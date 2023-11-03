@@ -1,0 +1,7 @@
+class Course {
+
+}
+
+class CourseLesson {
+
+}
