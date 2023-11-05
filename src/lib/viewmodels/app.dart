@@ -3,30 +3,23 @@ import 'package:fit_schedule_maker_plus/constants.dart';
 import 'package:flutter/material.dart';
 
 import '../models/timetable.dart';
-import '../models/timetable_variant.dart';
-import 'variants.dart';
 
 class AppViewModel extends ChangeNotifier {
-  /// Stores all variants that store all timetables. It is stored here,
-  /// so we can easily serialize and deserialize this from disk
-  /// together with `allCourses`.
-  late VariantsViewModel varViewMod;
-
-  AppViewModel() {
-    // TODO: Load variants from disk. Also should we do it here or somehow use Future...
-    varViewMod = VariantsViewModel(variants: [
-      TimetableVariant(name: 'Ver. 1', timetable: Timetable(selected: {})),
-      TimetableVariant(name: 'Ver. 2', timetable: Timetable(selected: {})),
-      TimetableVariant(name: 'Ver. 3', timetable: Timetable(selected: {})),
-    ]);
-  }
-
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
   int grade = 1;
   String year = "2023/24";
   bool isWinterTerm = true;
   String study = "BIT";
+
+  /// Load stored timetables from disk
+  List<Timetable> getTimetables() {
+    return [
+      Timetable(name: "Ver. 1", selected: {}),
+      Timetable(name: "Ver. 2", selected: {}),
+      Timetable(name: "Ver. 3", selected: {}),
+    ];
+  }
 
   /// Fetch all courses from https://www.fit.vut.cz/study/course/
   Future<void> getAllCourses() async {

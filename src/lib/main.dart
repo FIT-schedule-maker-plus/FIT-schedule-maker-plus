@@ -18,8 +18,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AppViewModel()),
         ChangeNotifierProvider(
-            create: (ctx) => ctx.read<AppViewModel>().varViewMod),
-        ChangeNotifierProvider(create: (_) => TimetableViewModel()),
+            create: (ctx) => TimetableViewModel(
+                timetables: ctx.read<AppViewModel>().getTimetables())),
       ],
       child: MaterialApp(
         title: 'FIT Schedule Maker+',

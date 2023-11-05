@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/timetable_variant.dart';
-import '../viewmodels/variants.dart';
+import '../viewmodels/timetable.dart';
 
 enum VariantMenuItem { export, delete }
 
 class VariantWidget extends StatelessWidget {
-  final TimetableVariant variant;
   final Color foreground;
   final Color background;
   final Color foreground2;
-  final VariantsViewModel viewmodel;
+  final int index;
+  final TimetableViewModel viewmodel;
 
   const VariantWidget({
     super.key,
-    required this.variant,
+    required this.index,
     required this.viewmodel,
     this.background = const Color(0xff292727),
     this.foreground = const Color(0xff1BD30B),
@@ -69,7 +68,7 @@ class VariantWidget extends StatelessWidget {
             ),
             PopupMenuItem<VariantMenuItem>(
               onTap: () {
-                viewmodel.deleteVariant(name: variant.name);
+                viewmodel.removeTimetable(index: index);
               },
               value: VariantMenuItem.delete,
               child: const Row(
@@ -89,7 +88,7 @@ class VariantWidget extends StatelessWidget {
     return Row(
       children: [
         Text(
-          variant.name,
+          viewmodel.timetables[index].name,
           style: TextStyle(
             fontSize: 16,
             color: foreground,
@@ -101,70 +100,6 @@ class VariantWidget extends StatelessWidget {
           color: foreground2,
         ),
       ],
-    );
-  }
-
-  Flex buildVariantButtonContents() {
-    return Flex(
-      direction: Axis.horizontal,
-      children: <Widget>[
-        buildLeftContents(),
-        buildRightContents(),
-      ],
-    );
-  }
-
-  Expanded buildRightContents() {
-    return Expanded(
-      flex: 1,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          PopupMenuButton<VariantMenuItem>(
-            onSelected: (item) {},
-            itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
-              const PopupMenuItem<VariantMenuItem>(
-                value: VariantMenuItem.export,
-                child: Text('Export'),
-              ),
-              PopupMenuItem<VariantMenuItem>(
-                onTap: () {
-                  viewmodel.deleteVariant(name: variant.name);
-                },
-                value: VariantMenuItem.delete,
-                child: const Row(
-                  children: <Widget>[
-                    Expanded(child: Text('Delete')),
-                    Icon(Icons.delete, color: Color(0xff770505)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Expanded buildLeftContents() {
-    return Expanded(
-      flex: 1,
-      child: Row(
-        children: [
-          Text(
-            variant.name,
-            style: TextStyle(
-              fontSize: 16,
-              color: foreground,
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.edit),
-            color: foreground2,
-          ),
-        ],
-      ),
     );
   }
 }
@@ -187,11 +122,11 @@ class TimetableVariants extends StatelessWidget {
             child: Expanded(
               child: Container(
                 color: Colors.transparent,
-                child: Consumer<VariantsViewModel>(
+                child: Consumer<TimetableViewModel>(
                   builder: (ctx, vm, _) => ListView.builder(
-                    itemCount: vm.variants.length,
-                    itemBuilder: (ctx, index) => VariantWidget(
-                      variant: vm.variants[index],
+                    itemCount: vm.timetables.length,
+                    itemBuilder: (ctx, i) => VariantWidget(
+                      index: i,
                       viewmodel: vm,
                     ),
                   ),
