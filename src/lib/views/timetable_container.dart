@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
+import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
+import 'package:fit_schedule_maker_plus/models/course.dart';
 
 class TimetableContainer extends StatefulWidget {
   const TimetableContainer({super.key});
@@ -11,9 +14,11 @@ class TimetableContainer extends StatefulWidget {
 class _TimetableContainer extends State<TimetableContainer> {
   @override
   Widget build(BuildContext context) {
+    var timetable = context.watch<TimetableViewModel>();
+
     return Column(
       children: [
-        Courses(model: model),
+        Courses(),
         SizedBox(height: 39),
         Expanded(child: Timetable()),
       ],
@@ -22,12 +27,17 @@ class _TimetableContainer extends State<TimetableContainer> {
 }
 
 class Courses extends StatelessWidget {
-  const Courses({super.key, required this.model});
+  const Courses({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var courses = ["IMA2", "IPT", "INP", "IFJ", "IAL", "ISS", "BIS", "SCO", "ITU"];
-    var course_widgets = courses.map(buildCourseWidget);
+    var app = context.read<AppViewModel>();
+    var timetable = context.watch<TimetableViewModel>();
+
+    var course_widgets = timetable
+        .courses
+        .map((id) => app.allCourses[id]!)
+        .map((id) => buildCourseWidget(id, context));
 
     return Container(
       width: double.infinity,
@@ -92,7 +102,9 @@ class Timetable extends StatelessWidget {
   }
 }
 
-Widget buildCourseWidget(String course) {
+Widget buildCourseWidget(Course course, BuildContext context) {
+  var timetable = context.read<TimetableViewModel>();
+
   return Flexible(
     flex: 1,
     child: Container(
@@ -104,50 +116,30 @@ Widget buildCourseWidget(String course) {
           borderRadius: BorderRadius.circular(20),
         ),
       ),
-      child: Stack(
+
+      child: Row(
         children: [
-          Positioned(
-            left: 38.26,
-            top: 2,
-            child: Text(
-              course,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                course.shortcut,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            )
           ),
-
-          Positioned(
-            left: 150,
-            top: 4,
-            child: Container(
-              width: 20,
-              height: 20,
-              child: Text("✖", style:TextStyle(color: Colors.white)),
-            ),
+          IconButton(
+                onPressed: () => timetable.removeCourse(course.id),
+                tooltip: 'Delete',
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.close)
           ),
-        ],
-      ),
-    )
-  );
-}
-
-Widget buildTime(String time, double padding_right) {
-  return Container(
-    width: 36,
-    height: 15,
-    // padding: EdgeInsets.only(right: padding_right),
-    child: Text(
-      time,
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 12,
-        fontFamily: 'Inter',
-        fontWeight: FontWeight.w600,
-        height: 0
+        ]
       )
     )
   );
@@ -157,42 +149,25 @@ Widget buildTimeWidget() {
   return Container(
     width: 1083,
     height: 15.71,
-    child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildTime("07:00", 2),
-          const SizedBox(width: 39),
-          buildTime("08:00", 2), // no margin
-          const SizedBox(width: 39),
-          buildTime("09:00", 2), // no margin
-          const SizedBox(width: 39),
-          buildTime("10:00", 2),
-          const SizedBox(width: 39),
-          buildTime("11:00", 4),
-          const SizedBox(width: 39),
-          buildTime("12:00", 3),
-          const SizedBox(width: 39),
-          buildTime("13:00", 2),
-          const SizedBox(width: 39),
-          buildTime("14:00", 2),
-          const SizedBox(width: 39),
-          buildTime("15:00", 3),
-          const SizedBox(width: 39),
-          buildTime("16:00", 2),
-          const SizedBox(width: 39),
-          buildTime("17:00", 4),
-          const SizedBox(width: 39),
-          buildTime("18:00", 3),
-          const SizedBox(width: 39),
-          buildTime("19:00", 2),
-          const SizedBox(width: 39),
-          buildTime("20:00", 1),
-          const SizedBox(width: 39),
-          buildTime("21:00", 3),
-        ],
-    ),
-)
-      ;
+    child: ListView.separated(
+      itemCount: 15,
+      scrollDirection: Axis.horizontal,
+      separatorBuilder: (BuildContext context, int index) => const SizedBox(width: 39),
+      itemBuilder: (BuildContext context, int index) {
+        return Container(
+          width: 36,
+          height: 15,
+          child: Text(
+            '${index+7}:00',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+            )
+          )
+        );
+      },
+    )
+  );
 }
