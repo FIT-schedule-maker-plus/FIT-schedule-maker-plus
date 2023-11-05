@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/timetable_variant.dart';
 import '../viewmodels/variants.dart';
 
+enum VariantMenuItem { export, delete }
+
 class VariantWidget extends StatelessWidget {
   final TimetableVariant variant;
   final Color foreground;
@@ -29,50 +31,139 @@ class VariantWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           color: background,
         ),
-        child: MaterialButton(
-          onPressed: () {},
-          child: Flex(
+        child: ExpansionTile(
+          title: Flex(
             direction: Axis.horizontal,
             children: <Widget>[
               Expanded(
                 flex: 1,
-                child: Row(
-                  children: [
-                    Text(
-                      variant.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: foreground,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.edit),
-                      color: foreground2,
-                    ),
-                  ],
-                ),
+                child: buildVariantName(),
               ),
               Expanded(
                 flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.more_horiz, color: foreground2),
-                    ),
-                    IconButton(
-                      onPressed: () =>
-                          viewmodel.deleteVariant(name: variant.name),
-                      icon: const Icon(Icons.delete, color: Color(0xff770505)),
-                    ),
+                child: buildVariantOptions(),
+              ),
+            ],
+          ),
+          children: <Widget>[
+            Container(
+              height: 200,
+              color: Colors.blue,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Row buildVariantOptions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        PopupMenuButton<VariantMenuItem>(
+          onSelected: (item) {},
+          itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
+            const PopupMenuItem<VariantMenuItem>(
+              value: VariantMenuItem.export,
+              child: Text('Export'),
+            ),
+            PopupMenuItem<VariantMenuItem>(
+              onTap: () {
+                viewmodel.deleteVariant(name: variant.name);
+              },
+              value: VariantMenuItem.delete,
+              child: const Row(
+                children: <Widget>[
+                  Expanded(child: Text('Delete')),
+                  Icon(Icons.delete, color: Color(0xff770505)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Row buildVariantName() {
+    return Row(
+      children: [
+        Text(
+          variant.name,
+          style: TextStyle(
+            fontSize: 16,
+            color: foreground,
+          ),
+        ),
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.edit),
+          color: foreground2,
+        ),
+      ],
+    );
+  }
+
+  Flex buildVariantButtonContents() {
+    return Flex(
+      direction: Axis.horizontal,
+      children: <Widget>[
+        buildLeftContents(),
+        buildRightContents(),
+      ],
+    );
+  }
+
+  Expanded buildRightContents() {
+    return Expanded(
+      flex: 1,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          PopupMenuButton<VariantMenuItem>(
+            onSelected: (item) {},
+            itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
+              const PopupMenuItem<VariantMenuItem>(
+                value: VariantMenuItem.export,
+                child: Text('Export'),
+              ),
+              PopupMenuItem<VariantMenuItem>(
+                onTap: () {
+                  viewmodel.deleteVariant(name: variant.name);
+                },
+                value: VariantMenuItem.delete,
+                child: const Row(
+                  children: <Widget>[
+                    Expanded(child: Text('Delete')),
+                    Icon(Icons.delete, color: Color(0xff770505)),
                   ],
                 ),
               ),
             ],
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Expanded buildLeftContents() {
+    return Expanded(
+      flex: 1,
+      child: Row(
+        children: [
+          Text(
+            variant.name,
+            style: TextStyle(
+              fontSize: 16,
+              color: foreground,
+            ),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.edit),
+            color: foreground2,
+          ),
+        ],
       ),
     );
   }
@@ -87,15 +178,13 @@ class TimetableVariants extends StatelessWidget {
       color: const Color(0xff171616),
       child: Padding(
         padding: const EdgeInsets.only(top: 20),
-        child: Flex(
-          direction: Axis.horizontal,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: Container(color: const Color.fromARGB(50, 0, 100, 100)),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: 200,
+              maxWidth: 1000,
             ),
-            Expanded(
-              flex: 2,
+            child: Expanded(
               child: Container(
                 color: Colors.transparent,
                 child: Consumer<VariantsViewModel>(
@@ -109,11 +198,7 @@ class TimetableVariants extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: Container(color: const Color.fromARGB(50, 0, 100, 100)),
-            ),
-          ],
+          ),
         ),
       ),
     );
