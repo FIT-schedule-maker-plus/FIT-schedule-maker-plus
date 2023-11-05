@@ -10,12 +10,10 @@ class VariantWidget extends StatelessWidget {
   final Color background;
   final Color foreground2;
   final int index;
-  final TimetableViewModel viewmodel;
 
   const VariantWidget({
     super.key,
     required this.index,
-    required this.viewmodel,
     this.background = const Color(0xff292727),
     this.foreground = const Color(0xff1BD30B),
     this.foreground2 = Colors.white,
@@ -40,7 +38,7 @@ class VariantWidget extends StatelessWidget {
               ),
               Expanded(
                 flex: 1,
-                child: buildVariantOptions(),
+                child: buildVariantOptions(context),
               ),
             ],
           ),
@@ -55,10 +53,18 @@ class VariantWidget extends StatelessWidget {
     );
   }
 
-  Row buildVariantOptions() {
+  Row buildVariantOptions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      children: [
+      children: <Widget>[
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+          ),
+          child: const Text('Activate'),
+          onPressed: () =>
+              context.read<TimetableViewModel>().setActive(index: index),
+        ),
         PopupMenuButton<VariantMenuItem>(
           onSelected: (item) {},
           itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
@@ -68,7 +74,9 @@ class VariantWidget extends StatelessWidget {
             ),
             PopupMenuItem<VariantMenuItem>(
               onTap: () {
-                viewmodel.removeTimetable(index: index);
+                context
+                    .read<TimetableViewModel>()
+                    .removeTimetable(index: index);
               },
               value: VariantMenuItem.delete,
               child: const Row(
@@ -87,11 +95,15 @@ class VariantWidget extends StatelessWidget {
   Row buildVariantName() {
     return Row(
       children: [
-        Text(
-          viewmodel.timetables[index].name,
-          style: TextStyle(
-            fontSize: 16,
-            color: foreground,
+        Consumer<TimetableViewModel>(
+          builder: (ctx, vm, _) => Text(
+            vm.timetables[index].name,
+            style: TextStyle(
+              fontSize: 16,
+              color: index == vm.active
+                  ? foreground
+                  : const Color.fromARGB(255, 255, 255, 255),
+            ),
           ),
         ),
         IconButton(
@@ -122,13 +134,11 @@ class TimetableVariants extends StatelessWidget {
             child: Expanded(
               child: Container(
                 color: Colors.transparent,
-                child: Consumer<TimetableViewModel>(
-                  builder: (ctx, vm, _) => ListView.builder(
-                    itemCount: vm.timetables.length,
-                    itemBuilder: (ctx, i) => VariantWidget(
-                      index: i,
-                      viewmodel: vm,
-                    ),
+                child: Selector<TimetableViewModel, int>(
+                  selector: (ctx, vm) => vm.timetables.length,
+                  builder: (ctx, length, _) => ListView.builder(
+                    itemCount: length,
+                    itemBuilder: (ctx, i) => VariantWidget(index: i),
                   ),
                 ),
               ),

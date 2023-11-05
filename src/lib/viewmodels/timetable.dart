@@ -15,6 +15,11 @@ class TimetableViewModel extends ChangeNotifier {
     }
   }
 
+  void setActive({required int index}) {
+    active = index;
+    notifyListeners();
+  }
+
   void addTimetable({required Timetable timetable}) {
     timetables.add(timetable);
     notifyListeners();
