@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'viewmodels/app.dart';
-import 'viewmodels/variants.dart';
+import 'viewmodels/timetable.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,10 +19,22 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppViewModel()),
         ChangeNotifierProvider(
             create: (ctx) => ctx.read<AppViewModel>().varViewMod),
+        ChangeNotifierProvider(create: (_) => TimetableViewModel()),
       ],
       child: MaterialApp(
         title: 'FIT Schedule Maker+',
         theme: ThemeData(
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ButtonStyle(
+                overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                    (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return const Color.fromARGB(16, 204, 204, 204);
+                  }
+                  return null;
+                }),
+              ),
+            ),
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true),
         home: const Homepage(),

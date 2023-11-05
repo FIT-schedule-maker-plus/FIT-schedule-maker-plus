@@ -4,19 +4,27 @@ import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 
 /// Represents a single course. This course contains multiple CourseLessons with different times
 class Course {
+  final int id;
   final String shortcut;
   final String full_name;
   final List<CourseLesson> lessons;
 
-  Course({required this.full_name, required this.shortcut, required this.lessons});
+  Course({
+    required this.id,
+    required this.full_name,
+    required this.shortcut,
+    required this.lessons,
+  });
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
+        id: json["id"],
         shortcut: json["hour_from"],
         full_name: json["hour_to"],
         lessons: List<CourseLesson>.from(json["lessons"].map((lesson) => CourseLesson.fromJson(lesson))),
       );
 
   Map<String, dynamic> toJson() => {
+        "id": id,
         "hour_from": shortcut,
         "hour_to": full_name,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),

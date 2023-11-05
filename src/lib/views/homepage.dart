@@ -35,7 +35,7 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appViewModel = context.watch<AppViewModel>();
+    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
 
     return FutureBuilder(
       future: appViewModel.getAllCourses(),
