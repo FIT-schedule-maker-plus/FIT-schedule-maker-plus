@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'viewmodels/app.dart';
+import 'viewmodels/variants.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,6 +17,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppViewModel()),
+        ChangeNotifierProvider(
+            create: (ctx) => ctx.read<AppViewModel>().varViewMod),
       ],
       child: MaterialApp(
         title: 'FIT Schedule Maker+',
