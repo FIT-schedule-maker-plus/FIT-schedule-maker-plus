@@ -9,8 +9,6 @@ import 'package:fit_schedule_maker_plus/views/timetable_variants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/course.dart';
-
 Widget getMainContent({required bool showSideBar}) {
   return DefaultTabController(
     length: 3,
@@ -35,7 +33,8 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
+    AppViewModel appViewModel =
+        Provider.of<AppViewModel>(context, listen: false);
 
     return FutureBuilder(
       future: appViewModel.getAllCourses(),
