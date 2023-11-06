@@ -54,6 +54,7 @@ class VariantWidget extends StatelessWidget {
   }
 
   Row buildVariantOptions(BuildContext context) {
+    final vm = context.watch<TimetableViewModel>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
@@ -61,27 +62,22 @@ class VariantWidget extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
           ),
-          child: const Text('Activate'),
-          onPressed: () =>
-              context.read<TimetableViewModel>().setActive(index: index),
+          child: const Text('Zvolit'),
+          onPressed: () => vm.setActive(index: index),
         ),
         PopupMenuButton<VariantMenuItem>(
           onSelected: (item) {},
           itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
             const PopupMenuItem<VariantMenuItem>(
               value: VariantMenuItem.export,
-              child: Text('Export'),
+              child: Text('Exportovat'),
             ),
             PopupMenuItem<VariantMenuItem>(
-              onTap: () {
-                context
-                    .read<TimetableViewModel>()
-                    .removeTimetable(index: index);
-              },
+              onTap: () => vm.removeTimetable(index: index),
               value: VariantMenuItem.delete,
               child: const Row(
                 children: <Widget>[
-                  Expanded(child: Text('Delete')),
+                  Expanded(child: Text('Vymazat')),
                   Icon(Icons.delete, color: Color(0xff770505)),
                 ],
               ),
