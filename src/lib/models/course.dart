@@ -6,27 +6,30 @@ import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 class Course {
   final int id;
   final String shortcut;
-  final String full_name;
-  final List<CourseLesson> lessons;
+  final String fullName;
+  List<CourseLesson> lessons;
+  bool loadedLessons;
 
   Course({
     required this.id,
-    required this.full_name,
+    required this.fullName,
     required this.shortcut,
     required this.lessons,
+    required this.loadedLessons,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
         id: json["id"],
-        shortcut: json["hour_from"],
-        full_name: json["hour_to"],
+        shortcut: json["shortcut"],
+        fullName: json["fullName"],
         lessons: List<CourseLesson>.from(json["lessons"].map((lesson) => CourseLesson.fromJson(lesson))),
+        loadedLessons: false,
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "hour_from": shortcut,
-        "hour_to": full_name,
+        "shortcut": shortcut,
+        "fullName": fullName,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),
       };
 }
