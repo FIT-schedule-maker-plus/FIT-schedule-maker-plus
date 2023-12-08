@@ -5,6 +5,23 @@ enum CourseDuty {
   recommended, // doporuceny
 }
 
+extension ParseToString on CourseDuty {
+  String toCzechString() {
+    switch (this) {
+      case CourseDuty.compulsory:
+        return "Povinne predmety";
+      case CourseDuty.compulsoryElective:
+        return "Povinne volitelne predmety";
+      case CourseDuty.elective:
+        return "Volitelne predmety";
+      case CourseDuty.recommended:
+        return "Doporucene predmety";
+      default:
+        return "Unknown";
+    }
+  }
+}
+
 /// Represent a course in a program. This contain
 class ProgramCourse {
   final int courseId;
