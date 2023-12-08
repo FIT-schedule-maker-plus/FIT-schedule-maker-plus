@@ -33,11 +33,10 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppViewModel appViewModel =
-        Provider.of<AppViewModel>(context, listen: false);
+    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
 
     return FutureBuilder(
-      future: appViewModel.getAllCourses(),
+      future: appViewModel.getAllStudyProgram(),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:

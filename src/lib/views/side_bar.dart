@@ -1,11 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../constants.dart';
+import '../models/program_course_group.dart';
+import '../models/study.dart';
 
 const Color subjectBarColor = Color.fromARGB(255, 22, 22, 22);
 const Color activeColor = Color.fromRGBO(41, 39, 39, 1);
@@ -34,8 +36,8 @@ class SideBar extends StatelessWidget {
 
 Widget buildStudiumBar(BuildContext context) {
   AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-  final String? activeStudy = context.select((AppViewModel appViewModel) => appViewModel.study);
-  List<String> magStudiums = appViewModel.getAllMagisterStudies();
+  final activeStudy = context.select((AppViewModel appViewModel) => appViewModel.currentStudyProgram);
+  Map<int, StudyProgram> studies = appViewModel.allStudyPrograms;
 
   return Container(
     color: black,
@@ -45,14 +47,14 @@ Widget buildStudiumBar(BuildContext context) {
       children: [
         Image.asset('assets/vut_logo.png'),
         SizedBox(height: 10),
-        buildStudiumName("BAKALARSKE"),
-        SizedBox(height: 10),
-        buildStudiumButton(
-          "BIT",
-          activeStudy,
-          () => appViewModel.changeStudy("BIT"),
-        ),
-        SizedBox(height: 20),
+        // buildStudiumName("BAKALARSKE"),
+        // SizedBox(height: 10),
+        // buildStudiumButton(
+        //   "BIT",
+        //   activeStudy,
+        //   () => appViewModel.changeStudy(activeStudy),
+        // ),
+        // SizedBox(height: 20),
         buildStudiumName("MAGISTERSKE"),
         SizedBox(height: 10),
         Expanded(
@@ -68,13 +70,9 @@ Widget buildStudiumBar(BuildContext context) {
             },
             child: ListView.builder(
               padding: EdgeInsets.only(bottom: 50),
-              itemCount: magStudiums.length,
+              itemCount: studies.length,
               itemBuilder: (context, index) {
-                return buildStudiumButton(
-                  magStudiums[index],
-                  activeStudy,
-                  () => appViewModel.changeStudy(magStudiums[index]),
-                );
+                return buildStudiumButton(studies.elementAt(index), activeStudy, appViewModel);
               },
             ),
           ),
@@ -84,21 +82,21 @@ Widget buildStudiumBar(BuildContext context) {
   );
 }
 
-Widget buildStudiumButton(String text, String? activeStudy, void Function() onPressed) {
+Widget buildStudiumButton(StudyProgram study, int activeStudy, AppViewModel appViewModel) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
     child: ElevatedButton(
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.all(3.0),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-        disabledBackgroundColor: activeStudy == text ? activeColor : black,
+        disabledBackgroundColor: study.id == activeStudy ? activeColor : black,
         backgroundColor: black,
         surfaceTintColor: black,
         splashFactory: NoSplash.splashFactory,
         fixedSize: Size(double.infinity, 70.0),
       ),
-      onPressed: activeStudy == text ? null : onPressed,
-      child: Text(text, style: TextStyle(color: white, fontSize: 20)),
+      onPressed: study.id == activeStudy ? null : () => appViewModel.changeStudy(study.id),
+      child: Text(study.shortcut, style: TextStyle(color: white, fontSize: 20)),
     ),
   );
 }
@@ -130,11 +128,11 @@ Widget buildSubjectBar(BuildContext context) {
           child: ListView(
             shrinkWrap: true,
             children: [
-              SubjectsExpansionTiles(Category.compulsory),
+              SubjectsExpansionTiles(CourseDuty.compulsory),
               Divider(color: black),
-              SubjectsExpansionTiles(Category.compulsoryOptional),
+              SubjectsExpansionTiles(CourseDuty.compulsoryElective),
               Divider(color: black),
-              SubjectsExpansionTiles(Category.optional),
+              SubjectsExpansionTiles(CourseDuty.elective),
             ],
           ),
         )
@@ -145,15 +143,14 @@ Widget buildSubjectBar(BuildContext context) {
 
 Widget buildHeader(BuildContext context) {
   AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-  final isWinterTerm = context.select((AppViewModel appViewModel) => appViewModel.isWinterTerm);
+  final currentSemester = context.select((AppViewModel appViewModel) => appViewModel.currentSemester);
 
   return Row(
     mainAxisSize: MainAxisSize.max,
     children: [
       Expanded(
         child: Text("2023/24",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
+            textAlign: TextAlign.center, style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
       ),
       Transform.scale(
         scale: 1,
@@ -163,8 +160,8 @@ Widget buildHeader(BuildContext context) {
           inactiveTrackColor: Color.fromARGB(255, 249, 249, 107),
           inactiveThumbColor: white,
           inactiveThumbImage: AssetImage("sun.png"),
-          value: isWinterTerm,
-          onChanged: (value) => appViewModel.changeTerm(value),
+          value: currentSemester == Semester.winter,
+          onChanged: (value) => appViewModel.changeTerm(value ? Semester.winter : Semester.summer),
         ),
       ),
     ],
@@ -175,7 +172,7 @@ Widget buildGradeTabs(BuildContext context) {
   AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
 
   return DefaultTabController(
-    initialIndex: appViewModel.grade,
+    initialIndex: appViewModel.currentGrade.index,
     length: 3,
     child: TabBar(
       indicatorColor: Color.fromARGB(255, 27, 211, 11),
@@ -184,7 +181,7 @@ Widget buildGradeTabs(BuildContext context) {
       labelColor: white,
       dividerColor: Colors.transparent,
       labelPadding: EdgeInsets.all(0),
-      onTap: (value) => appViewModel.changeGrade(value),
+      onTap: (index) => appViewModel.changeGrade(YearOfStudy.values[index]),
       tabs: [
         buildGradeText("1.Roc"),
         buildGradeText("2.Roc"),
@@ -206,52 +203,68 @@ Widget buildGradeText(String grade) {
 }
 
 class SubjectsExpansionTiles extends StatelessWidget {
-  final Category category;
-  const SubjectsExpansionTiles(this.category, {super.key});
+  final CourseDuty courseDuty;
+  const SubjectsExpansionTiles(this.courseDuty, {super.key});
 
   @override
   Widget build(BuildContext context) {
     AppViewModel appViewModel = context.watch<AppViewModel>();
+    return FutureBuilder(
+      future: appViewModel.getProgramCourseGroup(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+          case ConnectionState.none:
+          case ConnectionState.active:
+            return CircularProgressIndicator();
+          default:
+            List<ProgramCourseGroup> programCourses = snapshot.data!;
 
-    return ExpansionTile(
-      tilePadding: EdgeInsets.only(right: 17, left: 5),
-      initiallyExpanded: true,
-      shape: OutlineInputBorder(borderSide: BorderSide.none),
-      title: Text(
-        category.toCzechString(),
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: white,
-          fontWeight: FontWeight.w600,
-          fontSize: 18,
-        ),
-      ),
-      childrenPadding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-      backgroundColor: subjectBarColor,
-      collapsedIconColor: white,
-      iconColor: white,
-      controlAffinity: ListTileControlAffinity.leading,
-      maintainState: true,
-      children: appViewModel
-          .filterCourses(category)
-          .map((courseID) => buildSubjectButton(courseID, context))
-          .toList(),
+            ProgramCourseGroup programCourseGroup = programCourses.firstWhere((courseGroup) =>
+                courseGroup.semester == appViewModel.currentSemester &&
+                courseGroup.yearOfStudy == appViewModel.currentGrade);
+            return ExpansionTile(
+              tilePadding: EdgeInsets.only(right: 17, left: 5),
+              initiallyExpanded: true,
+              shape: OutlineInputBorder(borderSide: BorderSide.none),
+              title: Text(
+                courseDuty.toCzechString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+              childrenPadding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+              backgroundColor: subjectBarColor,
+              collapsedIconColor: white,
+              iconColor: white,
+              controlAffinity: ListTileControlAffinity.leading,
+              maintainState: true,
+              children: programCourseGroup.courses
+                  .where((course) => course.duty == courseDuty)
+                  .map((course) => buildSubjectButton(course, context))
+                  .toList(),
+            );
+        }
+      },
     );
   }
 }
 
-Widget buildSubjectButton(int courseID, BuildContext context) {
+Widget buildSubjectButton(ProgramCourse programCourse, BuildContext context) {
   TimetableViewModel timetableViewModel = Provider.of<TimetableViewModel>(context, listen: false);
   AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
   bool isSelected = context
-      .select((TimetableViewModel timetableViewModel) => timetableViewModel.containsCourse(courseID));
+      .select((TimetableViewModel timetableViewModel) => timetableViewModel.containsCourse(programCourse.courseId));
 
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: ElevatedButton(
-      onPressed: () => timetableViewModel.containsCourse(courseID)
-          ? timetableViewModel.removeCourse(courseID)
-          : timetableViewModel.addCourse(courseID),
+      onPressed: () => timetableViewModel.containsCourse(programCourse.courseId)
+          ? timetableViewModel.removeCourse(programCourse.courseId)
+          : timetableViewModel.addCourse(programCourse.courseId),
       style: ElevatedButton.styleFrom(
         minimumSize: Size(double.infinity, 40),
         alignment: Alignment.centerLeft,
@@ -260,7 +273,7 @@ Widget buildSubjectButton(int courseID, BuildContext context) {
         splashFactory: NoSplash.splashFactory,
         elevation: 0,
       ),
-      child: Text(appViewModel.allCourses[courseID]!.shortcut,
+      child: Text(appViewModel.allCourses[programCourse.courseId]!.shortcut,
           style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400)),
     ),
   );
