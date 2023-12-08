@@ -263,9 +263,9 @@ class AppViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<ProgramCourseGroup> getProgramCourseGroup() {
+  Future<List<ProgramCourseGroup>> getProgramCourseGroup() async {
     if (!allStudyPrograms.containsKey(currentStudyProgram)) {
-      getProgramCourses(currentStudyProgram);
+      await getProgramCourses(currentStudyProgram);
     }
 
     final semester = isWinterTerm ? Semester.winter : Semester.summer;
