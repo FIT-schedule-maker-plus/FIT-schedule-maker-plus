@@ -3,19 +3,22 @@ import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:fit_schedule_maker_plus/models/study.dart';
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/models/program_course.dart';
-// import 'package:fit_schedule_maker_plus/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
 import '../models/timetable.dart';
 
+extension allStudyPrograms on Map {
+  elementAt(int index) => values.elementAt(index);
+}
+
 class AppViewModel extends ChangeNotifier {
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
   Map<int, StudyProgram> allStudyPrograms = {};
-  int grade = 1;
-  String year = "2023/24";
-  bool isWinterTerm = true;
+  YearOfStudy currentGrade = YearOfStudy.second;
+  Semester currentSemester = Semester.winter;
+  String currentYear = "2023/24";
   int currentStudyProgram = 15803;
 
   /// Load stored timetables from disk
@@ -70,15 +73,18 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
+
   Future<void> getProgramCourses(int programId) async {
     if (allStudyPrograms.containsKey(programId)) {
-      return;
+      if (allStudyPrograms[programId]!.courseGroups.isNotEmpty) {
+        return;
+      }
     }
 
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
     if (parser == null) return;
 
-    allStudyPrograms[programId]?.courseGroups = parser
+    allStudyPrograms[programId]!.courseGroups = parser
         .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
         .map(_parseCourseGroup)
         .where((value) => value != null)
@@ -86,17 +92,21 @@ class AppViewModel extends ChangeNotifier {
         .toList();
   }
 
-  ProgramCourseGroup? _parseCourseGroup(element) {
+  ProgramCourseGroup? _parseCourseGroup(Result element) {
     var caption = element.querySelector("caption")?.text;
     if (caption == null) return null;
     caption = caption.trimLeft();
 
     final semester = caption.contains("winter semester") ? Semester.winter : Semester.summer;
-    final yearOfStudy = caption.startsWith("1st year") ? YearOfStudy.first
-        : caption.startsWith("2nd year") ? YearOfStudy.second
-        : caption.startsWith("3rd year") ? YearOfStudy.third
-        : caption.startsWith("Any") ? YearOfStudy.any
-        : null;
+    final yearOfStudy = caption.startsWith("1st year")
+        ? YearOfStudy.first
+        : caption.startsWith("2nd year")
+            ? YearOfStudy.second
+            : caption.startsWith("3rd year")
+                ? YearOfStudy.third
+                : caption.startsWith("Any")
+                    ? YearOfStudy.any
+                    : null;
 
     if (yearOfStudy == null) return null;
 
@@ -121,11 +131,15 @@ class AppViewModel extends ChangeNotifier {
     final id = int.parse(courseIdString);
 
     final dutyText = html.split("class=\"w5p\">")[2].split("<")[0];
-    final duty = dutyText.startsWith("CE") ? CourseDuty.compulsoryElective
-        : dutyText == "C" ? CourseDuty.compulsory
-        : dutyText == "E" ? CourseDuty.elective
-        : dutyText == "R" ? CourseDuty.recommended
-        : null;
+    final duty = dutyText.startsWith("CE")
+        ? CourseDuty.compulsoryElective
+        : dutyText == "C"
+            ? CourseDuty.compulsory
+            : dutyText == "E"
+                ? CourseDuty.elective
+                : dutyText == "R"
+                    ? CourseDuty.recommended
+                    : null;
 
     if (duty == null) return null;
 
@@ -140,13 +154,12 @@ class AppViewModel extends ChangeNotifier {
         shortcut: shortcut,
         fullName: courseName,
         lessons: [],
-        loadedLessons: false
+        loadedLessons: false,
       );
     }
 
     return ProgramCourse(courseId: id, duty: duty);
   }
-
 
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
   Future<void> getCourseLessions(int courseId) async {
@@ -188,7 +201,7 @@ class AppViewModel extends ChangeNotifier {
 
     if (type == null) return null;
 
-    final dayOfWeek = switch(matches[0]) {
+    final dayOfWeek = switch (matches[0]) {
       "<th>Mon" => DayOfWeek.monday,
       "<th>Tue" => DayOfWeek.tueday,
       "<th>Wed" => DayOfWeek.wednesday,
@@ -233,26 +246,25 @@ class AppViewModel extends ChangeNotifier {
       info: info,
       startsFrom: startsFrom,
       endsAt: endsAt,
-      capacity: capacity
+      capacity: capacity,
     );
   }
 
-
   /// Changes the grade and notifies all listeners
-  void changeGrade(int grade) {
-    this.grade = grade;
+  void changeGrade(YearOfStudy grade) {
+    currentGrade = grade;
     notifyListeners();
   }
 
   /// Changes the term to winter or summer and notifies all listeners
-  void changeTerm(bool isWinterTerm) {
-    this.isWinterTerm = isWinterTerm;
+  void changeTerm(Semester semester) {
+    currentSemester = semester;
     notifyListeners();
   }
 
   /// Changes the year and notifies all listeners that the year has been changed
   void changeYear(String year) {
-    this.year = year;
+    currentYear = year;
     notifyListeners();
   }
 
@@ -264,40 +276,17 @@ class AppViewModel extends ChangeNotifier {
   }
 
   Future<List<ProgramCourseGroup>> getProgramCourseGroup() async {
-    if (!allStudyPrograms.containsKey(currentStudyProgram)) {
-      await getProgramCourses(currentStudyProgram);
+    if (allStudyPrograms.containsKey(currentStudyProgram)) {
+      if (allStudyPrograms[currentStudyProgram]!.courseGroups.isEmpty) {
+        await getProgramCourses(currentStudyProgram);
+      }
     }
 
-    final semester = isWinterTerm ? Semester.winter : Semester.summer;
-    return allStudyPrograms[currentStudyProgram]!
-        .courseGroups
-        .where((group) => group.semester == semester)
-        .toList();
+    return allStudyPrograms[currentStudyProgram]!.courseGroups.where((group) => group.semester == currentSemester).toList();
   }
-
-  /// Return indices of all courses that satisfy the following filters: year, term, study and [category]
-  // List<int> filterCourses(Category category) {
-  //   if (study != "BIT") return [];
-  //   if (!isWinterTerm) return [30, 31, 32];
-
-  //   switch (category) {
-  //     case Category.compulsory:
-  //       return List.generate(6, (index) => index + (grade + 1) * 6,
-  //           growable: false);
-  //     case Category.compulsoryOptional:
-  //       return List.generate(4, (index) => index + ((grade + 1) * 2),
-  //           growable: false);
-  //     case Category.optional:
-  //       return List.generate(5, (index) => 2 * index + (grade + 4),
-  //           growable: false);
-  //     default:
-  //       return [];
-  //   }
-  // }
 }
 
 int parseTime(String str) {
   final chunks = str.split(":").map((v) => int.parse(v));
   return chunks.elementAt(0) * 60 + chunks.elementAt(1);
 }
-
