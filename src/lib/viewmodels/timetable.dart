@@ -9,9 +9,37 @@ class TimetableViewModel extends ChangeNotifier {
   final List<Timetable> timetables;
   int active;
 
+  final Map<int, String> _isEditing = {};
+
+  Timetable get currentTimetable => timetables[active];
+
   TimetableViewModel({required this.timetables, this.active = 0}) {
     if (timetables.isEmpty) {
       timetables.add(Timetable(name: "default", selected: {}));
+    }
+  }
+
+  bool isEditingName({required int index}) {
+    return _isEditing.containsKey(index);
+  }
+
+  void saveEditingName(int index) {
+    timetables[index].name = _isEditing[index]!;
+    _isEditing.remove(index);
+    notifyListeners();
+  }
+
+  void updateEditingName(int index, String text) {
+    _isEditing[index] = text;
+  }
+
+  void setEditingName({required int index, required bool value}) {
+    if (value) {
+      _isEditing[index] = timetables[index].name;
+      notifyListeners();
+    } else if (_isEditing.containsKey(index)) {
+      _isEditing.remove(index);
+      notifyListeners();
     }
   }
 

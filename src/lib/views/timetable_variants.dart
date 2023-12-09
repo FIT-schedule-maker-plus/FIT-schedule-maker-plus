@@ -9,6 +9,8 @@ class VariantWidget extends StatelessWidget {
   final Color foreground;
   final Color background;
   final Color foreground2;
+  final Color colClose;
+  final Color colConfirm;
   final int index;
 
   const VariantWidget({
@@ -17,6 +19,8 @@ class VariantWidget extends StatelessWidget {
     this.background = const Color(0xff292727),
     this.foreground = const Color(0xff1BD30B),
     this.foreground2 = Colors.white,
+    this.colClose = const Color(0xff770505),
+    this.colConfirm = const Color(0xff00ff00),
   });
 
   @override
@@ -88,26 +92,56 @@ class VariantWidget extends StatelessWidget {
     );
   }
 
-  Row buildVariantName() {
-    return Row(
-      children: [
-        Consumer<TimetableViewModel>(
-          builder: (ctx, vm, _) => Text(
-            vm.timetables[index].name,
-            style: TextStyle(
-              fontSize: 16,
-              color: index == vm.active
-                  ? foreground
-                  : const Color.fromARGB(255, 255, 255, 255),
+  Widget buildVariantName() {
+    return Consumer<TimetableViewModel>(
+      builder: (ctx, vm, _) => Row(
+        children: [
+          if (vm.isEditingName(index: index))
+            Expanded(
+              child: TextField(
+                  controller: TextEditingController()
+                    ..text = vm.timetables[index].name,
+                  onChanged: (newText) {
+                    vm.updateEditingName(index, newText);
+                  },
+                  style: const TextStyle(color: Color(0xffffffff))),
             ),
-          ),
-        ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.edit),
-          color: foreground2,
-        ),
-      ],
+          if (!vm.isEditingName(index: index))
+            Text(
+              vm.timetables[index].name,
+              style: TextStyle(
+                fontSize: 16,
+                color: index == vm.active
+                    ? foreground
+                    : const Color.fromARGB(255, 255, 255, 255),
+              ),
+            ),
+          if (vm.isEditingName(index: index))
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => vm.saveEditingName(index),
+                  icon: const Icon(Icons.check),
+                  color: colConfirm,
+                ),
+                IconButton(
+                  onPressed: () =>
+                      vm.setEditingName(index: index, value: false),
+                  icon: const Icon(Icons.close),
+                  color: colClose,
+                ),
+              ],
+            ),
+          if (!vm.isEditingName(index: index))
+            IconButton(
+              onPressed: () {
+                vm.setEditingName(index: index, value: true);
+              },
+              icon: const Icon(Icons.edit),
+              color: foreground2,
+            ),
+        ],
+      ),
     );
   }
 }
