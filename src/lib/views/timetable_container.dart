@@ -58,7 +58,8 @@ class Courses extends StatelessWidget {
           Center(
               child: Wrap(
                   spacing: 60, // to apply margin in the main axis of the wrap
-                  runSpacing: 10, // to apply margin in the cross axis of the wrap
+                  runSpacing:
+                      10, // to apply margin in the cross axis of the wrap
                   children: courseWidgets)),
           const SizedBox(height: 17),
         ]));
@@ -71,26 +72,26 @@ class Timetable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var timeWidget = SizedBox(
-      width: 1083,
-      height: 15.71,
-      child: ListView.separated(
-        itemCount: 15,
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (BuildContext context, int index) =>
-            const SizedBox(width: 39),
-        itemBuilder: (BuildContext context, int index) {
-          return SizedBox(
-              width: 36,
-              height: 15,
-              child: Text('${index + 7}:00',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                  )));
-        },
-      ));
+        width: 1083,
+        height: 15.71,
+        child: ListView.separated(
+          itemCount: 15,
+          scrollDirection: Axis.horizontal,
+          separatorBuilder: (BuildContext context, int index) =>
+              const SizedBox(width: 39),
+          itemBuilder: (BuildContext context, int index) {
+            return SizedBox(
+                width: 36,
+                height: 15,
+                child: Text('${index + 7}:00',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                    )));
+          },
+        ));
 
     return Container(
       width: double.infinity,
