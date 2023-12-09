@@ -1,16 +1,25 @@
 import 'package:fit_schedule_maker_plus/models/course.dart';
-import 'package:fit_schedule_maker_plus/constants.dart';
+import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/models/study.dart';
+import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
+import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
+import 'package:chaleno/chaleno.dart';
 
 import '../models/timetable.dart';
+
+extension allStudyPrograms on Map {
+  elementAt(int index) => values.elementAt(index);
+}
 
 class AppViewModel extends ChangeNotifier {
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
-  int grade = 1;
-  String year = "2023/24";
-  bool isWinterTerm = true;
-  String study = "BIT";
+  Map<int, StudyProgram> allStudyPrograms = {};
+  YearOfStudy currentGrade = YearOfStudy.second;
+  Semester currentSemester = Semester.winter;
+  String currentYear = "2023/24";
+  int currentStudyProgram = 15803;
 
   /// Load stored timetables from disk
   List<Timetable> getTimetables() {
@@ -21,104 +30,263 @@ class AppViewModel extends ChangeNotifier {
     ];
   }
 
-  /// Fetch all courses from https://www.fit.vut.cz/study/course/
-  Future<void> getAllCourses() async {
-    // await Future.delayed(Duration(milliseconds: 2000));
-    allCourses = {
-      1: Course(id: 1, full_name: "Algoritmy", shortcut: "IAL", lessons: []),
-      2: Course(id: 2, full_name: "", shortcut: "IFJ", lessons: []),
-      3: Course(id: 3, full_name: "", shortcut: "ISS", lessons: []),
-      4: Course(id: 4, full_name: "", shortcut: "INP", lessons: []),
-      5: Course(id: 5, full_name: "", shortcut: "IMA2", lessons: []),
-      6: Course(id: 6, full_name: "", shortcut: "IPT", lessons: []),
-      7: Course(id: 7, full_name: "", shortcut: "XYZ", lessons: []),
-      8: Course(id: 8, full_name: "", shortcut: "ABC", lessons: []),
-      9: Course(id: 9, full_name: "", shortcut: "DEF", lessons: []),
-      10: Course(id: 10, full_name: "", shortcut: "GHI", lessons: []),
-      11: Course(id: 11, full_name: "", shortcut: "JKL", lessons: []),
-      12: Course(id: 12, full_name: "", shortcut: "MNO", lessons: []),
-      13: Course(id: 13, full_name: "", shortcut: "PQR", lessons: []),
-      14: Course(id: 14, full_name: "", shortcut: "STU", lessons: []),
-      15: Course(id: 15, full_name: "", shortcut: "VWX", lessons: []),
-      16: Course(id: 16, full_name: "", shortcut: "YZA", lessons: []),
-      17: Course(id: 17, full_name: "", shortcut: "BCD", lessons: []),
-      18: Course(id: 18, full_name: "", shortcut: "EFG", lessons: []),
-      19: Course(id: 19, full_name: "", shortcut: "HIJ", lessons: []),
-      20: Course(id: 20, full_name: "", shortcut: "KLM", lessons: []),
-      21: Course(id: 21, full_name: "", shortcut: "NOP", lessons: []),
-      22: Course(id: 22, full_name: "", shortcut: "QRS", lessons: []),
-      23: Course(id: 23, full_name: "", shortcut: "TUV", lessons: []),
-      24: Course(id: 24, full_name: "", shortcut: "WXY", lessons: []),
-      25: Course(id: 25, full_name: "", shortcut: "ZAB", lessons: []),
-      26: Course(id: 26, full_name: "", shortcut: "CDE", lessons: []),
-      27: Course(id: 27, full_name: "", shortcut: "FGH", lessons: []),
-      28: Course(id: 28, full_name: "", shortcut: "IJK", lessons: []),
-      29: Course(id: 29, full_name: "", shortcut: "LMN", lessons: []),
-      30: Course(id: 30, full_name: "", shortcut: "OPQ", lessons: []),
-      31: Course(id: 31, full_name: "", shortcut: "RST", lessons: []),
-      32: Course(id: 32, full_name: "", shortcut: "UVW", lessons: []),
-      33: Course(id: 33, full_name: "", shortcut: "XYZ", lessons: []),
-      34: Course(id: 34, full_name: "", shortcut: "ABC", lessons: []),
-      35: Course(id: 35, full_name: "", shortcut: "DEF", lessons: []),
-    };
+  /// https://www.fit.vut.cz/study/study-plan/.en
+  /// TODO Fetch from the site instead of hardcoding them
+  Future<void> getAllStudyProgram() async {
+    var studyPrograms = [
+      StudyProgram(id: 15803, shortcut: "BIT", courseGroups: [], fullName: "Information Technology"),
+
+      // MITAI
+      StudyProgram(id: 15994, shortcut: "NADE", courseGroups: [], fullName: "Application Development"),
+      StudyProgram(id: 15990, shortcut: "NBIO", courseGroups: [], fullName: "Bioinformatics and Biocomputing"),
+      StudyProgram(id: 15993, shortcut: "NGRI", courseGroups: [], fullName: "Computer Graphics and Interaction"),
+      StudyProgram(id: 15984, shortcut: "NNET", courseGroups: [], fullName: "Computer Networks"),
+      StudyProgram(id: 15992, shortcut: "NVIZ", courseGroups: [], fullName: "Computer Vision"),
+      StudyProgram(id: 15999, shortcut: "NCPS", courseGroups: [], fullName: "Cyberphysical Systems"),
+      StudyProgram(id: 15997, shortcut: "NSEC", courseGroups: [], fullName: "Cybersecurity"),
+      StudyProgram(id: 15988, shortcut: "NEMB", courseGroups: [], fullName: "Embedded Systems"),
+      StudyProgram(id: 16000, shortcut: "NHPC", courseGroups: [], fullName: "High Performance Computing"),
+      StudyProgram(id: 15995, shortcut: "NISD", courseGroups: [], fullName: "Information Systems and Databases"),
+      StudyProgram(id: 15987, shortcut: "NIDE", courseGroups: [], fullName: "Intelligent Devices"),
+      StudyProgram(id: 16001, shortcut: "NISY", courseGroups: [], fullName: "Intelligent Systems"),
+      StudyProgram(id: 15985, shortcut: "NMAL", courseGroups: [], fullName: "Machine Learning"),
+      StudyProgram(id: 15996, shortcut: "NMAT", courseGroups: [], fullName: "Mathematical Methods"),
+      StudyProgram(id: 15991, shortcut: "NSEN", courseGroups: [], fullName: "Software Engineering"),
+      StudyProgram(id: 15986, shortcut: "NVER", courseGroups: [], fullName: "Software Verification and Testing"),
+      StudyProgram(id: 15989, shortcut: "NSPE", courseGroups: [], fullName: "Sound, Speech and Natural Language Processing"),
+
+      // IT-MGR-2
+      StudyProgram(id: 15813, shortcut: "MBI", courseGroups: [], fullName: "Bioinformatics and Biocomputing"),
+      StudyProgram(id: 15808, shortcut: "MPV", courseGroups: [], fullName: "Computer and Embedded Systems"),
+      StudyProgram(id: 15811, shortcut: "MGM", courseGroups: [], fullName: "Computer Graphics and Multimedia"),
+      StudyProgram(id: 15814, shortcut: "MSK", courseGroups: [], fullName: "Computer Networks and Communication"),
+      StudyProgram(id: 15809, shortcut: "MIS", courseGroups: [], fullName: "Information Systems"),
+      StudyProgram(id: 15807, shortcut: "MBS", courseGroups: [], fullName: "Information Technology Security"),
+      StudyProgram(id: 15810, shortcut: "MIN", courseGroups: [], fullName: "Intelligent Systems"),
+      StudyProgram(id: 15812, shortcut: "MMI", courseGroups: [], fullName: "Management and Information Technologies"),
+      StudyProgram(id: 15815, shortcut: "MMM", courseGroups: [], fullName: "Mathematical Methods in Information Technology"),
+    ];
+
+    for (final program in studyPrograms) {
+      allStudyPrograms[program.id] = program;
+    }
   }
 
-  /// Returns name of all magister studies
-  List<String> getAllMagisterStudies() {
-    return [
-      "NBIO",
-      "NISD",
-      "NISY",
-      "NIDE",
-      "NCPS",
-      "NSEC",
-      "NMAT",
-      "NISD",
-      "NISD"
-    ];
+  /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
+
+  Future<void> getProgramCourses(int programId) async {
+    if (allStudyPrograms.containsKey(programId)) {
+      if (allStudyPrograms[programId]!.courseGroups.isNotEmpty) {
+        return;
+      }
+    }
+
+    final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
+    if (parser == null) return;
+
+    allStudyPrograms[programId]!.courseGroups = parser
+        .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
+        .map(_parseCourseGroup)
+        .where((value) => value != null)
+        .map((value) => value!)
+        .toList();
+  }
+
+  ProgramCourseGroup? _parseCourseGroup(Result element) {
+    var caption = element.querySelector("caption")?.text;
+    if (caption == null) return null;
+    caption = caption.trimLeft();
+
+    final semester = caption.contains("winter semester") ? Semester.winter : Semester.summer;
+    final yearOfStudy = caption.startsWith("1st year")
+        ? YearOfStudy.first
+        : caption.startsWith("2nd year")
+            ? YearOfStudy.second
+            : caption.startsWith("3rd year")
+                ? YearOfStudy.third
+                : caption.startsWith("Any")
+                    ? YearOfStudy.any
+                    : null;
+
+    if (yearOfStudy == null) return null;
+
+    var courses = element
+        .querySelectorAll("tr")!
+        .map(_parseAndStoreCourse)
+        .where((value) => value != null)
+        .map((value) => value!)
+        .toList();
+
+    return ProgramCourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
+  }
+
+  ProgramCourse? _parseAndStoreCourse(courseElement) {
+    final html = courseElement.html!;
+    if (!html.contains("w15p")) return null;
+
+    final nameElement = courseElement.querySelector("a");
+    if (nameElement == null) return null;
+    final courseIdString = nameElement.href?.split("/")[5];
+    if (courseIdString == null) return null;
+    final id = int.parse(courseIdString);
+
+    final dutyText = html.split("class=\"w5p\">")[2].split("<")[0];
+    final duty = dutyText.startsWith("CE")
+        ? CourseDuty.compulsoryElective
+        : dutyText == "C"
+            ? CourseDuty.compulsory
+            : dutyText == "E"
+                ? CourseDuty.elective
+                : dutyText == "R"
+                    ? CourseDuty.recommended
+                    : null;
+
+    if (duty == null) return null;
+
+    if (!allCourses.containsKey(id)) {
+      final courseName = nameElement.text;
+      final shortcut = html.split("class=\"w15p\">")[1].split("<")[0];
+
+      if (courseName == null) return null;
+
+      allCourses[id] = Course(
+        id: id,
+        shortcut: shortcut,
+        fullName: courseName,
+        lessons: [],
+        loadedLessons: false,
+      );
+    }
+
+    return ProgramCourse(courseId: id, duty: duty);
+  }
+
+  /// https://www.fit.vut.cz/study/course/{course_id}/.en
+  Future<void> getCourseLessions(int courseId) async {
+    if (!allCourses.containsKey(courseId)) {
+      // Unknown course
+      return;
+    }
+
+    if (allCourses[courseId]!.loadedLessons) {
+      // No need to do anything
+      return;
+    }
+
+    final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
+    if (parser == null) return;
+
+    allCourses[courseId]!.lessons = parser
+        .querySelectorAll("#schedule tbody tr")
+        .map(_parseLesson)
+        .where((value) => value != null)
+        .map((value) => value!)
+        .toList();
+
+    allCourses[courseId]!.loadedLessons = true;
+  }
+
+  CourseLesson? _parseLesson(element) {
+    RegExp exp = RegExp(r">(.*)</");
+    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
+
+    final type = switch (matches[1]) {
+      "exercise" => LessonType.exercise,
+      "lecture" => LessonType.lecture,
+      "laboratory" => LessonType.laboratory,
+      "seminar" => LessonType.seminar,
+      "comp.lab" => LessonType.computerLab,
+      _ => null
+    };
+
+    if (type == null) return null;
+
+    final dayOfWeek = switch (matches[0]) {
+      "<th>Mon" => DayOfWeek.monday,
+      "<th>Tue" => DayOfWeek.tueday,
+      "<th>Wed" => DayOfWeek.wednesday,
+      "<th>Thu" => DayOfWeek.thursday,
+      "<th>Fri" => DayOfWeek.friday,
+      _ => null
+    };
+
+    if (dayOfWeek == null) return null;
+
+    List<String> locations = [];
+    int? startsFrom;
+    int? endsAt;
+    int? capacity;
+
+    for (var i = 3; i < matches.length; i++) {
+      final s = matches[i]!;
+      if (s.startsWith("<td>")) {
+        final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
+        startsFrom = parseTime(chunks.elementAt(0));
+        endsAt = parseTime(chunks.elementAt(1));
+        capacity = int.parse(chunks.elementAt(2));
+
+        break;
+      }
+
+      locations.add(s);
+    }
+
+    if (startsFrom == null || endsAt == null || capacity == null) return null;
+
+    final note = matches[2];
+    final info = exp.firstMatch(matches.last!)![1];
+
+    if (note == null || info == null) return null;
+
+    return CourseLesson(
+      dayOfWeek: dayOfWeek,
+      type: type,
+      locations: locations,
+      note: note,
+      info: info,
+      startsFrom: startsFrom,
+      endsAt: endsAt,
+      capacity: capacity,
+    );
   }
 
   /// Changes the grade and notifies all listeners
-  void changeGrade(int grade) {
-    this.grade = grade;
+  void changeGrade(YearOfStudy grade) {
+    currentGrade = grade;
     notifyListeners();
   }
 
   /// Changes the term to winter or summer and notifies all listeners
-  void changeTerm(bool isWinterTerm) {
-    this.isWinterTerm = isWinterTerm;
+  void changeTerm(Semester semester) {
+    currentSemester = semester;
     notifyListeners();
   }
 
   /// Changes the year and notifies all listeners that the year has been changed
   void changeYear(String year) {
-    this.year = year;
+    currentYear = year;
     notifyListeners();
   }
 
   /// Changes the stady and notifies all listeners
-  void changeStudy(String study) {
-    this.study = study;
+  void changeStudy(int programId) {
+    currentStudyProgram = programId;
+    getProgramCourses(programId);
     notifyListeners();
   }
 
-  /// Return indices of all courses that satisfy the following filters: year, term, study and [category]
-  List<int> filterCourses(Category category) {
-    if (study != "BIT") return [];
-    if (!isWinterTerm) return [30, 31, 32];
-
-    switch (category) {
-      case Category.compulsory:
-        return List.generate(6, (index) => index + (grade + 1) * 6,
-            growable: false);
-      case Category.compulsoryOptional:
-        return List.generate(4, (index) => index + ((grade + 1) * 2),
-            growable: false);
-      case Category.optional:
-        return List.generate(5, (index) => 2 * index + (grade + 4),
-            growable: false);
-      default:
-        return [];
+  Future<List<ProgramCourseGroup>> getProgramCourseGroup() async {
+    if (allStudyPrograms.containsKey(currentStudyProgram)) {
+      if (allStudyPrograms[currentStudyProgram]!.courseGroups.isEmpty) {
+        await getProgramCourses(currentStudyProgram);
+      }
     }
+
+    return allStudyPrograms[currentStudyProgram]!.courseGroups.where((group) => group.semester == currentSemester).toList();
   }
+}
+
+int parseTime(String str) {
+  final chunks = str.split(":").map((v) => int.parse(v));
+  return chunks.elementAt(0) * 60 + chunks.elementAt(1);
 }
