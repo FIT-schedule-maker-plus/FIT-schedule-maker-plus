@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
@@ -32,10 +34,11 @@ class Courses extends StatelessWidget {
     var app = context.read<AppViewModel>();
     var timetable = context.watch<TimetableViewModel>();
 
-    var courseWidgets = timetable.courses
+    List<Widget> courseWidgets = timetable.courses[timetable.semester]!
         .map((id) => app.allCourses[id]!)
         .map((id) => buildCourseWidget(id, context))
         .toList();
+
 
     return Container(
         width: double.infinity,
@@ -53,7 +56,8 @@ class Courses extends StatelessWidget {
               fontWeight: FontWeight.w600,
               height: 0,
             ),
-          )),
+            ),
+          ),
           const SizedBox(height: 17),
           Center(
               child: Wrap(
@@ -61,7 +65,9 @@ class Courses extends StatelessWidget {
                   runSpacing: 10, // to apply margin in the cross axis of the wrap
                   children: courseWidgets)),
           const SizedBox(height: 17),
-        ]));
+        ],
+      ),
+    );
   }
 }
 
@@ -71,26 +77,25 @@ class Timetable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var timeWidget = SizedBox(
-      width: 1083,
-      height: 15.71,
-      child: ListView.separated(
-        itemCount: 15,
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (BuildContext context, int index) =>
-            const SizedBox(width: 39),
-        itemBuilder: (BuildContext context, int index) {
-          return SizedBox(
-              width: 36,
-              height: 15,
-              child: Text('${index + 7}:00',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                  )));
-        },
-      ));
+        width: 1083,
+        height: 15.71,
+        child: ListView.separated(
+          itemCount: 15,
+          scrollDirection: Axis.horizontal,
+          separatorBuilder: (BuildContext context, int index) => const SizedBox(width: 39),
+          itemBuilder: (BuildContext context, int index) {
+            return SizedBox(
+                width: 36,
+                height: 15,
+                child: Text('${index + 7}:00',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                    )));
+          },
+        ));
 
     return Container(
       width: double.infinity,
@@ -119,36 +124,40 @@ class Timetable extends StatelessWidget {
 }
 
 Widget buildCourseWidget(Course course, BuildContext context) {
-  var timetable = context.read<TimetableViewModel>();
+  TimetableViewModel timetable = context.read<TimetableViewModel>();
 
-  return Flexible(
-      flex: 1,
-      child: Container(
-          width: 178,
-          height: 28,
-          decoration: ShapeDecoration(
-            color: const Color(0xFF1BD30B),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+  return Container(
+    width: 178,
+    height: 28,
+    decoration: ShapeDecoration(
+      color: const Color(0xFF1BD30B),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              course.shortcut,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          child: Row(children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      course.shortcut,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ))),
-            IconButton(
-                onPressed: () => timetable.removeCourse(course.id),
-                tooltip: 'Delete',
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.close)),
-          ])));
+        ),
+        IconButton(
+          onPressed: () => timetable.removeCourse(course.id),
+          tooltip: 'Delete',
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ),
+  );
 }
