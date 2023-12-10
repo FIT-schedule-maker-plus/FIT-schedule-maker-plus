@@ -62,13 +62,14 @@ class VariantWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
+        if (vm.active != index)
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+            ),
+            child: const Text('Zvolit'),
+            onPressed: () => vm.setActive(index: index),
           ),
-          child: const Text('Zvolit'),
-          onPressed: () => vm.setActive(index: index),
-        ),
         PopupMenuButton<VariantMenuItem>(
           onSelected: (item) {},
           itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
