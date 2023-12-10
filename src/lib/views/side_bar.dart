@@ -38,6 +38,7 @@ Widget buildStudiumBar(BuildContext context) {
   AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
   final activeStudy = context.select((AppViewModel appViewModel) => appViewModel.currentStudyProgram);
   Map<int, StudyProgram> studies = appViewModel.allStudyPrograms;
+  final int studyTypeCount = StudyType.values.length + 1;
 
   return Container(
     color: black,
@@ -58,23 +59,24 @@ Widget buildStudiumBar(BuildContext context) {
                 tileMode: TileMode.mirror,
               ).createShader(bounds);
             },
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 50.0),
-              child: ListView.separated(
-                  itemCount: StudyType.values.length + 1,
-                  shrinkWrap: true,
-                  separatorBuilder: (contex, index) => buildStudiumName(StudyType.values[index]),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Container();
-                    } else {
-                      List<StudyProgram> studyPrograms = studies.values.where((study) => study.type == StudyType.values[index - 1]).toList();
-                      return Column(
-                        children: studyPrograms.map((study) => buildStudiumButton(study, activeStudy, appViewModel)).toList(),
-                      );
-                    }
-                  }),
+            child: ListView.separated(
+              itemCount: studyTypeCount,
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              separatorBuilder: (contex, index) => buildStudiumName(StudyType.values[index]),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Container(padding: EdgeInsets.zero);
+                } else {
+                  List<StudyProgram> studyPrograms = studies.values.where((study) => study.type == StudyType.values[index - 1]).toList();
+                  return Column(
+                    children: studyPrograms.map((study) => buildStudiumButton(study, activeStudy, appViewModel)).toList()
+                      ..add(SizedBox(height: index + 1 == studyTypeCount ? 50 : 0)),
+                  );
+                }
+              },
             ),
+
           ),
         ),
       ],
@@ -121,7 +123,7 @@ Widget buildStudiumButton(StudyProgram study, int activeStudy, AppViewModel appV
 
 Widget buildStudiumName(StudyType studyType) {
   return Padding(
-    padding: const EdgeInsets.only(top: 20.0, bottom: 5.0),
+    padding: const EdgeInsets.only(top: 10.0, bottom: 5.0),
     child: Text(
       studyType.toCzechString(),
       textAlign: TextAlign.center,
