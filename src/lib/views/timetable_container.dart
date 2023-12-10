@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
@@ -32,37 +34,37 @@ class Courses extends StatelessWidget {
     var app = context.read<AppViewModel>();
     var timetable = context.watch<TimetableViewModel>();
 
-    var courseWidgets = timetable.courses
-        .map((id) => app.allCourses[id]!)
-        .map((id) => buildCourseWidget(id, context))
-        .toList();
+    List<Widget> courseWidgets = timetable.courses[timetable.semester]!.map((id) => app.allCourses[id]!).map((id) => buildCourseWidget(id, context)).toList();
 
     return Container(
-        width: double.infinity,
-        color: Colors.red,
-        child: Column(children: [
+      width: double.infinity,
+      color: Colors.red,
+      child: Column(
+        children: [
           const SizedBox(height: 17),
           const Center(
-              child: Text(
-            'Vybrané predmety',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              height: 0,
+            child: Text(
+              'Vybrané predmety',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+                height: 0,
+              ),
             ),
-          )),
+          ),
           const SizedBox(height: 17),
           Center(
               child: Wrap(
                   spacing: 60, // to apply margin in the main axis of the wrap
-                  runSpacing:
-                      10, // to apply margin in the cross axis of the wrap
+                  runSpacing: 10, // to apply margin in the cross axis of the wrap
                   children: courseWidgets)),
           const SizedBox(height: 17),
-        ]));
+        ],
+      ),
+    );
   }
 }
 
@@ -77,8 +79,7 @@ class Timetable extends StatelessWidget {
         child: ListView.separated(
           itemCount: 15,
           scrollDirection: Axis.horizontal,
-          separatorBuilder: (BuildContext context, int index) =>
-              const SizedBox(width: 39),
+          separatorBuilder: (BuildContext context, int index) => const SizedBox(width: 39),
           itemBuilder: (BuildContext context, int index) {
             return SizedBox(
                 width: 36,
@@ -120,36 +121,40 @@ class Timetable extends StatelessWidget {
 }
 
 Widget buildCourseWidget(Course course, BuildContext context) {
-  var timetable = context.read<TimetableViewModel>();
+  TimetableViewModel timetable = context.read<TimetableViewModel>();
 
-  return Flexible(
-      flex: 1,
-      child: Container(
-          width: 178,
-          height: 28,
-          decoration: ShapeDecoration(
-            color: const Color(0xFF1BD30B),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+  return Container(
+    width: 178,
+    height: 28,
+    decoration: ShapeDecoration(
+      color: const Color(0xFF1BD30B),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              course.shortcut,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          child: Row(children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      course.shortcut,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ))),
-            IconButton(
-                onPressed: () => timetable.removeCourse(course.id),
-                tooltip: 'Delete',
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.close)),
-          ])));
+        ),
+        IconButton(
+          onPressed: () => timetable.removeCourse(course.id),
+          tooltip: 'Delete',
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ),
+  );
 }
