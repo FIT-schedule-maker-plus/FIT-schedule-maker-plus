@@ -9,21 +9,34 @@ import 'package:fit_schedule_maker_plus/views/timetable_variants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-Widget getMainContent({required bool showSideBar}) {
-  return DefaultTabController(
-    length: 3,
-    child: Scaffold(
-      appBar: TabAppBar(),
-      drawer: showSideBar ? SideBar() : null,
-      floatingActionButton: ElevatedButton(
-        child: Text("Generátor rozvrhu"),
-        onPressed: () {},
-      ),
-      body: const TabBarView(children: <Widget>[
+TabBarView buildTabBarView() {
+  return TabBarView(
+    children: <Widget>[
+      Stack(children: [
         TimetableContainer(),
-        CompleteTimetable(),
-        TimetableVariants(),
+        buildGenerator(),
       ]),
+      CompleteTimetable(),
+      TimetableVariants(),
+    ],
+  );
+}
+
+Widget buildMainContent(bool showSidebar) {
+  return Scaffold(
+    appBar: TabAppBar(),
+    drawer: showSidebar ? SideBar() : null,
+    body: buildTabBarView(),
+  );
+}
+
+Widget buildGenerator() {
+  return Positioned(
+    right: 20,
+    bottom: 20,
+    child: ElevatedButton(
+      child: Text("Generátor rozvrhu"),
+      onPressed: () {},
     ),
   );
 }
@@ -40,15 +53,21 @@ class Homepage extends StatelessWidget {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            return MediaQuery.of(context).size.width > 1000
-                ? Row(children: [
-                    Container(
-                      color: Color.fromARGB(255, 52, 52, 52),
-                      child: SideBar(),
+            bool narrowLayout = MediaQuery.of(context).size.width < 1000;
+            return DefaultTabController(
+              length: 3,
+              child: narrowLayout
+                  ? buildMainContent(true)
+                  : Row(
+                      children: [
+                        Container(
+                          color: Color.fromARGB(255, 52, 52, 52),
+                          child: SideBar(),
+                        ),
+                        Expanded(child: buildMainContent(false))
+                      ],
                     ),
-                    Expanded(child: getMainContent(showSideBar: false))
-                  ])
-                : getMainContent(showSideBar: true);
+            );
           case ConnectionState.waiting:
             return Center(
               child: CircularProgressIndicator(),
