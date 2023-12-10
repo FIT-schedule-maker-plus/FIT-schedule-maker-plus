@@ -6,6 +6,7 @@ import 'viewmodels/app.dart';
 import 'viewmodels/timetable.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

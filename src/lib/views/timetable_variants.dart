@@ -93,6 +93,7 @@ class VariantWidget extends StatelessWidget {
   }
 
   Widget buildVariantName() {
+    bool isHovered = false;
     return Consumer<TimetableViewModel>(
       builder: (ctx, vm, _) => Row(
         children: [
@@ -101,9 +102,8 @@ class VariantWidget extends StatelessWidget {
               child: TextField(
                   controller: TextEditingController()
                     ..text = vm.timetables[index].name,
-                  onChanged: (newText) {
-                    vm.updateEditingName(index, newText);
-                  },
+                  onChanged: (newText) => vm.updateEditingName(index, newText),
+                  focusNode: FocusNode()..requestFocus(),
                   style: const TextStyle(color: Color(0xffffffff))),
             ),
           if (!vm.isEditingName(index: index))
@@ -133,12 +133,18 @@ class VariantWidget extends StatelessWidget {
               ],
             ),
           if (!vm.isEditingName(index: index))
-            IconButton(
-              onPressed: () {
-                vm.setEditingName(index: index, value: true);
-              },
-              icon: const Icon(Icons.edit),
-              color: foreground2,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: StatefulBuilder(builder: (_, setState) {
+                return InkWell(
+                  onHover: (val) => setState(() => isHovered = val),
+                  onTap: () => vm.setEditingName(index: index, value: true),
+                  child: Icon(
+                    Icons.edit,
+                    color: isHovered ? Colors.blue : foreground2,
+                  ),
+                );
+              }),
             ),
         ],
       ),

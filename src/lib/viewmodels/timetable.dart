@@ -1,4 +1,3 @@
-import 'package:fit_schedule_maker_plus/views/side_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../models/program_course_group.dart';
