@@ -34,28 +34,25 @@ class Courses extends StatelessWidget {
     var app = context.read<AppViewModel>();
     var timetable = context.watch<TimetableViewModel>();
 
-    List<Widget> courseWidgets = timetable.courses[timetable.semester]!
-        .map((id) => app.allCourses[id]!)
-        .map((id) => buildCourseWidget(id, context))
-        .toList();
-
+    List<Widget> courseWidgets = timetable.courses[timetable.semester]!.map((id) => app.allCourses[id]!).map((id) => buildCourseWidget(id, context)).toList();
 
     return Container(
-        width: double.infinity,
-        color: Colors.red,
-        child: Column(children: [
+      width: double.infinity,
+      color: Colors.red,
+      child: Column(
+        children: [
           const SizedBox(height: 17),
           const Center(
-              child: Text(
-            'Vybrané predmety',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              height: 0,
-            ),
+            child: Text(
+              'Vybrané predmety',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+                height: 0,
+              ),
             ),
           ),
           const SizedBox(height: 17),

@@ -119,24 +119,20 @@ class TimetableVariants extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xff171616),
-      child: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: 200,
-              maxWidth: 1000,
-            ),
-            child: Expanded(
-              child: Container(
-                color: Colors.transparent,
-                child: Selector<TimetableViewModel, int>(
-                  selector: (ctx, vm) => vm.timetables.length,
-                  builder: (ctx, length, _) => ListView.builder(
-                    itemCount: length,
-                    itemBuilder: (ctx, i) => VariantWidget(index: i),
-                  ),
-                ),
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.only(top: 20.0),
+          constraints: const BoxConstraints(
+            minWidth: 200,
+            maxWidth: 1000,
+          ),
+          child: Container(
+            color: Colors.transparent,
+            child: Selector<TimetableViewModel, int>(
+              selector: (ctx, vm) => vm.timetables.length,
+              builder: (ctx, length, _) => ListView.builder(
+                itemCount: length,
+                itemBuilder: (ctx, i) => VariantWidget(index: i),
               ),
             ),
           ),
