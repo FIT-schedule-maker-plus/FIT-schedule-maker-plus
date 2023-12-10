@@ -1,11 +1,13 @@
 import 'package:fit_schedule_maker_plus/views/side_bar.dart';
 import 'package:flutter/material.dart';
 
+import '../models/program_course_group.dart';
 import '../models/timetable.dart';
 
 class TimetableViewModel extends ChangeNotifier {
   // Represents unique IDs of courses
-  Set<int> courses = {};
+  Map<Semester, Set<int>> courses = {Semester.winter: {}, Semester.summer: {}};
+  Semester semester = Semester.winter;
 
   final List<Timetable> timetables;
   int active;
@@ -54,6 +56,11 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeSemester(Semester semester) {
+    this.semester = semester;
+    notifyListeners();
+  }
+
   void addTimetable({required Timetable timetable}) {
     timetables.add(timetable);
     notifyListeners();
@@ -73,16 +80,16 @@ class TimetableViewModel extends ChangeNotifier {
   }
 
   void addCourse(int courseID) {
-    courses.add(courseID);
+    courses[semester]!.add(courseID);
     notifyListeners();
   }
 
   void removeCourse(int courseID) {
-    courses.remove(courseID);
+    courses[semester]!.remove(courseID);
     notifyListeners();
   }
 
   bool containsCourse(int courseID) {
-    return courses.contains(courseID);
+    return courses[semester]!.contains(courseID);
   }
 }
