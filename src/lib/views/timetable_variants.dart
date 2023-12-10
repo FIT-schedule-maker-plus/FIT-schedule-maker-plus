@@ -160,15 +160,33 @@ class TimetableVariants extends StatelessWidget {
             minWidth: 200,
             maxWidth: 1000,
           ),
-          child: Container(
-            color: Colors.transparent,
-            child: Selector<TimetableViewModel, int>(
-              selector: (ctx, vm) => vm.timetables.length,
-              builder: (ctx, length, _) => ListView.builder(
-                itemCount: length,
-                itemBuilder: (ctx, i) => VariantWidget(index: i),
+          child: Column(
+            children: [
+              Container(
+                color: Colors.transparent,
+                child: Selector<TimetableViewModel, int>(
+                  selector: (ctx, vm) => vm.timetables.length,
+                  builder: (ctx, length, _) => ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: length,
+                    itemBuilder: (ctx, i) => VariantWidget(index: i),
+                  ),
+                ),
               ),
-            ),
+              Container(
+                alignment: Alignment.center,
+                child: IconButton(
+                  onPressed: () {
+                    context.read<TimetableViewModel>().createNewTimetable();
+                  },
+                  icon: const Icon(Icons.add),
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xff292727),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

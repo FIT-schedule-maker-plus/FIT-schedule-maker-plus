@@ -1,3 +1,4 @@
+import 'package:fit_schedule_maker_plus/views/side_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../models/timetable.dart';
@@ -48,6 +49,11 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void createNewTimetable() {
+    timetables.add(Timetable(name: "Variant name", selected: {}));
+    notifyListeners();
+  }
+
   void addTimetable({required Timetable timetable}) {
     timetables.add(timetable);
     notifyListeners();
@@ -60,6 +66,8 @@ class TimetableViewModel extends ChangeNotifier {
       if (timetables.isEmpty) {
         timetables.add(Timetable(name: "default", selected: {}));
       }
+    } else if (index < active) {
+      active--;
     }
     notifyListeners();
   }
