@@ -2,11 +2,14 @@
 
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 
+import 'program_course_group.dart';
+
 /// Represents a single course. This course contains multiple CourseLessons with different times
 class Course {
   final int id;
   final String shortcut;
   final String fullName;
+  final Semester semester;
   List<CourseLesson> lessons;
   bool loadedLessons;
 
@@ -15,6 +18,7 @@ class Course {
     required this.fullName,
     required this.shortcut,
     required this.lessons,
+    required this.semester,
     required this.loadedLessons,
   });
 
@@ -22,6 +26,7 @@ class Course {
         id: json["id"],
         shortcut: json["shortcut"],
         fullName: json["fullName"],
+        semester: json["semester"],
         lessons: List<CourseLesson>.from(json["lessons"].map((lesson) => CourseLesson.fromJson(lesson))),
         loadedLessons: false,
       );
@@ -30,6 +35,7 @@ class Course {
         "id": id,
         "shortcut": shortcut,
         "fullName": fullName,
+        "semester": semester,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),
       };
 }
