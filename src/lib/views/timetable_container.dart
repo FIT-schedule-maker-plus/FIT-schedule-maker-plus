@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:fit_schedule_maker_plus/disp_timetable_gen.dart';
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:fit_schedule_maker_plus/models/course.dart';
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
 const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
 const double daysBarWidth = 35;
+const lessonHeight = 100;
 
 class TimetableContainer extends StatelessWidget {
   const TimetableContainer({super.key});
@@ -146,21 +148,25 @@ class Timetable extends StatelessWidget {
     bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
 
     return areAllLessonsFetched
-        ? buildTimetable(appViewModel.getAllCourseLessonSync(courseIds))
+        ? buildTimetable(appViewModel.getAllCourseLessonSync(courseIds), context)
         : FutureBuilder(
             future: appViewModel.getAllCourseLessonsAsync(courseIds),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
                   List<CourseLesson> lessons = snapshot.data!;
-                  return buildTimetable(lessons);
+                  return buildTimetable(lessons, context);
                 default:
                   return Center(child: CircularProgressIndicator());
               }
             });
   }
 
-  Widget buildTimetable(List<CourseLesson> lessons) {
+  Widget buildTimetable(List<CourseLesson> lessons, BuildContext context) {
+    AppViewModel appViewModel = context.read<AppViewModel>();
+    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
+    final generatedData = genDispTimetable(appViewModel, timetableViewModel, Filter.all());
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
       width: double.infinity,
@@ -181,7 +187,7 @@ class Timetable extends StatelessWidget {
                       Column(
                         children: List.generate(5, (index) {
                           return [
-                            buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1),
+                            buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
                             Divider(thickness: 2, height: 2, color: Colors.black),
                           ];
                         }).expand((item) => item).toList(),
@@ -221,9 +227,10 @@ class Timetable extends StatelessWidget {
     );
   }
 
-  Widget buildWeekDay(DayOfWeek dayOfWeek, double lessonWidth) {
+  Widget buildWeekDay(DayOfWeek dayOfWeek, double lessonWidth, int maxHeight) {
+    print(maxHeight);
     return SizedBox(
-      height: 100,
+      height: lessonHeight * (maxHeight + 1),
       child: Row(
         children: [
           SizedBox(
