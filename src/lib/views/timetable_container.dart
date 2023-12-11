@@ -165,9 +165,10 @@ class Timetable extends StatelessWidget {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
     final generatedData = genDispTimetable(appViewModel, timetableViewModel, Filter.none());
+    List<int> rowHeights = List.generate(5, (index) => generatedData[DayOfWeek.values[index]]!.first + 1);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 30),
+      padding: EdgeInsets.only(left: 30, right: 30, bottom: 30),
       width: double.infinity,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -191,7 +192,13 @@ class Timetable extends StatelessWidget {
                           ];
                         }).expand((item) => item).toList(),
                       ),
-                      ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
+                      ...List.generate(
+                              5,
+                              (index) => generatedData[DayOfWeek.values[index]]!
+                                  .second
+                                  .map((specLes) => buildLesson(appViewModel.allCourses[specLes.courseID]!.lessons[specLes.lessonID], oneLessonWidth, specLes.height, rowHeights)))
+                          .expand((element) => element)
+                      // ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
                     ],
                   ),
                 ),
@@ -227,7 +234,6 @@ class Timetable extends StatelessWidget {
   }
 
   Widget buildWeekDay(DayOfWeek dayOfWeek, double lessonWidth, int maxHeight) {
-    print("maxHeight: ${maxHeight}");
     return SizedBox(
       height: lessonHeight * (maxHeight + 1),
       child: Row(
@@ -255,10 +261,11 @@ class Timetable extends StatelessWidget {
     );
   }
 
-  Widget buildLesson(CourseLesson lesson, double oneLessonWidth) {
+  Widget buildLesson(CourseLesson lesson, double oneLessonWidth, int lessonLevel, List<int> maxHeights) {
+    int cumSum = maxHeights.getRange(0, lesson.dayOfWeek.index).reduce((value, element) => value + element);
     return Positioned(
       left: daysBarWidth + 5 + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth + 1),
-      top: 100 * lesson.dayOfWeek.index + 3 + (lesson.dayOfWeek.index + 1) * 2,
+      top: lessonHeight * (lessonLevel) + lessonHeight * cumSum + (lesson.dayOfWeek.index + 1) * 2 + 3,
       child: Container(
         color: Colors.black,
         width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
