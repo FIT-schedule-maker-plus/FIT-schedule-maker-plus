@@ -1,27 +1,30 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/models/course.dart';
 
-class TimetableContainer extends StatefulWidget {
+const appBarCol = Color.fromARGB(255, 52, 52, 52);
+const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
+const double daysBarWidth = 35;
+
+class TimetableContainer extends StatelessWidget {
   const TimetableContainer({super.key});
 
   @override
-  State<TimetableContainer> createState() => _TimetableContainer();
-}
-
-class _TimetableContainer extends State<TimetableContainer> {
-  @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Courses(),
-        SizedBox(height: 39),
-        Expanded(child: Timetable()),
-      ],
+    return Container(
+      color: appBarCol,
+      child: Column(
+        children: [
+          Courses(),
+          SizedBox(height: 40),
+          Expanded(child: Timetable()),
+        ],
+      ),
     );
   }
 }
@@ -31,40 +34,100 @@ class Courses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var app = context.read<AppViewModel>();
-    var timetable = context.watch<TimetableViewModel>();
+    print("build");
+    final app = context.read<AppViewModel>();
+    // TODO: change watch to select
+    final timetableViewModel = context.watch<TimetableViewModel>();
+    // final currentTimetable = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.timetables[timetableViewModel.active]);
 
-    List<Widget> courseWidgets = timetable.currentTimetable.currentContent.keys
-        .map((id) => app.allCourses[id]!)
-        .map((course) => buildCourseWidget(course, context))
-        .toList();
+    return timetableViewModel.currentTimetable.content[timetableViewModel.currentTimetable.semester]!.keys.isEmpty
+        ? SizedBox(height: 20)
+        : Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [appBarCol, Colors.black],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(0.0, 10.0),
+                    blurRadius: 15.0,
+                    spreadRadius: 10.0,
+                  )
+                ]),
+            child: Column(
+              children: [
+                const SizedBox(height: 17),
+                const Center(
+                  child: Text(
+                    'Vybrané predmety',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      height: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 17),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 50),
+                  alignment: Alignment.center,
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 60, // to apply margin in the main axis of the wrap
+                    runSpacing: 10, // to apply margin in the cross axis of the wrap
+                    children: timetableViewModel.currentTimetable.content[timetableViewModel.currentTimetable.semester]!.keys
+                        .map((courseId) => buildCourseWidget(app.allCourses[courseId]!, context))
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 17),
+              ],
+            ),
+          );
+  }
+
+  Widget buildCourseWidget(Course course, BuildContext context) {
+    TimetableViewModel timetable = context.read<TimetableViewModel>();
 
     return Container(
-      width: double.infinity,
-      color: Colors.red,
-      child: Column(
+      width: 178,
+      height: 28,
+      decoration: ShapeDecoration(
+        color: Color(0xFF1BD30B),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: Row(
         children: [
-          const SizedBox(height: 17),
-          const Center(
-            child: Text(
-              'Vybrané predmety',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w600,
-                height: 0,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 10),
+              child: Text(
+                course.shortcut,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 17),
-          Center(
-              child: Wrap(
-                  spacing: 60, // to apply margin in the main axis of the wrap
-                  runSpacing: 10, // to apply margin in the cross axis of the wrap
-                  children: courseWidgets)),
-          const SizedBox(height: 17),
+          IconButton(
+            onPressed: () => timetable.removeCourse(course.id),
+            tooltip: 'Delete',
+            padding: EdgeInsets.zero,
+            color: Colors.white,
+            icon: const Icon(Icons.close),
+          ),
         ],
       ),
     );
@@ -76,88 +139,130 @@ class Timetable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var timeWidget = SizedBox(
-        width: 1083,
-        height: 15.71,
-        child: ListView.separated(
-          itemCount: 15,
-          scrollDirection: Axis.horizontal,
-          separatorBuilder: (BuildContext context, int index) => const SizedBox(width: 39),
-          itemBuilder: (BuildContext context, int index) {
-            return SizedBox(
-                width: 36,
-                height: 15,
-                child: Text('${index + 7}:00',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                    )));
-          },
-        ));
+    AppViewModel appViewModel = context.read<AppViewModel>();
+    TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
 
+    Iterable<int> courseIds = timetableViewModel.currentTimetable.currentContent.keys;
+    bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
+
+    return areAllLessonsFetched
+        ? buildTimetable(appViewModel.getAllCourseLessonSync(courseIds))
+        : FutureBuilder(
+            future: appViewModel.getAllCourseLessonsAsync(courseIds),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                  List<CourseLesson> lessons = snapshot.data!;
+                  return buildTimetable(lessons);
+                default:
+                  return Center(child: CircularProgressIndicator());
+              }
+            });
+  }
+
+  Widget buildTimetable(List<CourseLesson> lessons) {
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: 30),
       width: double.infinity,
-      color: Colors.grey,
-      child: Column(children: [
-        timeWidget,
-        Container(
-          width: 1084,
-          decoration: const ShapeDecoration(
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                width: 2,
-                strokeAlign: BorderSide.strokeAlignCenter,
-              ),
-            ),
-          ),
-        ),
-        const Center(child: Text("Po")),
-        const Center(child: Text("Ut")),
-        const Center(child: Text("St")),
-        const Center(child: Text("Ct")),
-        const Center(child: Text("Pa")),
-      ]),
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          double parentWidth = constraints.maxWidth;
+          double oneLessonWidth = parentWidth / 15;
+
+          return Column(
+            children: [
+              buildTimeBar(),
+              Divider(thickness: 2, height: 2, color: Colors.black),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: List.generate(5, (index) {
+                          return [
+                            buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1),
+                            Divider(thickness: 2, height: 2, color: Colors.black),
+                          ];
+                        }).expand((item) => item).toList(),
+                      ),
+                      ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          );
+        },
+      ),
     );
   }
-}
 
-Widget buildCourseWidget(Course course, BuildContext context) {
-  TimetableViewModel timetable = context.read<TimetableViewModel>();
-
-  return Container(
-    width: 178,
-    height: 28,
-    decoration: ShapeDecoration(
-      color: const Color(0xFF1BD30B),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+  Widget buildTimeBar() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: List.generate(
+          15,
+          (index) => Expanded(
             child: Text(
-              course.shortcut,
+              '${index + 7}:00',
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 12,
                 fontFamily: 'Inter',
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ),
-        IconButton(
-          onPressed: () => timetable.removeCourse(course.id),
-          tooltip: 'Delete',
-          padding: EdgeInsets.zero,
-          icon: const Icon(Icons.close),
+      ),
+    );
+  }
+
+  Widget buildWeekDay(DayOfWeek dayOfWeek, double lessonWidth) {
+    return SizedBox(
+      height: 100,
+      child: Row(
+        children: [
+          SizedBox(
+            width: daysBarWidth,
+            child: Text(
+              dayOfWeek.toCzechString(),
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(right: lessonWidth / 2),
+            child: VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+          ),
+          ...List.generate(
+            14,
+            (index) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: lessonWidth / 2),
+              child: VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildLesson(CourseLesson lesson, double oneLessonWidth) {
+    return Positioned(
+      left: daysBarWidth + 5 + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth + 1),
+      top: 100 * lesson.dayOfWeek.index + 3 + (lesson.dayOfWeek.index + 1) * 2,
+      child: Container(
+        color: Colors.black,
+        width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
+        height: 90,
+        alignment: Alignment.center,
+        child: Text(
+          lesson.info,
+          style: TextStyle(color: Colors.white),
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
