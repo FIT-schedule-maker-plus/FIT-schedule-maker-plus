@@ -91,4 +91,27 @@ class TimetableViewModel extends ChangeNotifier {
   bool containsCourse(int courseID) {
     return currentTimetable.containsCourse(courseID);
   }
+
+  /// Check if current timtable contains lesson.
+  bool containsLesson(CourseID course, LessonID lesson) {
+    return currentTimetable.containsLesson(course, lesson);
+  }
+
+  /// Add lesson to current timetable.
+  void addLesson(CourseID course, LessonID lesson) {
+    currentTimetable.addLesson(course, lesson);
+    notifyListeners();
+  }
+
+  /// Remove lesson from current timetable.
+  void removeLesson(CourseID course, LessonID lesson) {
+    currentTimetable.removeLesson(course, lesson);
+    notifyListeners();
+  }
+
+  /// Clear all lessons from current timetable.
+  void clearLessons() {
+    currentTimetable.clearLessons();
+    notifyListeners();
+  }
 }
