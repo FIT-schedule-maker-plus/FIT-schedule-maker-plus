@@ -11,12 +11,12 @@ class Timetable {
   /// -> Semester
   ///     -> All CourseID's that this semester Contains
   ///         -> All LessonID's this course contains.
-  Map<Semester, Map<CourseID, Set<LessonID>>> content = {
+  Map<Semester, Map<CourseID, Set<LessonID>>> selected = {
     Semester.winter: {},
     Semester.summer: {},
   };
 
-  Map<CourseID, Set<LessonID>> get currentContent => content[semester]!;
+  Map<CourseID, Set<LessonID>> get currentContent => selected[semester]!;
   Semester semester = Semester.winter;
 
   /// Unique name of the timetable used for differenciating variants
@@ -27,7 +27,7 @@ class Timetable {
     Map<Semester, Map<CourseID, Set<LessonID>>>? courseContent,
   }) {
     if (courseContent != null) {
-      content = courseContent;
+      selected = courseContent;
     }
   }
 
@@ -51,6 +51,6 @@ class Timetable {
   Map<String, dynamic> toJson() => {
         "semester": semester,
         "name": name,
-        "content": content,
+        "content": selected,
       };
 }
