@@ -12,25 +12,72 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color getColor(Set<MaterialState> states) {
+      if (states.contains(MaterialState.hovered)) {
+        return Colors.transparent;
+      }
+      return Colors.red;
+    }
+
+    bool isHovered1 = false;
+    bool isHovered2 = false;
+    bool isHovered3 = false;
+
     return AppBar(
-        centerTitle: true,
-        backgroundColor: appBarCol,
-        title: TabBar(
+      centerTitle: true,
+      backgroundColor: appBarCol,
+      title: StatefulBuilder(builder: (_, setState) {
+        return TabBar(
           indicatorColor: selectedUnderlineColor,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
           unselectedLabelColor: unsTabCol,
-          // overlayColor: MaterialStateProperty.resolveWith(),
+          overlayColor: MaterialStateProperty.resolveWith(getColor),
           tabAlignment: TabAlignment.center,
           labelPadding: const EdgeInsets.symmetric(horizontal: 40),
           controller: tabController,
           labelStyle: const TextStyle(fontSize: 22),
-          tabs: const <Widget>[
-            Tab(text: 'Pracovní rozvrh'),
-            Tab(text: 'Výsledný rozvrh'),
-            Tab(text: 'Verze rozvrhu'),
+          tabs: <Widget>[
+            MouseRegion(
+              onEnter: (_) => setState(() => isHovered1 = true),
+              onExit: (_) => setState(() => isHovered1 = false),
+              child: Tab(
+                child: Text(
+                  "Pracovní rozvrh",
+                  style: isHovered1
+                      ? const TextStyle(color: Colors.green)
+                      : const TextStyle(),
+                ),
+              ),
+            ),
+            MouseRegion(
+              onEnter: (_) => setState(() => isHovered2 = true),
+              onExit: (_) => setState(() => isHovered2 = false),
+              child: Tab(
+                child: Text(
+                  'Výsledný rozvrh',
+                  style: isHovered2
+                      ? const TextStyle(color: Colors.green)
+                      : const TextStyle(),
+                ),
+              ),
+            ),
+            MouseRegion(
+              onEnter: (_) => setState(() => isHovered3 = true),
+              onExit: (_) => setState(() => isHovered3 = false),
+              child: Tab(
+                child: Text(
+                  'Verze rozvrhu',
+                  style: isHovered3
+                      ? const TextStyle(color: Colors.green)
+                      : const TextStyle(),
+                ),
+              ),
+            ),
           ],
-        ));
+        );
+      }),
+    );
   }
 
   int get newMethod => 0;
