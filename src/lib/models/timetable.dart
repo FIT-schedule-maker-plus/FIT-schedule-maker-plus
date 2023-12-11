@@ -1,3 +1,5 @@
+import 'program_course_group.dart';
+
 class Timetable {
   /// Key: Index into List<Courses> from AppViewModel.allCourses
   /// Value: Index into List<CourseLesson> from Course.lessons
@@ -5,6 +7,8 @@ class Timetable {
 
   /// Unique name of the timetable used for differenciating variants
   String name;
+
+  Semester semester = Semester.winter;
 
   Timetable({required this.name, required this.selected});
 

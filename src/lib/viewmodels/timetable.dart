@@ -6,14 +6,42 @@ import '../models/timetable.dart';
 class TimetableViewModel extends ChangeNotifier {
   // Represents unique IDs of courses
   Map<Semester, Set<int>> courses = {Semester.winter: {}, Semester.summer: {}};
-  Semester semester = Semester.winter;
+  Semester get semester => timetables[active].semester;
 
   final List<Timetable> timetables;
   int active;
 
+  final Map<int, String> _isEditing = {};
+
+  Timetable get currentTimetable => timetables[active];
+
   TimetableViewModel({required this.timetables, this.active = 0}) {
     if (timetables.isEmpty) {
       timetables.add(Timetable(name: "default", selected: {}));
+    }
+  }
+
+  bool isEditingName({required int index}) {
+    return _isEditing.containsKey(index);
+  }
+
+  void saveEditingName(int index) {
+    timetables[index].name = _isEditing[index]!;
+    _isEditing.remove(index);
+    notifyListeners();
+  }
+
+  void updateEditingName(int index, String text) {
+    _isEditing[index] = text;
+  }
+
+  void setEditingName({required int index, required bool value}) {
+    if (value) {
+      _isEditing[index] = timetables[index].name;
+      notifyListeners();
+    } else if (_isEditing.containsKey(index)) {
+      _isEditing.remove(index);
+      notifyListeners();
     }
   }
 
@@ -22,8 +50,17 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeSemester(Semester semester) {
-    this.semester = semester;
+  void createNewTimetable() {
+    timetables.add(Timetable(name: "Variant name", selected: {}));
+    notifyListeners();
+  }
+
+  void changeSemester(Semester semester, {int? index}) {
+    if (index != null) {
+      timetables[index].semester = semester;
+    } else {
+      timetables[active].semester = semester;
+    }
     notifyListeners();
   }
 
@@ -39,6 +76,8 @@ class TimetableViewModel extends ChangeNotifier {
       if (timetables.isEmpty) {
         timetables.add(Timetable(name: "default", selected: {}));
       }
+    } else if (index < active) {
+      active--;
     }
     notifyListeners();
   }
