@@ -40,7 +40,7 @@ class Courses extends StatelessWidget {
     final timetableViewModel = context.watch<TimetableViewModel>();
     // final currentTimetable = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.timetables[timetableViewModel.active]);
 
-    return timetableViewModel.currentTimetable.content[timetableViewModel.currentTimetable.semester]!.keys.isEmpty
+    return timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys.isEmpty
         ? SizedBox(height: 20)
         : Container(
             width: double.infinity,
@@ -82,7 +82,7 @@ class Courses extends StatelessWidget {
                     alignment: WrapAlignment.center,
                     spacing: 60, // to apply margin in the main axis of the wrap
                     runSpacing: 10, // to apply margin in the cross axis of the wrap
-                    children: timetableViewModel.currentTimetable.content[timetableViewModel.currentTimetable.semester]!.keys
+                    children: timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys
                         .map((courseId) => buildCourseWidget(app.allCourses[courseId]!, context))
                         .toList(),
                   ),
