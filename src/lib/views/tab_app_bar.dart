@@ -14,6 +14,8 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
         centerTitle: true,
         backgroundColor: appBarCol,
         title: TabBar(
+          tabAlignment: TabAlignment.center,
+          labelPadding: EdgeInsets.symmetric(horizontal: 40),
           controller: tabController,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
