@@ -31,6 +31,11 @@ class Timetable {
     }
   }
 
+  bool containsLesson({required CourseID course, required LessonID lesson}) {
+    return currentContent.containsKey[course] &&
+        currentContent[course].contains(lesson);
+  }
+
   void addCourse(CourseID courseID) {
     currentContent[courseID] = {};
   }
