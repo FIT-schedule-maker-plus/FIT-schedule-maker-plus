@@ -17,6 +17,8 @@ class AppViewModel extends ChangeNotifier {
   String currentYear = "2023/24";
   int currentStudyProgram = 15803;
 
+  int activeTabIndex = 0;
+
   /// Load stored timetables from disk
   List<Timetable> getTimetables() {
     return [
@@ -80,12 +82,8 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
     if (parser == null) return;
 
-    allStudyPrograms[programId]!.courseGroups = parser
-        .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
-        .map(_parseCourseGroup)
-        .where((value) => value != null)
-        .map((value) => value!)
-        .toList();
+    allStudyPrograms[programId]!.courseGroups =
+        parser.querySelectorAll("div.table-responsive__holder:nth-child(1) table").map(_parseCourseGroup).where((value) => value != null).map((value) => value!).toList();
   }
 
   ProgramCourseGroup? _parseCourseGroup(Result element) {
@@ -106,12 +104,7 @@ class AppViewModel extends ChangeNotifier {
 
     if (yearOfStudy == null) return null;
 
-    var courses = element
-        .querySelectorAll("tr")!
-        .map((res) => _parseAndStoreCourse(res, semester))
-        .where((value) => value != null)
-        .map((value) => value!)
-        .toList();
+    var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
 
     return ProgramCourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
   }
@@ -173,12 +166,7 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
 
-    allCourses[courseId]!.lessons = parser
-        .querySelectorAll("#schedule tbody tr")
-        .map(_parseLesson)
-        .where((value) => value != null)
-        .map((value) => value!)
-        .toList();
+    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).where((value) => value != null).map((value) => value!).toList();
 
     allCourses[courseId]!.loadedLessons = true;
   }
@@ -269,6 +257,11 @@ class AppViewModel extends ChangeNotifier {
   void changeStudy(int programId) {
     currentStudyProgram = programId;
     getProgramCourses(programId);
+    notifyListeners();
+  }
+
+  void changeTab(int index) {
+    activeTabIndex = index;
     notifyListeners();
   }
 
