@@ -64,16 +64,16 @@ DisplayedTimetable genDispTimetable(
   TimetableViewModel tvm,
   Filter filter,
 ) {
-  List<SpecificLesson> emptySet = [];
   DisplayedTimetable res = {
-    DayOfWeek.monday: Pair(0, emptySet),
-    DayOfWeek.tueday: Pair(0, emptySet),
-    DayOfWeek.wednesday: Pair(0, emptySet),
-    DayOfWeek.thursday: Pair(0, emptySet),
-    DayOfWeek.friday: Pair(0, emptySet),
+    DayOfWeek.monday: Pair(0, []),
+    DayOfWeek.tuesday: Pair(0, []),
+    DayOfWeek.wednesday: Pair(0, []),
+    DayOfWeek.thursday: Pair(0, []),
+    DayOfWeek.friday: Pair(0, []),
   };
 
   fillDays(avm.allCourses, tvm.currentTimetable, filter, res);
+  fillHeights(avm.allCourses, res);
 
   return res;
 }

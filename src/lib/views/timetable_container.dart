@@ -36,7 +36,6 @@ class Courses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("build");
     final app = context.read<AppViewModel>();
     // TODO: change watch to select
     final timetableViewModel = context.watch<TimetableViewModel>();
@@ -165,7 +164,7 @@ class Timetable extends StatelessWidget {
   Widget buildTimetable(List<CourseLesson> lessons, BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
-    final generatedData = genDispTimetable(appViewModel, timetableViewModel, Filter.all());
+    final generatedData = genDispTimetable(appViewModel, timetableViewModel, Filter.none());
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
@@ -228,7 +227,7 @@ class Timetable extends StatelessWidget {
   }
 
   Widget buildWeekDay(DayOfWeek dayOfWeek, double lessonWidth, int maxHeight) {
-    print(maxHeight);
+    print("maxHeight: ${maxHeight}");
     return SizedBox(
       height: lessonHeight * (maxHeight + 1),
       child: Row(
