@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/program_course_group.dart';
+import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
 
 enum ExportMenuItem { exportPNG, exportJSON }
@@ -51,18 +53,41 @@ class VariantWidget extends StatelessWidget {
   }
 
   Row buildVariantOptions(BuildContext context) {
-    final vm = context.watch<TimetableViewModel>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
-        if (vm.active != index)
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-            ),
-            child: const Text('Zvolit'),
-            onPressed: () => vm.setActive(index: index),
+        Selector<TimetableViewModel, Semester>(
+          selector: (context, vm) => vm.timetables[index].semester,
+          builder: (context, sem, _) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Switch(
+                activeThumbImage: const AssetImage("snowflake.png"),
+                activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
+                inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
+                inactiveThumbColor: Colors.white,
+                inactiveThumbImage: const AssetImage("sun.png"),
+                value: sem == Semester.winter,
+                onChanged: (value) {
+                  Semester semester = value ? Semester.winter : Semester.summer;
+                  final tvm = context.read<TimetableViewModel>();
+                  tvm.changeSemester(semester, index: index);
+                  if (index == tvm.active) {
+                    context.read<AppViewModel>().changeTerm(semester);
+                  }
+                },
+              ),
+            );
+          },
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
           ),
+          child: const Text('Zvolit'),
+          onPressed: () =>
+              context.read<TimetableViewModel>().setActive(index: index),
+        ),
         PopupMenuButton<ExportMenuItem>(
           onSelected: (item) {},
           icon: Icon(Icons.download, color: foreground2),

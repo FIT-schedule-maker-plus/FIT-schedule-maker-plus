@@ -6,7 +6,7 @@ import '../models/timetable.dart';
 class TimetableViewModel extends ChangeNotifier {
   // Represents unique IDs of courses
   Map<Semester, Set<int>> courses = {Semester.winter: {}, Semester.summer: {}};
-  Semester semester = Semester.winter;
+  Semester get semester => timetables[active].semester;
 
   final List<Timetable> timetables;
   int active;
@@ -55,8 +55,12 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeSemester(Semester semester) {
-    this.semester = semester;
+  void changeSemester(Semester semester, {int? index}) {
+    if (index != null) {
+      timetables[index].semester = semester;
+    } else {
+      timetables[active].semester = semester;
+    }
     notifyListeners();
   }
 
