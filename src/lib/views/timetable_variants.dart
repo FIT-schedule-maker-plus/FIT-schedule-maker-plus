@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../viewmodels/timetable.dart';
 
-enum VariantMenuItem { export, delete }
+enum ExportMenuItem { exportPNG, exportJSON }
 
 class VariantWidget extends StatelessWidget {
   final Color foreground;
@@ -33,17 +33,10 @@ class VariantWidget extends StatelessWidget {
           color: background,
         ),
         child: ExpansionTile(
-          title: Flex(
-            direction: Axis.horizontal,
+          title: Row(
             children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: buildVariantName(),
-              ),
-              Expanded(
-                flex: 1,
-                child: buildVariantOptions(context),
-              ),
+              Expanded(child: buildVariantName()),
+              Expanded(child: buildVariantOptions(context)),
             ],
           ),
           children: <Widget>[
@@ -70,25 +63,24 @@ class VariantWidget extends StatelessWidget {
             child: const Text('Zvolit'),
             onPressed: () => vm.setActive(index: index),
           ),
-        PopupMenuButton<VariantMenuItem>(
+        PopupMenuButton<ExportMenuItem>(
           onSelected: (item) {},
-          itemBuilder: (context) => <PopupMenuEntry<VariantMenuItem>>[
-            const PopupMenuItem<VariantMenuItem>(
-              value: VariantMenuItem.export,
-              child: Text('Exportovat'),
+          icon: Icon(Icons.download, color: foreground2),
+          color: background,
+          itemBuilder: (context) => <PopupMenuEntry<ExportMenuItem>>[
+            PopupMenuItem<ExportMenuItem>(
+              value: ExportMenuItem.exportPNG,
+              child: Text("PNG", style: TextStyle(color: foreground2)),
+              onTap: () {},
             ),
-            PopupMenuItem<VariantMenuItem>(
-              onTap: () => vm.removeTimetable(index: index),
-              value: VariantMenuItem.delete,
-              child: const Row(
-                children: <Widget>[
-                  Expanded(child: Text('Vymazat')),
-                  Icon(Icons.delete, color: Color(0xff770505)),
-                ],
-              ),
+            PopupMenuItem<ExportMenuItem>(
+              value: ExportMenuItem.exportJSON,
+              child: Text("JSON", style: TextStyle(color: foreground2)),
+              onTap: () {},
             ),
           ],
         ),
+        ConfirmDeleteButton(variantIndex: index),
       ],
     );
   }
@@ -198,5 +190,56 @@ class TimetableVariants extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ConfirmDeleteButton extends StatefulWidget {
+  final int variantIndex;
+  const ConfirmDeleteButton({
+    super.key,
+    required this.variantIndex,
+  });
+
+  @override
+  State<ConfirmDeleteButton> createState() => _ConfirmDeleteButtonState();
+}
+
+class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
+  bool isEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isEnabled = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isEnabled) {
+      return IconButton(
+        icon: const Icon(Icons.delete),
+        color: const Color(0xff770505),
+        onPressed: () {
+          setState(() {
+            isEnabled = !isEnabled;
+          });
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              isEnabled = false;
+            });
+          });
+        },
+      );
+    } else {
+      return IconButton(
+          icon: const Icon(Icons.check),
+          color: const Color(0xff00ff00),
+          onPressed: () {
+            context
+                .read<TimetableViewModel>()
+                .removeTimetable(index: widget.variantIndex);
+            isEnabled = false;
+          });
+    }
   }
 }
