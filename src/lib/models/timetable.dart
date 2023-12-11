@@ -38,7 +38,7 @@ class Timetable {
   }
 
   /// Add course lesson to current semester timetable.
-  void addCourseLesson(CourseID course, LessonID lesson) {
+  void addLesson(CourseID course, LessonID lesson) {
     if (currentContent[course] == null) {
       currentContent[course] = {};
     }
@@ -46,7 +46,7 @@ class Timetable {
   }
 
   /// Remove lesson from current semester timetable.
-  void removeCourseLesson(CourseID course, LessonID lesson) {
+  void removeLesson(CourseID course, LessonID lesson) {
     if (!containsLesson(course, lesson)) {
       return;
     }
@@ -70,7 +70,7 @@ class Timetable {
     currentContent.remove(courseID);
   }
 
-  /// Check if given seme
+  /// Check if currect semester timetable contains a given course.
   bool containsCourse(CourseID courseID) {
     return currentContent.containsKey(courseID);
   }
