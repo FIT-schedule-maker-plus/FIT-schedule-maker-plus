@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 const selTabCol = Color.fromARGB(255, 255, 255, 255);
 const unsTabCol = Color.fromARGB(255, 125, 125, 125);
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
+const selectedUnderlineColor = Colors.white;
+const hoverUnderlineColor = Colors.green;
 
 class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TabController tabController;
@@ -14,13 +16,15 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
         centerTitle: true,
         backgroundColor: appBarCol,
         title: TabBar(
-          tabAlignment: TabAlignment.center,
-          labelPadding: EdgeInsets.symmetric(horizontal: 40),
-          controller: tabController,
+          indicatorColor: selectedUnderlineColor,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
           unselectedLabelColor: unsTabCol,
-          labelStyle: TextStyle(fontSize: 22),
+          // overlayColor: MaterialStateProperty.resolveWith(),
+          tabAlignment: TabAlignment.center,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 40),
+          controller: tabController,
+          labelStyle: const TextStyle(fontSize: 22),
           tabs: const <Widget>[
             Tab(text: 'Pracovní rozvrh'),
             Tab(text: 'Výsledný rozvrh'),

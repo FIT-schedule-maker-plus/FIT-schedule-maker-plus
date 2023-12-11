@@ -34,7 +34,10 @@ class Courses extends StatelessWidget {
     var app = context.read<AppViewModel>();
     var timetable = context.watch<TimetableViewModel>();
 
-    List<Widget> courseWidgets = timetable.courses[timetable.semester]!.map((id) => app.allCourses[id]!).map((id) => buildCourseWidget(id, context)).toList();
+    List<Widget> courseWidgets = timetable.currentTimetable.currentContent.keys
+        .map((id) => app.allCourses[id]!)
+        .map((course) => buildCourseWidget(course, context))
+        .toList();
 
     return Container(
       width: double.infinity,

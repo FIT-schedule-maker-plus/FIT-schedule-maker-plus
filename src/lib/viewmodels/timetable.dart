@@ -4,10 +4,6 @@ import '../models/program_course_group.dart';
 import '../models/timetable.dart';
 
 class TimetableViewModel extends ChangeNotifier {
-  // Represents unique IDs of courses
-  Map<Semester, Set<int>> courses = {Semester.winter: {}, Semester.summer: {}};
-  Semester get semester => timetables[active].semester;
-
   final List<Timetable> timetables;
   int active;
 
@@ -17,7 +13,7 @@ class TimetableViewModel extends ChangeNotifier {
 
   TimetableViewModel({required this.timetables, this.active = 0}) {
     if (timetables.isEmpty) {
-      timetables.add(Timetable(name: "default", selected: {}));
+      timetables.add(Timetable(name: "default"));
     }
   }
 
@@ -51,7 +47,7 @@ class TimetableViewModel extends ChangeNotifier {
   }
 
   void createNewTimetable() {
-    timetables.add(Timetable(name: "Variant name", selected: {}));
+    timetables.add(Timetable(name: "Variant name"));
     notifyListeners();
   }
 
@@ -74,7 +70,7 @@ class TimetableViewModel extends ChangeNotifier {
     if (index == active) {
       active = 0;
       if (timetables.isEmpty) {
-        timetables.add(Timetable(name: "default", selected: {}));
+        timetables.add(Timetable(name: "default"));
       }
     } else if (index < active) {
       active--;
@@ -83,16 +79,16 @@ class TimetableViewModel extends ChangeNotifier {
   }
 
   void addCourse(int courseID) {
-    courses[semester]!.add(courseID);
+    currentTimetable.addCourse(courseID);
     notifyListeners();
   }
 
   void removeCourse(int courseID) {
-    courses[semester]!.remove(courseID);
+    currentTimetable.removeCourse(courseID);
     notifyListeners();
   }
 
   bool containsCourse(int courseID) {
-    return courses[semester]!.contains(courseID);
+    return currentTimetable.containsCourse(courseID);
   }
 }

@@ -1,24 +1,56 @@
 import 'program_course_group.dart';
 
+/// Index into AppViewModel::allCourser
+typedef CourseID = int;
+
+/// Index into Course::lessons
+typedef LessonID = int;
+
 class Timetable {
-  /// Key: Index into List<Courses> from AppViewModel.allCourses
-  /// Value: Index into List<CourseLesson> from Course.lessons
-  Map<int, int> selected = {};
+  /// Contains all information about the content of this timetable. The structure is as follows:
+  /// -> Semester
+  ///     -> All CourseID's that this semester Contains
+  ///         -> All LessonID's this course contains.
+  Map<Semester, Map<CourseID, Set<LessonID>>> content = {
+    Semester.winter: {},
+    Semester.summer: {},
+  };
+
+  Map<CourseID, Set<LessonID>> get currentContent => content[semester]!;
+  Semester semester = Semester.winter;
 
   /// Unique name of the timetable used for differenciating variants
   String name;
 
-  Semester semester = Semester.winter;
+  Timetable({
+    required this.name,
+    Map<Semester, Map<CourseID, Set<LessonID>>>? courseContent,
+  }) {
+    if (courseContent != null) {
+      content = courseContent;
+    }
+  }
 
-  Timetable({required this.name, required this.selected});
+  void addCourse(CourseID courseID) {
+    currentContent[courseID] = {};
+  }
+
+  void removeCourse(CourseID courseID) {
+    currentContent.remove(courseID);
+  }
+
+  bool containsCourse(CourseID courseID) {
+    return currentContent.containsKey(courseID);
+  }
 
   factory Timetable.fromJson(Map<String, dynamic> json) => Timetable(
-        selected: json["selected"],
         name: json["name"],
+        courseContent: json["content"],
       );
 
   Map<String, dynamic> toJson() => {
-        "selected": selected,
+        "semester": semester,
         "name": name,
+        "content": content,
       };
 }
