@@ -19,18 +19,22 @@ class SideBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: black,
-      elevation: 0,
-      width: 315,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          buildStudiumBar(context),
-          buildSubjectBar(context),
-        ],
-      ),
-    );
+    int tabIndex = context.select((AppViewModel appViewModel) => appViewModel.activeTabIndex);
+
+    return tabIndex != 0
+        ? Container()
+        : Drawer(
+            backgroundColor: black,
+            elevation: 0,
+            width: 315,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildStudiumBar(context),
+                buildSubjectBar(context),
+              ],
+            ),
+          );
   }
 }
 
@@ -76,7 +80,6 @@ Widget buildStudiumBar(BuildContext context) {
                 }
               },
             ),
-
           ),
         ),
       ],
@@ -127,7 +130,7 @@ Widget buildStudiumName(StudyType studyType) {
     child: Text(
       studyType.toCzechString(),
       textAlign: TextAlign.center,
-      style: TextStyle(color: Color.fromARGB(255, 129, 129, 129), fontSize: 9, fontWeight: FontWeight.bold),
+      style: TextStyle(color: Color.fromARGB(255, 129, 129, 129), fontSize: 10, fontWeight: FontWeight.bold),
     ),
   );
 }
@@ -191,8 +194,7 @@ Widget buildHeader(BuildContext context) {
     mainAxisSize: MainAxisSize.max,
     children: [
       Expanded(
-        child: Text(appViewModel.currentYear,
-            textAlign: TextAlign.center, style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
+        child: Text(appViewModel.currentYear, textAlign: TextAlign.center, style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
       ),
       Padding(
         padding: const EdgeInsets.only(right: 10.0),
@@ -288,26 +290,25 @@ class SubjectButton extends StatelessWidget {
   Widget build(BuildContext context) {
     TimetableViewModel timetableViewModel = Provider.of<TimetableViewModel>(context, listen: false);
     AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-    bool isSelected = context
-      .select((TimetableViewModel timetableViewModel) => timetableViewModel.containsCourse(programCourse.courseId));
+    bool isSelected = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.containsCourse(programCourse.courseId));
 
     return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 3),
-    child: ElevatedButton(
-        onPressed: () => isSelected
-          ? timetableViewModel.removeCourse(programCourse.courseId)
-          : timetableViewModel.addCourse(programCourse.courseId),
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(double.infinity, 40),
-        alignment: Alignment.centerLeft,
-        backgroundColor: isSelected ? activeColor : subjectBarColor,
-        surfaceTintColor: Colors.transparent,
-        splashFactory: NoSplash.splashFactory,
-        elevation: 0,
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: ElevatedButton(
+        onPressed: () => isSelected ? timetableViewModel.removeCourse(programCourse.courseId) : timetableViewModel.addCourse(programCourse.courseId),
+        style: ElevatedButton.styleFrom(
+          minimumSize: Size(double.infinity, 40),
+          alignment: Alignment.centerLeft,
+          backgroundColor: isSelected ? activeColor : subjectBarColor,
+          surfaceTintColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
+          elevation: 0,
+        ),
+        child: Text(
+          appViewModel.allCourses[programCourse.courseId]!.shortcut,
+          style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
+        ),
       ),
-      child: Text(appViewModel.allCourses[programCourse.courseId]!.shortcut,
-          style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400)),
-    ),
     );
   }
 }
