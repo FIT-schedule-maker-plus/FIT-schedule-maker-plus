@@ -2,10 +2,29 @@
 
 enum DayOfWeek {
   monday,
-  tueday,
+  tuesday,
   wednesday,
   thursday,
   friday,
+}
+
+extension ParseToString on DayOfWeek {
+  String toCzechString() {
+    switch (this) {
+      case DayOfWeek.monday:
+        return "Po";
+      case DayOfWeek.tuesday:
+        return "Ut";
+      case DayOfWeek.wednesday:
+        return "St";
+      case DayOfWeek.thursday:
+        return "Čt";
+      case DayOfWeek.friday:
+        return "Pá";
+      default:
+        return "Unknown";
+    }
+  }
 }
 
 enum LessonType {
@@ -30,6 +49,7 @@ class CourseLesson {
   /// Location of the lesson. For example: B/D105
   final List<String> locations;
   final int capacity;
+
   /// Note attached to this lesson
   final String note;
   final String info;
