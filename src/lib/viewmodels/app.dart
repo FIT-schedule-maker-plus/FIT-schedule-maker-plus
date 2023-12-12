@@ -1,5 +1,6 @@
 import 'package:fit_schedule_maker_plus/models/course.dart';
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
 import 'package:fit_schedule_maker_plus/models/study.dart';
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/models/program_course.dart';
@@ -161,7 +162,11 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
 
-    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).where((value) => value != null).map((value) => value!).toList();
+    allCourses[courseId]!.lessons = parser
+        .querySelectorAll("#schedule tbody tr")
+        .map(_parseLesson)
+        .fold(<CourseLesson>[], _mergeSameLessons);
+
     allCourses[courseId]!.loadedLessons = true;
   }
 
@@ -185,6 +190,35 @@ class AppViewModel extends ChangeNotifier {
   /// Get all course lessons synchronously. Expect that all lessons for a given course have already been fetched.
   List<CourseLesson> getAllCourseLessonSync(Iterable<int> courseIds) {
     return courseIds.map((courseId) => allCourses[courseId]!.lessons).expand((element) => element).toList();
+  }
+
+  List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
+    if (lesson == null) {
+      return list;
+    }
+
+    bool found = false;
+
+    for (var i = 0; i < list.length; i++) {
+      final value = list[i];
+      if (value.dayOfWeek != lesson.dayOfWeek
+        || value.startsFrom != lesson.startsFrom
+        || value.endsAt != lesson.endsAt
+        || value.type != lesson.type
+      ) {
+        continue;
+      }
+
+      list[i].infos.addAll(lesson.infos);
+      found = true;
+      break;
+    }
+
+    if (!found) {
+      list.add(lesson);
+    }
+
+    return list;
   }
 
   CourseLesson? _parseLesson(element) {
@@ -235,20 +269,17 @@ class AppViewModel extends ChangeNotifier {
 
     if (startsFrom == null || endsAt == null || capacity == null) return null;
 
-    final note = matches[2];
+    final weeks = matches[2];
     final info = exp.firstMatch(matches.last!)![1];
 
-    if (note == null || info == null) return null;
+    if (weeks == null || info == null) return null;
 
     return CourseLesson(
       dayOfWeek: dayOfWeek,
       type: type,
-      locations: locations,
-      note: note,
-      info: info,
+      infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
       startsFrom: startsFrom,
       endsAt: endsAt,
-      capacity: capacity,
     );
   }
 

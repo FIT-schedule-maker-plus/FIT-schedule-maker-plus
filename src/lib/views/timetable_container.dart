@@ -298,7 +298,8 @@ class Timetable extends StatelessWidget {
           .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
     }
 
-    String locations = lesson.locations.join(", ");
+    // String locations = lesson.locations.join(", ");
+    String locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
     return Positioned(
       left: daysBarWidth + 5 + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth + 1),
       top: lessonHeight * (lessonLevel) + lessonHeight * cumSum + (lesson.dayOfWeek.index + 1) * 2 + 3,
@@ -333,7 +334,7 @@ class Timetable extends StatelessWidget {
               ),
 
               Text(
-                lesson.info,
+                lesson.infos.map((info) => info.info).toSet().join(", "),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w300,
