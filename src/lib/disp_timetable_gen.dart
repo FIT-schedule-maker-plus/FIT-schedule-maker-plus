@@ -85,8 +85,8 @@ void fillHeights(
   outTim.forEach((_, pair) {
     pair.second.sort(
       (a, b) =>
-          courses[b.courseID]!.lessons[b.lessonID].startsFrom -
-          courses[a.courseID]!.lessons[a.lessonID].startsFrom,
+          courses[a.courseID]!.lessons[a.lessonID].startsFrom -
+          courses[b.courseID]!.lessons[b.lessonID].startsFrom,
     );
 
     final List<int> levels = [];
