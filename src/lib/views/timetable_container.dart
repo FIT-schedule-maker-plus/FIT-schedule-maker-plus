@@ -35,8 +35,15 @@ class TimetableContainer extends StatelessWidget {
   }
 }
 
-class Courses extends StatelessWidget {
+class Courses extends StatefulWidget {
   const Courses({super.key});
+
+  @override
+  State<Courses> createState() => _CoursesState();
+}
+
+class _CoursesState extends State<Courses> {
+  bool isCollapsed = true;
 
   @override
   Widget build(BuildContext context) {
@@ -44,66 +51,74 @@ class Courses extends StatelessWidget {
     // TODO: change watch to select
     final timetableViewModel = context.watch<TimetableViewModel>();
     // final currentTimetable = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.timetables[timetableViewModel.active]);
+    isCollapsed = timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys.isEmpty;
 
-    return timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys.isEmpty
-        ? SizedBox(height: 20)
-        : Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [appBarCol, Colors.black],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: Offset(0.0, 10.0),
-                    blurRadius: 15.0,
-                    spreadRadius: 10.0,
-                  )
-                ]),
-            child: Column(
-              children: [
-                const SizedBox(height: 17),
-                const Center(
-                  child: Text(
-                    'Vybrané predmety',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 0,
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: 300),
+      child: isCollapsed
+          ? Container(key: ValueKey(1))
+          : Container(
+              key: ValueKey(2),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [appBarCol, Colors.black],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(0.0, 10.0),
+                      blurRadius: 15.0,
+                      spreadRadius: 10.0,
+                    )
+                  ]),
+              child: isCollapsed
+                  ? null
+                  : Column(
+                      children: [
+                        const SizedBox(height: 17),
+                        const Center(
+                          child: Text(
+                            'Vybrané predmety',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              height: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 17),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          alignment: Alignment.center,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 60, // to apply margin in the main axis of the wrap
+                            runSpacing: 10, // to apply margin in the cross axis of the wrap
+                            children: timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys
+                                .map((courseId) => buildCourseWidget(app.allCourses[courseId]!, context))
+                                .toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 17),
+                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 17),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 50),
-                  alignment: Alignment.center,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 60, // to apply margin in the main axis of the wrap
-                    runSpacing: 10, // to apply margin in the cross axis of the wrap
-                    children: timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys
-                        .map((courseId) => buildCourseWidget(app.allCourses[courseId]!, context))
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(height: 17),
-              ],
             ),
-          );
+    );
   }
 
   Widget buildCourseWidget(Course course, BuildContext context) {
     TimetableViewModel timetable = context.read<TimetableViewModel>();
+    bool isHiden = false;
 
     return Container(
-      width: 178,
-      height: 28,
+      width: 180,
+      height: 30,
       decoration: ShapeDecoration(
         color: Color(0xFF1BD30B),
         shape: RoundedRectangleBorder(
@@ -112,11 +127,31 @@ class Courses extends StatelessWidget {
       ),
       child: Row(
         children: [
+          StatefulBuilder(builder: (context, setState) {
+            return Tooltip(
+              waitDuration: Duration(milliseconds: 500),
+              message: "Skrýt",
+              child: IconButton(
+                onPressed: () {
+                  if (isHiden) {
+                    context.read<AppViewModel>().removeCourseFromFilter(course.id);
+                  } else {
+                    context.read<AppViewModel>().addCourseToFilter(course.id);
+                  }
+                  setState(() => isHiden = !isHiden);
+                },
+                padding: EdgeInsets.zero,
+                color: Colors.white,
+                icon: Icon(isHiden ? Icons.visibility_off : Icons.visibility),
+              ),
+            );
+          }),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 10),
+              padding: const EdgeInsets.only(right: 10),
               child: Text(
                 course.shortcut,
+                overflow: TextOverflow.clip,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -126,12 +161,15 @@ class Courses extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () => timetable.removeCourse(course.id),
-            tooltip: 'Delete',
-            padding: EdgeInsets.zero,
-            color: Colors.white,
-            icon: const Icon(Icons.close),
+          Tooltip(
+            waitDuration: Duration(milliseconds: 500),
+            message: "Vymazat",
+            child: IconButton(
+              onPressed: () => timetable.removeCourse(course.id),
+              padding: EdgeInsets.zero,
+              color: Colors.white,
+              icon: const Icon(Icons.close),
+            ),
           ),
         ],
       ),
@@ -153,7 +191,6 @@ class Timetable extends StatelessWidget {
 
     Iterable<int> courseIds = timetableViewModel.currentTimetable.currentContent.keys;
     bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
-
     return areAllLessonsFetched
         ? buildTimetable(context)
         : FutureBuilder(
@@ -178,7 +215,9 @@ class Timetable extends StatelessWidget {
       width: double.infinity,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
+          Filter filter = context.select((AppViewModel appViewModel) => appViewModel.filter);
           double oneLessonWidth = constraints.maxWidth / 15;
+          final generatedData = genDispTimetable(context.read<AppViewModel>(), context.read<TimetableViewModel>(), filter);
 
           return Column(
             children: [
