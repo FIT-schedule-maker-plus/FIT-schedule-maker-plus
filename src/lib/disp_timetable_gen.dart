@@ -22,16 +22,17 @@ class SpecificLesson {
 
 class Filter {
   /// List of all courses which will have their unselected lessons filtered out.
-  final List<CourseID> courses;
+  List<CourseID> courses;
 
   /// Filter all unselected courses.
-  final bool allCourses;
+  bool allCourses;
 
-  const Filter({required this.courses, required this.allCourses});
+  Filter({required this.courses, required this.allCourses});
 
-  const Filter.courses(List<CourseID> courses) : this(courses: courses, allCourses: false);
-  const Filter.all() : this(courses: const <int>[], allCourses: true);
-  const Filter.none() : this(courses: const <int>[], allCourses: false);
+  Filter.courses(List<CourseID> courses)
+      : this(courses: courses, allCourses: false);
+  Filter.all() : this(courses: [], allCourses: true);
+  Filter.none() : this(courses: [], allCourses: false);
 }
 
 void selectLesson(
@@ -105,7 +106,9 @@ void fillHeights(
       if (lessonA.startsFrom != lessonB.startsFrom) {
         return lessonA.startsFrom - lessonB.startsFrom;
       }
-      return courses[a.courseID]!.shortcut.compareTo(courses[b.courseID]!.shortcut);
+      return courses[a.courseID]!
+          .shortcut
+          .compareTo(courses[b.courseID]!.shortcut);
     });
 
     final List<int> levels = [];
@@ -155,7 +158,7 @@ void fillDays(
     return;
   }
 
-  final allCourseIDs = tim.currentContent.keys.where((courseID) => !filter.courses.contains(courseID)).toList();
+  final allCourseIDs = tim.currentContent.keys.toList();
 
   for (int i = 0; i < allCourseIDs.length; i++) {
     final courseID = allCourseIDs[i];
@@ -169,8 +172,10 @@ void fillDays(
         height: 0,
         selected: tim.containsLesson(courseID, j),
       );
-      final day = outTim[lesson.dayOfWeek]!;
-      day.second.add(sl);
+      // Filter only when the course isn't selected.
+      if (!filter.courses.contains(courseID) || sl.selected) {
+        outTim[lesson.dayOfWeek]!.second.add(sl);
+      }
     }
   }
 }

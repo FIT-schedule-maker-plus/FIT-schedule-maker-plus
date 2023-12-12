@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../disp_timetable_gen.dart';
 import '../models/program_course_group.dart';
 import '../models/timetable.dart';
 import '../utils.dart';
@@ -11,11 +12,22 @@ class TimetableViewModel extends ChangeNotifier {
   final Map<int, String> _isEditing = {};
 
   Timetable get currentTimetable => timetables[active];
+  Filter filter = Filter.none();
 
   TimetableViewModel({required this.timetables, this.active = 0}) {
     if (timetables.isEmpty) {
       timetables.add(Timetable(name: "default"));
     }
+  }
+
+  void addCourseToFilter(int courseId) {
+    filter.courses.add(courseId);
+    notifyListeners();
+  }
+
+  void removeCourseFromFilter(int courseId) {
+    filter.courses.remove(courseId);
+    notifyListeners();
   }
 
   void saveAsJson(int index) async {

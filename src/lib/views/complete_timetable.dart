@@ -11,7 +11,7 @@ class CompleteTimetable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: const Color.fromARGB(255, 52, 52, 52),
-      child: const custom_widget.Timetable(filter: Filter.all()),
+      child: custom_widget.Timetable(filter: Filter.all()),
     );
   }
 }

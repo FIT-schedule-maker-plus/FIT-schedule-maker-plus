@@ -28,7 +28,14 @@ class TimetableContainer extends StatelessWidget {
         children: [
           Courses(),
           SizedBox(height: 40),
-          Expanded(child: Timetable()),
+          Selector<TimetableViewModel, Filter>(
+            selector: (_, vm) => vm.filter,
+            builder: (context, filter, _) {
+              return Expanded(
+                child: Timetable(filter: filter),
+              );
+            }
+          )
         ],
       ),
     );
@@ -47,11 +54,9 @@ class _CoursesState extends State<Courses> {
 
   @override
   Widget build(BuildContext context) {
-    final app = context.read<AppViewModel>();
-    // TODO: change watch to select
-    final timetableViewModel = context.watch<TimetableViewModel>();
-    // final currentTimetable = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.timetables[timetableViewModel.active]);
-    isCollapsed = timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys.isEmpty;
+    final allCourses = context.select((AppViewModel vm) => vm.allCourses);
+    final courseIDs = context.select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
+    isCollapsed = courseIDs.isEmpty;
 
     return AnimatedSwitcher(
       duration: Duration(milliseconds: 300),
@@ -100,9 +105,10 @@ class _CoursesState extends State<Courses> {
                             alignment: WrapAlignment.center,
                             spacing: 60, // to apply margin in the main axis of the wrap
                             runSpacing: 10, // to apply margin in the cross axis of the wrap
-                            children: timetableViewModel.currentTimetable.selected[timetableViewModel.currentTimetable.semester]!.keys
-                                .map((courseId) => buildCourseWidget(app.allCourses[courseId]!, context))
+                            children: courseIDs
+                                .map((courseId) => buildCourseWidget(allCourses[courseId]!, context))
                                 .toList(),
+
                           ),
                         ),
                         const SizedBox(height: 17),
@@ -113,7 +119,6 @@ class _CoursesState extends State<Courses> {
   }
 
   Widget buildCourseWidget(Course course, BuildContext context) {
-    TimetableViewModel timetable = context.read<TimetableViewModel>();
     bool isHiden = false;
 
     return Container(
@@ -127,16 +132,17 @@ class _CoursesState extends State<Courses> {
       ),
       child: Row(
         children: [
-          StatefulBuilder(builder: (context, setState) {
+          StatefulBuilder(builder: (ctx, setState) {
             return Tooltip(
               waitDuration: Duration(milliseconds: 500),
               message: "Skrýt",
               child: IconButton(
                 onPressed: () {
+                  final tvm = ctx.read<TimetableViewModel>();
                   if (isHiden) {
-                    context.read<AppViewModel>().removeCourseFromFilter(course.id);
+                    tvm.removeCourseFromFilter(course.id);
                   } else {
-                    context.read<AppViewModel>().addCourseToFilter(course.id);
+                    tvm.addCourseToFilter(course.id);
                   }
                   setState(() => isHiden = !isHiden);
                 },
@@ -165,7 +171,7 @@ class _CoursesState extends State<Courses> {
             waitDuration: Duration(milliseconds: 500),
             message: "Vymazat",
             child: IconButton(
-              onPressed: () => timetable.removeCourse(course.id),
+              onPressed: () => context.read<TimetableViewModel>().removeCourse(course.id),
               padding: EdgeInsets.zero,
               color: Colors.white,
               icon: const Icon(Icons.close),
@@ -182,7 +188,7 @@ class Timetable extends StatelessWidget {
   /// from some variant. When this is null, then we display current timetable.
   final model.Timetable? timetable;
   final Filter filter;
-  const Timetable({super.key, this.timetable, this.filter = const Filter.none()});
+  const Timetable({super.key, this.timetable, required this.filter});
 
   @override
   Widget build(BuildContext context) {
@@ -215,9 +221,7 @@ class Timetable extends StatelessWidget {
       width: double.infinity,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          Filter filter = context.select((AppViewModel appViewModel) => appViewModel.filter);
           double oneLessonWidth = constraints.maxWidth / 15;
-          final generatedData = genDispTimetable(context.read<AppViewModel>(), context.read<TimetableViewModel>(), filter);
 
           return Column(
             children: [

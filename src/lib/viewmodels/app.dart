@@ -19,8 +19,6 @@ class AppViewModel extends ChangeNotifier {
   String currentYear = "2023/24";
   int currentStudyProgram = 15803;
 
-  final Filter filter = Filter.none();
-
   int activeTabIndex = 0;
 
   /// Load stored timetables from disk
@@ -306,16 +304,6 @@ class AppViewModel extends ChangeNotifier {
 
   void changeTab(int index) {
     activeTabIndex = index;
-    notifyListeners();
-  }
-
-  void addCourseToFilter(int courseId) {
-    filter.courses.add(courseId);
-    notifyListeners();
-  }
-
-  void removeCourseFromFilter(int courseId) {
-    filter.courses.remove(courseId);
     notifyListeners();
   }
 
