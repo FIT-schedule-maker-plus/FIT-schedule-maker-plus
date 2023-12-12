@@ -12,6 +12,8 @@ import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/models/course.dart';
 
+import '../models/timetable.dart' as model_timetable;
+
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
 const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
 const double daysBarWidth = 35;
@@ -140,7 +142,11 @@ class Courses extends StatelessWidget {
 }
 
 class Timetable extends StatelessWidget {
-  const Timetable({super.key});
+  /// Timetable to display explicitly. This is useful when we want to display a timetable
+  /// from some variant. When this is null, then we display current timetable.
+  final model_timetable.Timetable? timetable;
+  final Filter filter;
+  const Timetable({super.key, this.timetable, this.filter = const Filter.none()});
 
   @override
   Widget build(BuildContext context) {
@@ -151,24 +157,25 @@ class Timetable extends StatelessWidget {
     bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
 
     return areAllLessonsFetched
-        ? buildTimetable(appViewModel.getAllCourseLessonSync(courseIds), context)
+        ? buildTimetable(context)
         : FutureBuilder(
             future: appViewModel.getAllCourseLessonsAsync(courseIds),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
-                  List<CourseLesson> lessons = snapshot.data!;
-                  return buildTimetable(lessons, context);
+                  return buildTimetable(context);
                 default:
                   return Center(child: CircularProgressIndicator());
               }
             });
   }
 
-  Widget buildTimetable(List<CourseLesson> lessons, BuildContext context) {
+  Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
-    final generatedData = genDispTimetable(appViewModel, timetableViewModel, Filter.none());
+    final generatedData = timetable == null
+                        ? genDispTimetable(appViewModel, timetableViewModel, filter)
+                        : genDispTimetableSpecific(appViewModel, timetable!, filter);
     List<int> rowHeights = List.generate(5, (index) => generatedData[DayOfWeek.values[index]]!.first + 1);
 
     return Container(
@@ -202,7 +209,6 @@ class Timetable extends StatelessWidget {
                                   .second
                                   .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, rowHeights)))
                           .expand((element) => element)
-                      // ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
                     ],
                   ),
                 ),

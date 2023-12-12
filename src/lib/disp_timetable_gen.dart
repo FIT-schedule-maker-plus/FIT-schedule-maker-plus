@@ -22,17 +22,16 @@ class SpecificLesson {
 
 class Filter {
   /// List of all courses which will have their unselected lessons filtered out.
-  List<CourseID> courses;
+  final List<CourseID> courses;
 
   /// Filter all unselected courses.
-  bool allCourses;
+  final bool allCourses;
 
-  Filter({required this.courses, required this.allCourses});
+  const Filter({required this.courses, required this.allCourses});
 
-  Filter.courses(List<CourseID> courses)
-      : this(courses: courses, allCourses: false);
-  Filter.all() : this(courses: [], allCourses: true);
-  Filter.none() : this(courses: [], allCourses: false);
+  const Filter.courses(List<CourseID> courses) : this(courses: courses, allCourses: false);
+  const Filter.all() : this(courses: const <int>[], allCourses: true);
+  const Filter.none() : this(courses: const <int>[], allCourses: false);
 }
 
 void selectLesson(
