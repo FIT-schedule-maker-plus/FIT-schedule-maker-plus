@@ -200,7 +200,7 @@ class Timetable extends StatelessWidget {
                               5,
                               (index) => generatedData[DayOfWeek.values[index]]!
                                   .second
-                                  .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes.lessonID, oneLessonWidth, specLes.height, rowHeights)))
+                                  .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, rowHeights)))
                           .expand((element) => element)
                       // ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
                     ],
@@ -268,11 +268,12 @@ class Timetable extends StatelessWidget {
   Widget buildLesson(
     BuildContext context,
     Course course,
-    int lessonId,
+    SpecificLesson specLes,
     double oneLessonWidth,
-    int lessonLevel,
     List<int> maxHeights
   ) {
+    final lessonId = specLes.lessonID;
+    final lessonLevel = specLes.height;
     CourseLesson lesson = course.lessons[lessonId];
     int cumSum = switch (lesson.dayOfWeek) {
       DayOfWeek.monday => 0,
@@ -290,7 +291,7 @@ class Timetable extends StatelessWidget {
 
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
 
-    if (!timetableViewModel.containsLesson(course.id, lessonId)) {
+    if (!specLes.selected) {
       // color = color.withAlpha(150);
       color = color
           .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
@@ -305,10 +306,10 @@ class Timetable extends StatelessWidget {
       top: lessonHeight * (lessonLevel) + lessonHeight * cumSum + (lesson.dayOfWeek.index + 1) * 2 + 3,
       child: InkWell(
         onTap: () {
-          if (timetableViewModel.containsLesson(course.id, lessonId)) {
-            timetableViewModel.removeLesson(course.id, lessonId);
+          if (specLes.selected) {
+            deselectLesson(timetableViewModel, specLes);
           } else {
-            timetableViewModel.addLesson(course.id, lessonId);
+            selectLesson(timetableViewModel, specLes);
           }
         },
         child: Container(
