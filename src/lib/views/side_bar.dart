@@ -27,12 +27,15 @@ class SideBar extends StatelessWidget {
             backgroundColor: black,
             elevation: 0,
             width: 315,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildStudiumBar(context),
-                buildSubjectBar(context),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildStudiumBar(context),
+                  buildSubjectBar(context),
+                ],
+              ),
             ),
           );
   }
@@ -130,7 +133,7 @@ Widget buildStudiumName(StudyType studyType) {
     child: Text(
       studyType.toCzechString(),
       textAlign: TextAlign.center,
-      style: TextStyle(color: Color.fromARGB(255, 129, 129, 129), fontSize: 10, fontWeight: FontWeight.bold),
+      style: TextStyle(color: Color.fromARGB(255, 129, 129, 129), fontSize: 10, fontWeight: FontWeight.w400),
     ),
   );
 }
@@ -294,19 +297,23 @@ class SubjectButton extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: ElevatedButton(
-        onPressed: () => isSelected ? timetableViewModel.removeCourse(programCourse.courseId) : timetableViewModel.addCourse(programCourse.courseId),
-        style: ElevatedButton.styleFrom(
-          minimumSize: Size(double.infinity, 40),
-          alignment: Alignment.centerLeft,
-          backgroundColor: isSelected ? activeColor : subjectBarColor,
-          surfaceTintColor: Colors.transparent,
-          splashFactory: NoSplash.splashFactory,
-          elevation: 0,
-        ),
-        child: Text(
-          appViewModel.allCourses[programCourse.courseId]!.shortcut,
-          style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
+      child: Tooltip(
+        waitDuration: Duration(milliseconds: 1000),
+        message: appViewModel.allCourses[programCourse.courseId]!.fullName,
+        child: ElevatedButton(
+          onPressed: () => isSelected ? timetableViewModel.removeCourse(programCourse.courseId) : timetableViewModel.addCourse(programCourse.courseId),
+          style: ElevatedButton.styleFrom(
+            minimumSize: Size(double.infinity, 40),
+            alignment: Alignment.centerLeft,
+            backgroundColor: isSelected ? activeColor : subjectBarColor,
+            surfaceTintColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory,
+            elevation: 0,
+          ),
+          child: Text(
+            appViewModel.allCourses[programCourse.courseId]!.shortcut,
+            style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
+          ),
         ),
       ),
     );
