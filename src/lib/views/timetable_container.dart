@@ -1,7 +1,5 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-
-
 import 'dart:math';
 
 import 'package:fit_schedule_maker_plus/disp_timetable_gen.dart';
@@ -173,18 +171,14 @@ class Timetable extends StatelessWidget {
   Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
-    final generatedData = timetable == null
-                        ? genDispTimetable(appViewModel, timetableViewModel, filter)
-                        : genDispTimetableSpecific(appViewModel, timetable!, filter);
-    List<int> rowHeights = List.generate(5, (index) => generatedData[DayOfWeek.values[index]]!.first + 1);
+    final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
       padding: EdgeInsets.only(left: 30, right: 30, bottom: 30),
       width: double.infinity,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          double parentWidth = constraints.maxWidth;
-          double oneLessonWidth = parentWidth / 15;
+          double oneLessonWidth = constraints.maxWidth / 15;
 
           return Column(
             children: [
@@ -193,23 +187,22 @@ class Timetable extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
-                  child: Stack(
-                    children: [
-                      Column(
-                        children: List.generate(5, (index) {
-                          return [
-                            buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
-                            Divider(thickness: 2, height: 2, color: Colors.black),
-                          ];
-                        }).expand((item) => item).toList(),
-                      ),
-                      ...List.generate(
-                              5,
-                              (index) => generatedData[DayOfWeek.values[index]]!
-                                  .second
-                                  .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, rowHeights)))
-                          .expand((element) => element)
-                    ],
+                  child: Column(
+                    children: List.generate(5, (index) {
+                      return Stack(
+                        children: [
+                          Column(
+                            children: [
+                              buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
+                              Divider(thickness: 2, height: 2, color: Colors.black),
+                            ],
+                          ),
+                          ...generatedData[DayOfWeek.values[index]]!
+                              .second
+                              .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth))
+                        ],
+                      );
+                    }),
                   ),
                 ),
               )
@@ -247,6 +240,7 @@ class Timetable extends StatelessWidget {
     return SizedBox(
       height: lessonHeight * (maxHeight + 1),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
             width: daysBarWidth,
@@ -271,20 +265,11 @@ class Timetable extends StatelessWidget {
     );
   }
 
-  Widget buildLesson(
-    BuildContext context,
-    Course course,
-    SpecificLesson specLes,
-    double oneLessonWidth,
-    List<int> maxHeights
-  ) {
+  Widget buildLesson(BuildContext context, Course course, SpecificLesson specLes, double oneLessonWidth) {
     final lessonId = specLes.lessonID;
     final lessonLevel = specLes.height;
+    const int leftOffset = 5;
     CourseLesson lesson = course.lessons[lessonId];
-    int cumSum = switch (lesson.dayOfWeek) {
-      DayOfWeek.monday => 0,
-      _ => maxHeights.getRange(0, lesson.dayOfWeek.index).reduce((value, element) => value + element),
-    };
 
     Color color = switch (lesson.type) {
       LessonType.lecture => Color(0xFF1C7C26),
@@ -308,62 +293,48 @@ class Timetable extends StatelessWidget {
     // String locations = lesson.locations.join(", ");
     String locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
     return Positioned(
-      left: daysBarWidth + 5 + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth + 1),
-      top: lessonHeight * (lessonLevel) + lessonHeight * cumSum + (lesson.dayOfWeek.index + 1) * 2 + 3,
+      left: daysBarWidth + leftOffset + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth),
+      top: lessonHeight * lessonLevel + 5,
       child: InkWell(
-        onTap: () {
-          if (specLes.selected) {
-            deselectLesson(timetableViewModel, specLes);
-          } else {
-            selectLesson(timetableViewModel, specLes);
-          }
-        },
-        child: Container(
-          width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
-          decoration: ShapeDecoration(
-            color: color,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(width: 1),
-              borderRadius: BorderRadius.circular(10.0),
-            )
-          ),
-          height: 90,
-          alignment: Alignment.center,
-          child: Column(
-            children: [
+          onTap: () {
+            if (specLes.selected) {
+              deselectLesson(timetableViewModel, specLes);
+            } else {
+              selectLesson(timetableViewModel, specLes);
+            }
+          },
+          child: Container(
+            width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
+            decoration: ShapeDecoration(
+                color: color,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(width: 1),
+                  borderRadius: BorderRadius.circular(10.0),
+                )),
+            height: 90,
+            alignment: Alignment.center,
+            child: Column(children: [
               Text(
                 course.shortcut,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
               Text(
                 lesson.infos.map((info) => info.info).toSet().join(", "),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w300,
-                  color: Color(0xFFC5C4C4)
-                ),
+                style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
+                overflow: TextOverflow.ellipsis,
               ),
-
               SizedBox(height: 10),
-
               Text(
                 locations,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+                overflow: TextOverflow.ellipsis,
               )
             ]),
-        )
-      ),
+          )),
     );
   }
 }
-
-
