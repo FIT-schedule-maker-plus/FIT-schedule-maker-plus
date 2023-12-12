@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
+
 enum DayOfWeek {
   monday,
   tueday,
@@ -27,24 +29,14 @@ class CourseLesson {
   final LessonType type;
   final DayOfWeek dayOfWeek;
 
-  /// Location of the lesson. For example: B/D105
-  final List<String> locations;
-  final int capacity;
-  /// Note attached to this lesson
-  final String note;
-  final String info;
-  // final String faculty; // Cannot scrape this info tho...
+  List<LessonInfo> infos;
 
   CourseLesson({
     required this.dayOfWeek,
     required this.type,
     required this.startsFrom,
     required this.endsAt,
-    required this.locations,
-    required this.note,
-    required this.info,
-    required this.capacity,
-    // required this.faculty,
+    required this.infos,
   });
 
   factory CourseLesson.fromJson(Map<String, dynamic> json) => CourseLesson(
@@ -52,11 +44,7 @@ class CourseLesson {
         endsAt: int.parse(json["ends_at"]),
         type: LessonType.values[int.parse(json["type"])],
         dayOfWeek: DayOfWeek.values[int.parse(json["day_of_week"])],
-        locations: json["locations"],
-        info: json["info"],
-        note: json["note"],
-        capacity: int.parse(json["capacity"]),
-        // faculty: json["faculty"],
+        infos: List<LessonInfo>.from(json["infos"].map((info) => LessonInfo.fromJson(info))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -64,10 +52,6 @@ class CourseLesson {
         "ends_at": endsAt,
         "type": type.index,
         "day_of_week": dayOfWeek.index,
-        "locations": locations,
-        "capacity": capacity,
-        "info": info,
-        "note": note,
-        // "faculty": faculty,
+        "infos": List<dynamic>.from(infos.map((info) => info.toJson())),
       };
 }
