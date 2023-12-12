@@ -105,9 +105,7 @@ void fillHeights(
       if (lessonA.startsFrom != lessonB.startsFrom) {
         return lessonA.startsFrom - lessonB.startsFrom;
       }
-      return courses[a.courseID]!
-          .shortcut
-          .compareTo(courses[b.courseID]!.shortcut);
+      return courses[a.courseID]!.shortcut.compareTo(courses[b.courseID]!.shortcut);
     });
 
     final List<int> levels = [];
@@ -157,9 +155,7 @@ void fillDays(
     return;
   }
 
-  final allCourseIDs = tim.currentContent.keys
-      .where((courseID) => !filter.courses.contains(courseID))
-      .toList();
+  final allCourseIDs = tim.currentContent.keys.where((courseID) => !filter.courses.contains(courseID)).toList();
 
   for (int i = 0; i < allCourseIDs.length; i++) {
     final courseID = allCourseIDs[i];
