@@ -7,6 +7,7 @@ import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
+import '../disp_timetable_gen.dart';
 import '../models/timetable.dart';
 
 class AppViewModel extends ChangeNotifier {
@@ -17,6 +18,8 @@ class AppViewModel extends ChangeNotifier {
   Semester currentSemester = Semester.winter;
   String currentYear = "2023/24";
   int currentStudyProgram = 15803;
+
+  final Filter filter = Filter.none();
 
   int activeTabIndex = 0;
 
@@ -162,10 +165,7 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
 
-    allCourses[courseId]!.lessons = parser
-        .querySelectorAll("#schedule tbody tr")
-        .map(_parseLesson)
-        .fold(<CourseLesson>[], _mergeSameLessons);
+    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).fold(<CourseLesson>[], _mergeSameLessons);
 
     allCourses[courseId]!.loadedLessons = true;
   }
@@ -201,11 +201,7 @@ class AppViewModel extends ChangeNotifier {
 
     for (var i = 0; i < list.length; i++) {
       final value = list[i];
-      if (value.dayOfWeek != lesson.dayOfWeek
-        || value.startsFrom != lesson.startsFrom
-        || value.endsAt != lesson.endsAt
-        || value.type != lesson.type
-      ) {
+      if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
         continue;
       }
 
@@ -310,6 +306,16 @@ class AppViewModel extends ChangeNotifier {
 
   void changeTab(int index) {
     activeTabIndex = index;
+    notifyListeners();
+  }
+
+  void addCourseToFilter(int courseId) {
+    filter.courses.add(courseId);
+    notifyListeners();
+  }
+
+  void removeCourseFromFilter(int courseId) {
+    filter.courses.remove(courseId);
     notifyListeners();
   }
 
