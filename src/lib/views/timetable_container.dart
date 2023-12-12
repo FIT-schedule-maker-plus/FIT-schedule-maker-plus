@@ -188,7 +188,8 @@ class Timetable extends StatelessWidget {
   /// from some variant. When this is null, then we display current timetable.
   final model.Timetable? timetable;
   final Filter filter;
-  const Timetable({super.key, this.timetable, required this.filter});
+  final bool readOnly;
+  const Timetable({super.key, this.timetable, required this.filter, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -340,6 +341,9 @@ class Timetable extends StatelessWidget {
       top: lessonHeight * lessonLevel + 5,
       child: InkWell(
           onTap: () {
+            if (readOnly) {
+              return;
+            }
             if (specLes.selected) {
               deselectLesson(timetableViewModel, specLes);
             } else {

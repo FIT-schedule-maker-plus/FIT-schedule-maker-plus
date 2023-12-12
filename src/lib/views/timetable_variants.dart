@@ -53,6 +53,7 @@ class VariantWidget extends StatelessWidget {
                   return custom_widget.Timetable(
                     filter: Filter.all(),
                     timetable: tim,
+                    readOnly: true,
                   );
                 },
               ),
