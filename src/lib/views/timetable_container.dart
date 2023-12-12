@@ -12,7 +12,7 @@ import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/models/course.dart';
 
-import '../models/timetable.dart' as model_timetable;
+import '../models/timetable.dart' as model;
 
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
 const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
@@ -144,7 +144,7 @@ class Courses extends StatelessWidget {
 class Timetable extends StatelessWidget {
   /// Timetable to display explicitly. This is useful when we want to display a timetable
   /// from some variant. When this is null, then we display current timetable.
-  final model_timetable.Timetable? timetable;
+  final model.Timetable? timetable;
   final Filter filter;
   const Timetable({super.key, this.timetable, this.filter = const Filter.none()});
 
