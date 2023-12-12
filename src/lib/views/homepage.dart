@@ -10,68 +10,17 @@ import 'package:fit_schedule_maker_plus/views/timetable_variants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Homepage extends StatefulWidget {
+class Homepage extends StatelessWidget {
   const Homepage({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
-}
-
-class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
-  late TabController _tabController;
-  late AnimationController _animationController;
-  late Animation<Offset> _offsetAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-
-    // Set up offset animation
-    _offsetAnimation = Tween<Offset>(
-      begin: Offset(1.0, 0.0),
-      end: Offset(0.0, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-    _tabController.addListener(() {
-      if (appViewModel.activeTabIndex != _tabController.index) {
-        appViewModel.changeTab(_tabController.index);
-      }
-    });
-
     return FutureBuilder(
-      future: appViewModel.getAllStudyProgram(),
+      future: context.read<AppViewModel>().getAllStudyProgram(),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            bool narrowLayout = MediaQuery.of(context).size.width < 1000;
-            return narrowLayout
-                ? buildMainContent(true)
-                : Row(
-                    children: [
-                      SideBarVisibility(),
-                      Expanded(child: buildMainContent(false)),
-                    ],
-                  );
+            return Content();
           case ConnectionState.waiting:
             return Center(
               child: CircularProgressIndicator(),
@@ -93,13 +42,73 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
       },
     );
   }
+}
 
-  Widget buildMainContent(bool showSidebar) {
+class Content extends StatefulWidget {
+  const Content({super.key});
+
+  @override
+  State<Content> createState() => _ContentState();
+}
+
+class _ContentState extends State<Content> with TickerProviderStateMixin {
+  late TabController _tabController;
+  late AnimationController _animationController;
+  late Animation<Offset> _offsetAnimation;
+
+  int activeTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this, animationDuration: Duration(milliseconds: 0));
+    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200));
+
+    // Set up offset animation
+    _offsetAnimation = Tween<Offset>(
+      begin: Offset(1.0, 0.0),
+      end: Offset(0.0, 0.0),
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool narrowLayout = MediaQuery.of(context).size.width < 1000;
+    return narrowLayout
+        ? buildMainContent(true, activeTab)
+        : Row(
+            children: [
+              SideBarVisibility(activeTab),
+              Expanded(
+                child: buildMainContent(false, activeTab),
+              )
+            ],
+          );
+  }
+
+  void handleChangeTab(int value) {
+    setState(() {
+      activeTab = value;
+    });
+  }
+
+  Widget buildMainContent(bool showSidebar, int activeTab) {
     return Scaffold(
-      appBar: TabAppBar(_tabController),
-      drawer: showSidebar ? SideBar() : null,
+      appBar: TabAppBar(_tabController, handleChangeTab),
+      drawer: showSidebar && activeTab == 0 ? SideBar() : null,
       body: TabBarView(
         controller: _tabController,
+        physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
           Stack(
             alignment: Alignment.centerRight,
@@ -129,18 +138,15 @@ class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
 }
 
 class SideBarVisibility extends StatelessWidget {
-  const SideBarVisibility({super.key});
+  final int activeTab;
+  SideBarVisibility(this.activeTab, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    bool showSidebar = context.select((AppViewModel appViewModel) => appViewModel.activeTabIndex == 0);
-
-    return Visibility(
-      visible: showSidebar,
-      child: Container(
-        color: Color.fromARGB(255, 52, 52, 52),
-        child: SideBar(),
-      ),
+    return Container(
+      width: activeTab == 0 ? 315.0 : 0.0,
+      color: Color.fromARGB(255, 52, 52, 52),
+      child: SideBar(),
     );
   }
 }
