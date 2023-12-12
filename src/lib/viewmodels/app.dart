@@ -194,6 +194,7 @@ class AppViewModel extends ChangeNotifier {
       if (value.dayOfWeek != lesson.dayOfWeek
         || value.startsFrom != lesson.startsFrom
         || value.endsAt != lesson.endsAt
+        || value.type != lesson.type
       ) {
         continue;
       }
