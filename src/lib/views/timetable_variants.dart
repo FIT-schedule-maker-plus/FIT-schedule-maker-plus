@@ -249,9 +249,11 @@ class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
             isEnabled = !isEnabled;
           });
           Future.delayed(const Duration(seconds: 2), () {
-            setState(() {
-              isEnabled = false;
-            });
+            if (mounted) {
+              setState(() {
+                isEnabled = false;
+              });
+            }
           });
         },
       );
