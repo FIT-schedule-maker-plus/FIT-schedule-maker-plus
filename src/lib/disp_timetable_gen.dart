@@ -83,11 +83,16 @@ void fillHeights(
   DisplayedTimetable outTim,
 ) {
   outTim.forEach((_, pair) {
-    pair.second.sort(
-      (a, b) =>
-          courses[a.courseID]!.lessons[a.lessonID].startsFrom -
-          courses[b.courseID]!.lessons[b.lessonID].startsFrom,
-    );
+    pair.second.sort((a, b) {
+      final lessonA = courses[a.courseID]!.lessons[a.lessonID];
+      final lessonB = courses[b.courseID]!.lessons[b.lessonID];
+      if (lessonA.startsFrom != lessonB.startsFrom) {
+        return lessonA.startsFrom - lessonB.startsFrom;
+      }
+      return courses[a.courseID]!
+          .shortcut
+          .compareTo(courses[b.courseID]!.shortcut);
+    });
 
     final List<int> levels = [];
 
