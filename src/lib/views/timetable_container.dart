@@ -1,5 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+
+
+import 'dart:math';
+
 import 'package:fit_schedule_maker_plus/disp_timetable_gen.dart';
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:flutter/material.dart';
@@ -196,7 +200,7 @@ class Timetable extends StatelessWidget {
                               5,
                               (index) => generatedData[DayOfWeek.values[index]]!
                                   .second
-                                  .map((specLes) => buildLesson(appViewModel.allCourses[specLes.courseID]!.lessons[specLes.lessonID], oneLessonWidth, specLes.height, rowHeights)))
+                                  .map((specLes) => buildLesson(context, appViewModel.allCourses[specLes.courseID]!, specLes.lessonID, oneLessonWidth, specLes.height, rowHeights)))
                           .expand((element) => element)
                       // ...lessons.map((lesson) => buildLesson(lesson, oneLessonWidth - 1)),
                     ],
@@ -261,21 +265,97 @@ class Timetable extends StatelessWidget {
     );
   }
 
-  Widget buildLesson(CourseLesson lesson, double oneLessonWidth, int lessonLevel, List<int> maxHeights) {
-    int cumSum = maxHeights.getRange(0, lesson.dayOfWeek.index).reduce((value, element) => value + element);
+  Widget buildLesson(
+    BuildContext context,
+    Course course,
+    int lessonId,
+    double oneLessonWidth,
+    int lessonLevel,
+    List<int> maxHeights
+  ) {
+    CourseLesson lesson = course.lessons[lessonId];
+    int cumSum = switch (lesson.dayOfWeek) {
+      DayOfWeek.monday => 0,
+      _ => maxHeights.getRange(0, lesson.dayOfWeek.index).reduce((value, element) => value + element),
+    };
+
+    Color color = switch (lesson.type) {
+      LessonType.lecture => Color(0xFF1C7C26),
+      LessonType.seminar => Color(0xFF21A2A2),
+      LessonType.exercise => Color(0xFF286d88),
+      LessonType.computerLab => Color(0xFF760505),
+      LessonType.laboratory => Color(0xFF8d7626),
+      _ => Colors.black,
+    };
+
+    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
+
+    if (!timetableViewModel.containsLesson(course.id, lessonId)) {
+      // color = color.withAlpha(150);
+      color = color
+          .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
+          .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
+          .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+    }
+
+    String locations = lesson.locations.join(", ");
     return Positioned(
       left: daysBarWidth + 5 + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth + 1),
       top: lessonHeight * (lessonLevel) + lessonHeight * cumSum + (lesson.dayOfWeek.index + 1) * 2 + 3,
-      child: Container(
-        color: Colors.black,
-        width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
-        height: 90,
-        alignment: Alignment.center,
-        child: Text(
-          lesson.info,
-          style: TextStyle(color: Colors.white),
-        ),
+      child: InkWell(
+        onTap: () {
+          if (timetableViewModel.containsLesson(course.id, lessonId)) {
+            timetableViewModel.removeLesson(course.id, lessonId);
+          } else {
+            timetableViewModel.addLesson(course.id, lessonId);
+          }
+        },
+        child: Container(
+          width: (lesson.endsAt - lesson.startsFrom) / 60 * oneLessonWidth,
+          decoration: ShapeDecoration(
+            color: color,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(width: 1),
+              borderRadius: BorderRadius.circular(10.0),
+            )
+          ),
+          height: 90,
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Text(
+                course.shortcut,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              Text(
+                lesson.info,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w300,
+                  color: Color(0xFFC5C4C4)
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              Text(
+                locations,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white
+                ),
+              )
+            ]),
+        )
       ),
     );
   }
 }
+
+

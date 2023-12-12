@@ -189,7 +189,8 @@ class AppViewModel extends ChangeNotifier {
 
   CourseLesson? _parseLesson(element) {
     RegExp exp = RegExp(r">(.*)</");
-    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
+    final html = element.html.replaceAll("<sup class=\"color-red\">*)</sup>", "");
+    final matches = exp.allMatches(html).map((e) => e[1]).toList();
 
     final type = switch (matches[1]) {
       "exercise" => LessonType.exercise,
