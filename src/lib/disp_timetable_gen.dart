@@ -59,6 +59,23 @@ class Pair<T, U> {
 
 typedef DisplayedTimetable = Map<DayOfWeek, Pair<int, List<SpecificLesson>>>;
 
+DisplayedTimetable genDispTimetableSpecific(
+  AppViewModel avm,
+  Timetable tim,
+  Filter filter,
+) {
+  DisplayedTimetable res = {
+    DayOfWeek.monday: Pair(0, []),
+    DayOfWeek.tuesday: Pair(0, []),
+    DayOfWeek.wednesday: Pair(0, []),
+    DayOfWeek.thursday: Pair(0, []),
+    DayOfWeek.friday: Pair(0, []),
+  };
+  fillDays(avm.allCourses, tim, filter, res);
+  fillHeights(avm.allCourses, res);
+  return res;
+}
+
 DisplayedTimetable genDispTimetable(
   AppViewModel avm,
   TimetableViewModel tvm,
