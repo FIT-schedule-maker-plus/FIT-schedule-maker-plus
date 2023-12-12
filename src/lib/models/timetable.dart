@@ -81,8 +81,18 @@ class Timetable {
       );
 
   Map<String, dynamic> toJson() => {
-        "semester": semester,
+        "sel_semester": semester.index,
         "name": name,
-        "content": selected,
+        "selected": selected.map(
+          (sem, val) => MapEntry(
+            sem.index.toString(),
+            val.map(
+              (key, val) => MapEntry(
+                key.toString(),
+                val.toList(),
+              ),
+            ),
+          ),
+        ),
       };
 }

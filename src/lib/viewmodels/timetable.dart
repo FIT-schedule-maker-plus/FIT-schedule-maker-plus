@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
 import '../models/program_course_group.dart';
 import '../models/timetable.dart';
+import '../utils.dart';
 
 class TimetableViewModel extends ChangeNotifier {
   final List<Timetable> timetables;
@@ -14,6 +15,15 @@ class TimetableViewModel extends ChangeNotifier {
   TimetableViewModel({required this.timetables, this.active = 0}) {
     if (timetables.isEmpty) {
       timetables.add(Timetable(name: "default"));
+    }
+  }
+
+  void saveAsJson(int index) async {
+    try {
+      final jsonData = json.encode(timetables[index].toJson());
+      saveFile(jsonData, "timetable_${timetables[index].name}.json");
+    } catch (e) {
+      print("Error saving file: $e");
     }
   }
 
