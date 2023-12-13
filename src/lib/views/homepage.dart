@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last, prefer_const_constructors_in_immutables, must_be_immutable
 
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/views/complete_timetable.dart';
@@ -114,7 +114,13 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
             alignment: Alignment.centerRight,
             children: [
               TimetableContainer(),
-              buildGeneratorButton(),
+              _animationController.status == AnimationStatus.dismissed
+                  ? Positioned(
+                      right: 20,
+                      bottom: 20,
+                      child: BlackButton(onTap: () => _animationController.forward()),
+                    )
+                  : Container(),
               Generator(animationController: _animationController, ofssetAnimation: _offsetAnimation),
             ],
           ),
@@ -124,16 +130,37 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
       ),
     );
   }
+}
 
-  Widget buildGeneratorButton() {
-    return Positioned(
-      right: 20,
-      bottom: 20,
-      child: ElevatedButton(
-        child: Text("Generátor rozvrhu"),
-        onPressed: () => _animationController.forward(),
-      ),
-    );
+class BlackButton extends StatefulWidget {
+  void Function()? onTap;
+  BlackButton({this.onTap, super.key});
+
+  @override
+  State<BlackButton> createState() => _BlackButtonState();
+}
+
+class _BlackButtonState extends State<BlackButton> {
+  @override
+  Widget build(BuildContext context) {
+    bool isHovering = false;
+
+    return StatefulBuilder(builder: (context, setState) {
+      return InkWell(
+        onTap: widget.onTap,
+        onHover: (value) => setState(() => isHovering = value),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Center(
+            child: Text("Generátor rozvrhu", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
+          decoration: BoxDecoration(
+              color: isHovering ? Color.fromARGB(255, 20, 20, 20) : Colors.black,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black)]),
+        ),
+      );
+    });
   }
 }
 
@@ -145,7 +172,10 @@ class SideBarVisibility extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: activeTab == 0 ? 315.0 : 0.0,
-      color: Color.fromARGB(255, 52, 52, 52),
+      decoration: BoxDecoration(
+        border: Border.all(style: BorderStyle.none, width: 0),
+        color: Color.fromARGB(255, 52, 52, 52),
+      ),
       child: SideBar(),
     );
   }
