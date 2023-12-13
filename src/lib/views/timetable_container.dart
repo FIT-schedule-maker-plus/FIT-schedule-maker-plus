@@ -33,7 +33,7 @@ class TimetableContainer extends StatelessWidget {
           Courses(),
           SizedBox(height: 40),
           Selector<TimetableViewModel, Filter>(
-              selector: (_, vm) => vm.filter,
+              selector: (_, vm) => Filter.courses(vm.filter.courses),
               builder: (context, filter, _) {
                 return Expanded(
                   child: Timetable(filter: filter),
