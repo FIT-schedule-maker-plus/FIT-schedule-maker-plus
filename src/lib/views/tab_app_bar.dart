@@ -8,7 +8,9 @@ const hoverUnderlineColor = Colors.green;
 
 class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TabController tabController;
-  const TabAppBar(this.tabController, {super.key});
+  final void Function(int) setTabIndex;
+
+  const TabAppBar(this.tabController, this.setTabIndex, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +30,8 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: appBarCol,
       title: StatefulBuilder(builder: (_, setState) {
         return TabBar(
-          indicatorColor: selectedUnderlineColor,
           isScrollable: true,
+          indicatorColor: selectedUnderlineColor,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
           unselectedLabelColor: unsTabCol,
@@ -38,6 +40,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
           labelPadding: const EdgeInsets.symmetric(horizontal: 40),
           controller: tabController,
           labelStyle: const TextStyle(fontSize: 22),
+          onTap: (value) => setTabIndex(value),
           tabs: <Widget>[
             MouseRegion(
               onEnter: (_) => setState(() => isHovered1 = true),
@@ -45,9 +48,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Tab(
                 child: Text(
                   "Pracovní rozvrh",
-                  style: isHovered1
-                      ? const TextStyle(color: Colors.green)
-                      : const TextStyle(),
+                  style: isHovered1 ? const TextStyle(color: Colors.green) : const TextStyle(),
                 ),
               ),
             ),
@@ -57,9 +58,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Tab(
                 child: Text(
                   'Výsledný rozvrh',
-                  style: isHovered2
-                      ? const TextStyle(color: Colors.green)
-                      : const TextStyle(),
+                  style: isHovered2 ? const TextStyle(color: Colors.green) : const TextStyle(),
                 ),
               ),
             ),
@@ -69,9 +68,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Tab(
                 child: Text(
                   'Verze rozvrhu',
-                  style: isHovered3
-                      ? const TextStyle(color: Colors.green)
-                      : const TextStyle(),
+                  style: isHovered3 ? const TextStyle(color: Colors.green) : const TextStyle(),
                 ),
               ),
             ),
