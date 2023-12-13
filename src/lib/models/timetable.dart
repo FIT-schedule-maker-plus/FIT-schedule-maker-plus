@@ -95,4 +95,15 @@ class Timetable {
           ),
         ),
       };
+
+  @override
+  bool operator ==(Object other) {
+    return (other is Timetable) &&
+        semester == other.semester &&
+        selected == other.selected &&
+        name == other.name;
+  }
+
+  @override
+  int get hashCode => Object.hash(selected, semester, name);
 }

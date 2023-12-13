@@ -1,8 +1,14 @@
+import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:flutter/material.dart';
-import 'package:fit_schedule_maker_plus/views/timetable_container.dart'
-    as custom_widget;
+import 'package:fit_schedule_maker_plus/views/timetable_container.dart' as view;
+import 'package:provider/provider.dart';
 
 import '../disp_timetable_gen.dart';
+import '../viewmodels/app.dart';
+import '../viewmodels/timetable.dart';
+
+const bgColor = Color.fromARGB(255, 30, 30, 30);
+const timColor = Color.fromARGB(255, 52, 52, 52);
 
 class CompleteTimetable extends StatelessWidget {
   const CompleteTimetable({super.key});
@@ -10,11 +16,130 @@ class CompleteTimetable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromARGB(255, 52, 52, 52),
-      child: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: custom_widget.Timetable(filter: Filter.all(), readOnly: true),
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 50.0),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildFirstNameRow(),
+                buildSecondNameRow(),
+              ],
+            ),
+          ),
+          buildTimetableContainer(),
+        ],
       ),
+    );
+  }
+
+  Container buildTimetableContainer() {
+    return Container(
+      height: 100 * 5 + 150,
+      padding: const EdgeInsets.only(top: 20.0),
+      decoration: BoxDecoration(
+          color: timColor,
+          borderRadius: BorderRadius.circular(10.0),
+          boxShadow: const [
+            BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)
+          ]),
+      child: view.Timetable(filter: Filter.all(), readOnly: true),
+    );
+  }
+
+  Selector<TimetableViewModel, Semester> buildSecondNameRow() {
+    return Selector<TimetableViewModel, Semester>(
+      selector: (context, vm) => vm.currentTimetable.semester,
+      builder: (context, sem, _) {
+        return Row(
+          children: [
+            Text(
+              sem.toCzechString(),
+              style: TextStyle(
+                color: switch (sem) {
+                  Semester.winter => Colors.blue,
+                  Semester.summer => Colors.orange,
+                },
+                fontWeight: FontWeight.w200,
+                fontSize: 27,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Switch(
+                activeThumbImage: const AssetImage("snowflake.png"),
+                activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
+                inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
+                inactiveThumbColor: Colors.white,
+                inactiveThumbImage: const AssetImage("sun.png"),
+                value: sem == Semester.winter,
+                onChanged: (value) {
+                  final semester = value ? Semester.winter : Semester.summer;
+                  final tvm = context.read<TimetableViewModel>();
+                  tvm.changeSemester(semester);
+                  context.read<AppViewModel>().changeTerm(semester);
+                },
+              ),
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.read<TimetableViewModel>().saveAsJson();
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text("Export JSON",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400)),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                    child: const Text(
+                      "Export PNG",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  Row buildFirstNameRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Selector<TimetableViewModel, String>(
+            selector: (context, vm) => vm.currentTimetable.name,
+            builder: (context, timetableName, _) {
+              return Text(
+                timetableName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 36,
+                ),
+              );
+            }),
+      ],
     );
   }
 }

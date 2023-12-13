@@ -30,10 +30,13 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveAsJson(int index) async {
+  void saveAsJson({int? index}) async {
+    Timetable tim = timetables[index ?? active];
     try {
-      final jsonData = json.encode(timetables[index].toJson());
-      saveFile(jsonData, "timetable_${timetables[index].name}.json");
+      saveFile(
+        json.encode(tim.toJson()),
+        "timetable_${tim.semester.toEngString()}_${tim.name}.json",
+      );
     } catch (e) {
       print("Error saving file: $e");
     }

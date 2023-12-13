@@ -114,7 +114,7 @@ class VariantWidget extends StatelessWidget {
               value: ExportMenuItem.exportJSON,
               child: Text("JSON", style: TextStyle(color: foreground2)),
               onTap: () {
-                context.read<TimetableViewModel>().saveAsJson(index);
+                context.read<TimetableViewModel>().saveAsJson(index: index);
               },
             ),
           ],
