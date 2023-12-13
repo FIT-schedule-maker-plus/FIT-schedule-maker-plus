@@ -214,152 +214,6 @@ class AppViewModel extends ChangeNotifier {
     }));
   }
 
-  List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
-    if (lesson == null) {
-      return list;
-    }
-
-    bool found = false;
-
-    for (var i = 0; i < list.length; i++) {
-      final value = list[i];
-      if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
-        continue;
-      }
-
-      list[i].infos.addAll(lesson.infos);
-      found = true;
-      break;
-    }
-
-    if (!found) {
-      list.add(lesson);
-    }
-
-    return list;
-  }
-
-  CourseLesson? _parseLesson(element) {
-    if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
-      // It is not possible to register this class in Studis.
-      return null;
-    }
-
-    RegExp exp = RegExp(r">(.*)</");
-    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
-
-    final type = switch (matches[1]) {
-      "exercise" => LessonType.exercise,
-      "lecture" => LessonType.lecture,
-      "laboratory" => LessonType.laboratory,
-      "seminar" => LessonType.seminar,
-      "comp.lab" => LessonType.computerLab,
-      _ => null
-    };
-
-    if (type == null) return null;
-
-    final dayOfWeek = switch (matches[0]) {
-      "<th>Mon" => DayOfWeek.monday,
-      "<th>Tue" => DayOfWeek.tuesday,
-      "<th>Wed" => DayOfWeek.wednesday,
-      "<th>Thu" => DayOfWeek.thursday,
-      "<th>Fri" => DayOfWeek.friday,
-      _ => null
-    };
-
-    if (dayOfWeek == null) return null;
-
-    List<String> locations = [];
-    int? startsFrom;
-    int? endsAt;
-    int? capacity;
-
-    for (var i = 3; i < matches.length; i++) {
-      final s = matches[i]!;
-      if (s.startsWith("<td>")) {
-        final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
-        startsFrom = parseTime(chunks.elementAt(0));
-        endsAt = parseTime(chunks.elementAt(1));
-        capacity = int.parse(chunks.elementAt(2));
-
-        break;
-      }
-
-      locations.add(s);
-    }
-
-    if (startsFrom == null || endsAt == null || capacity == null) return null;
-
-    final weeks = matches[2];
-    final info = exp.firstMatch(matches.last!)![1];
-
-    if (weeks == null || info == null) return null;
-
-    return CourseLesson(
-      dayOfWeek: dayOfWeek,
-      type: type,
-      infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
-      startsFrom: startsFrom,
-      endsAt: endsAt,
-    );
-  }
-
-  List<CoursePrerequisite> _extractPrerequisites(String html) {
-    List<CoursePrerequisite> list = [];
-
-    var part = html.split("Time span").elementAtOrNull(1);
-    if (part == null) return list;
-    part = part.split("</ul>")[0];
-    RegExp exp = RegExp(r"<li>(.*)</li>");
-
-    for (final match in exp.allMatches(part)) {
-      final data = match[1];
-      if (data == null) continue;
-
-      final split = data.split(" hrs ");
-      final hours = int.tryParse(split[0]);
-      if (hours == null) continue;
-
-      final type = switch (split[1]) {
-        "lectures" => PrerequisiteType.lecture,
-        "seminars" => PrerequisiteType.seminar,
-        "exercises" => PrerequisiteType.exercise,
-        "laboratories" => PrerequisiteType.laborator,
-        "projects" => PrerequisiteType.project,
-        "pc labs" => PrerequisiteType.pcLab,
-        _ => null
-      };
-
-      if (type == null) continue;
-
-      final numberOfLessons = switch (type) {
-        PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
-        PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
-        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises") ?? _extractNumberOfLessons(html, "lectures"),
-        PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
-        PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
-        _ => 0,
-      };
-
-      if (numberOfLessons == null) continue;
-
-      list.add(CoursePrerequisite(type: type, requiredHours: hours, numberOfLessons: numberOfLessons));
-    }
-
-    return list;
-  }
-
-  int? _extractNumberOfLessons(String html, String delimiter) {
-    final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
-    if (part == null) return null;
-    final content = part.split("<div class=\"b-detail__content\">").elementAtOrNull(1);
-    if (content == null) return null;
-
-    final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
-    return numberOfLessons == 0 ? null : numberOfLessons;
-  }
-
   /// Changes the grade and notifies all listeners
   void changeGrade(YearOfStudy grade) {
     currentGrade = grade;
@@ -409,3 +263,156 @@ int parseTime(String str) {
   final chunks = str.split(":").map((v) => int.parse(v));
   return chunks.elementAt(0) * 60 + chunks.elementAt(1);
 }
+
+int? _extractNumberOfLessons(String html, String delimiter) {
+  final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
+  if (part == null) return null;
+  final content = part.split("<div class=\"b-detail__content\">").elementAtOrNull(1);
+  if (content == null) return null;
+
+  final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
+  return numberOfLessons == 0 ? null : numberOfLessons;
+}
+
+
+List<CoursePrerequisite> _extractPrerequisites(String html) {
+  List<CoursePrerequisite> list = [];
+
+  var part = html.split("Time span").elementAtOrNull(1);
+  if (part == null) return list;
+  part = part.split("</ul>")[0];
+  RegExp exp = RegExp(r"<li>(.*)</li>");
+
+  for (final match in exp.allMatches(part)) {
+    final data = match[1];
+    if (data == null) continue;
+
+    final split = data.split(" hrs ");
+    final hours = int.tryParse(split[0]);
+    if (hours == null) continue;
+
+    final type = switch (split[1]) {
+      "lectures" => PrerequisiteType.lecture,
+      "seminars" => PrerequisiteType.seminar,
+      "exercises" => PrerequisiteType.exercise,
+      "laboratories" => PrerequisiteType.laborator,
+      "projects" => PrerequisiteType.project,
+      "pc labs" => PrerequisiteType.pcLab,
+      _ => null
+    };
+
+    if (type == null) continue;
+
+    final numberOfLessons = switch (type) {
+      PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
+      PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
+      PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises")
+                                ?? _extractNumberOfLessons(html, "lectures"),
+      PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
+      PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
+      _ => 0,
+    };
+
+    if (numberOfLessons == null) continue;
+
+    list.add(CoursePrerequisite(
+      type: type,
+      requiredHours: hours,
+      numberOfLessons: numberOfLessons
+    ));
+  }
+
+  return list;
+}
+
+List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
+  if (lesson == null) {
+    return list;
+  }
+
+  bool found = false;
+
+  for (var i = 0; i < list.length; i++) {
+    final value = list[i];
+    if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
+      continue;
+    }
+
+    list[i].infos.addAll(lesson.infos);
+    found = true;
+    break;
+  }
+
+  if (!found) {
+    list.add(lesson);
+  }
+
+  return list;
+}
+
+CourseLesson? _parseLesson(element) {
+  if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
+    // It is not possible to register this class in Studis.
+    return null;
+  }
+
+  RegExp exp = RegExp(r">(.*)</");
+  final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
+
+  final type = switch (matches[1]) {
+    "exercise" => LessonType.exercise,
+    "lecture" => LessonType.lecture,
+    "laboratory" => LessonType.laboratory,
+    "seminar" => LessonType.seminar,
+    "comp.lab" => LessonType.computerLab,
+    _ => null
+  };
+
+  if (type == null) return null;
+
+  final dayOfWeek = switch (matches[0]) {
+    "<th>Mon" => DayOfWeek.monday,
+    "<th>Tue" => DayOfWeek.tuesday,
+    "<th>Wed" => DayOfWeek.wednesday,
+    "<th>Thu" => DayOfWeek.thursday,
+    "<th>Fri" => DayOfWeek.friday,
+    _ => null
+  };
+
+  if (dayOfWeek == null) return null;
+
+  List<String> locations = [];
+  int? startsFrom;
+  int? endsAt;
+  int? capacity;
+
+  for (var i = 3; i < matches.length; i++) {
+    final s = matches[i]!;
+    if (s.startsWith("<td>")) {
+      final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
+      startsFrom = parseTime(chunks.elementAt(0));
+      endsAt = parseTime(chunks.elementAt(1));
+      capacity = int.parse(chunks.elementAt(2));
+
+      break;
+    }
+
+    locations.add(s);
+  }
+
+  if (startsFrom == null || endsAt == null || capacity == null) return null;
+
+  final weeks = matches[2];
+  final info = exp.firstMatch(matches.last!)![1];
+
+  if (weeks == null || info == null) return null;
+
+  return CourseLesson(
+    dayOfWeek: dayOfWeek,
+    type: type,
+    infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
+    startsFrom: startsFrom,
+    endsAt: endsAt,
+  );
+}
+
