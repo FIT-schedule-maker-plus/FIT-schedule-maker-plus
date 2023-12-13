@@ -1,5 +1,6 @@
 import 'package:fit_schedule_maker_plus/models/course.dart';
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
 import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
 import 'package:fit_schedule_maker_plus/models/study.dart';
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
@@ -145,8 +146,8 @@ class AppViewModel extends ChangeNotifier {
         shortcut: shortcut,
         fullName: courseName,
         lessons: [],
+        prerequisites: [],
         semester: semester,
-        loadedLessons: false,
       );
     }
 
@@ -154,22 +155,30 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
-  Future<void> fetchCourseLessons(int courseId) async {
+  Future<void> fetchCourseData(int courseId) async {
     if (!allCourses.containsKey(courseId)) {
       // Unknown course
       return;
     }
 
-    final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
+    final parser = await Chaleno()
+        .load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
 
-    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).fold(<CourseLesson>[], _mergeSameLessons);
+    final html = parser.html;
+    if (html == null) return;
 
-    allCourses[courseId]!.loadedLessons = true;
+    allCourses[courseId]!.prerequisites = _extractPrerequisites(html);
+    allCourses[courseId]!.lessons = parser
+        .querySelectorAll("#schedule tbody tr")
+        .map(_parseLesson)
+        .fold(<CourseLesson>[], _mergeSameLessons);
+
+    allCourses[courseId]!.loaded = true;
   }
 
   bool isCourseLessonFetched(int courseId) {
-    return allCourses[courseId]!.loadedLessons;
+    return allCourses[courseId]!.loaded;
   }
 
   Future<List<CourseLesson>> getAllCourseLessonsAsync(Iterable<int> courseIds) async {
@@ -178,7 +187,7 @@ class AppViewModel extends ChangeNotifier {
       if (isCourseLessonFetched(courseId)) {
         lessons.addAll(allCourses[courseId]!.lessons);
       } else {
-        await fetchCourseLessons(courseId);
+        await fetchCourseData(courseId);
         lessons.addAll(allCourses[courseId]!.lessons);
       }
     }));
@@ -276,6 +285,67 @@ class AppViewModel extends ChangeNotifier {
       endsAt: endsAt,
     );
   }
+
+  List<CoursePrerequisite> _extractPrerequisites(String html) {
+    List<CoursePrerequisite> list = [];
+
+    var part = html.split("Time span").elementAtOrNull(1);
+    if (part == null) return list;
+    part = part.split("</ul>")[0];
+    RegExp exp = RegExp(r"<li>(.*)</li>");
+
+    for (final match in exp.allMatches(part)) {
+      final data = match[1];
+      if (data == null) continue;
+
+      final split = data.split(" hrs ");
+      final hours = int.tryParse(split[0]);
+      if (hours == null) continue;
+
+      final type = switch (split[1]) {
+        "lectures" => PrerequisiteType.lecture,
+        "seminars" => PrerequisiteType.seminar,
+        "exercises" => PrerequisiteType.exercise,
+        "laboratories" => PrerequisiteType.laborator,
+        "projects" => PrerequisiteType.project,
+        "pc labs" => PrerequisiteType.pcLab,
+        _ => null
+      };
+
+      if (type == null) continue;
+
+      final numberOfLessons = switch (type) {
+        PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
+        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises")
+                                  ?? _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
+        PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
+        _ => 0,
+      };
+
+      if (numberOfLessons == null) continue;
+
+      list.add(CoursePrerequisite(
+        type: type,
+        requiredHours: hours,
+        numberOfLessons: numberOfLessons
+      ));
+    }
+
+    return list;
+  }
+
+  int? _extractNumberOfLessons(String html, String delimiter) {
+    final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
+    if (part == null) return null;
+    final content = part.split("<div class=\"b-detail__content\">").elementAtOrNull(1);
+    if (content == null) return null;
+
+    final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
+    return numberOfLessons == 0 ? null : numberOfLessons;
+  }
+
 
   /// Changes the grade and notifies all listeners
   void changeGrade(YearOfStudy grade) {
