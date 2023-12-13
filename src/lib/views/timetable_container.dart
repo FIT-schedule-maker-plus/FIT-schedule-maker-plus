@@ -213,7 +213,7 @@ class Timetable extends StatelessWidget {
 
   Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
-    TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
+    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
     final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
@@ -337,7 +337,7 @@ class _LessonState extends State<Lesson> {
     final lessonLevel = widget.specLes.height;
     const int leftOffset = 5;
     CourseLesson lesson = widget.course.lessons[lessonId];
-    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
+    TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = switch (lesson.type) {
