@@ -181,7 +181,7 @@ class AppViewModel extends ChangeNotifier {
     return allCourses[courseId]!.loaded;
   }
 
-  Future<List<CourseLesson>> getAllCourseLessonsAsync(Iterable<int> courseIds) async {
+  Future<List<CourseLesson>> getAllCourseLessonsAsync(List<int> courseIds) async {
     List<CourseLesson> lessons = [];
     await Future.wait(courseIds.map((courseId) async {
       if (isCourseLessonFetched(courseId)) {

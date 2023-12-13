@@ -194,10 +194,9 @@ class Timetable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
-    TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
-
-    Iterable<int> courseIds = timetableViewModel.currentTimetable.currentContent.keys;
+    final courseIds = context.select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
     bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
+
     return areAllLessonsFetched
         ? buildTimetable(context)
         : FutureBuilder(
@@ -214,7 +213,7 @@ class Timetable extends StatelessWidget {
 
   Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
-    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
+    TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
     final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
