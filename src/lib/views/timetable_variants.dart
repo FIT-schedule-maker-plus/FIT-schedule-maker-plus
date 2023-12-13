@@ -34,10 +34,11 @@ class VariantWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(13),
           color: background,
         ),
         child: ExpansionTile(
+          shape: const OutlineInputBorder(borderSide: BorderSide.none),
           title: Row(
             children: <Widget>[
               Expanded(child: buildVariantName()),
@@ -108,7 +109,9 @@ class VariantWidget extends StatelessWidget {
             PopupMenuItem<ExportMenuItem>(
               value: ExportMenuItem.exportPNG,
               child: Text("PNG", style: TextStyle(color: foreground2)),
-              onTap: () {},
+              onTap: () {
+                context.read<TimetableViewModel>().saveAsPng(index: index);
+              },
             ),
             PopupMenuItem<ExportMenuItem>(
               value: ExportMenuItem.exportJSON,
@@ -126,59 +129,63 @@ class VariantWidget extends StatelessWidget {
 
   Widget buildVariantName() {
     bool isHovered = false;
-    return Consumer<TimetableViewModel>(
-      builder: (ctx, vm, _) => Row(
-        children: [
-          if (vm.isEditingName(index: index))
-            Expanded(
-              child: TextField(
-                  controller: TextEditingController()
-                    ..text = vm.timetables[index].name,
-                  onChanged: (newText) => vm.updateEditingName(index, newText),
-                  focusNode: FocusNode()..requestFocus(),
-                  style: const TextStyle(color: Color(0xffffffff))),
-            ),
-          if (!vm.isEditingName(index: index))
-            Text(
-              vm.timetables[index].name,
-              style: TextStyle(
-                fontSize: 16,
-                color: index == vm.active
-                    ? foreground
-                    : const Color.fromARGB(255, 255, 255, 255),
+    return Padding(
+      padding: const EdgeInsets.only(left: 20.0),
+      child: Consumer<TimetableViewModel>(
+        builder: (ctx, vm, _) => Row(
+          children: [
+            if (vm.isEditingName(index: index))
+              Expanded(
+                child: TextField(
+                    controller: TextEditingController()
+                      ..text = vm.timetables[index].name,
+                    onChanged: (newText) =>
+                        vm.updateEditingName(index, newText),
+                    focusNode: FocusNode()..requestFocus(),
+                    style: const TextStyle(color: Color(0xffffffff))),
               ),
-            ),
-          if (vm.isEditingName(index: index))
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () => vm.saveEditingName(index),
-                  icon: const Icon(Icons.check),
-                  color: colConfirm,
+            if (!vm.isEditingName(index: index))
+              Text(
+                vm.timetables[index].name,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: index == vm.active
+                      ? foreground
+                      : const Color.fromARGB(255, 255, 255, 255),
                 ),
-                IconButton(
-                  onPressed: () =>
-                      vm.setEditingName(index: index, value: false),
-                  icon: const Icon(Icons.close),
-                  color: colClose,
-                ),
-              ],
-            ),
-          if (!vm.isEditingName(index: index))
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: StatefulBuilder(builder: (_, setState) {
-                return InkWell(
-                  onHover: (val) => setState(() => isHovered = val),
-                  onTap: () => vm.setEditingName(index: index, value: true),
-                  child: Icon(
-                    Icons.edit,
-                    color: isHovered ? Colors.blue : foreground2,
+              ),
+            if (vm.isEditingName(index: index))
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => vm.saveEditingName(index),
+                    icon: const Icon(Icons.check),
+                    color: colConfirm,
                   ),
-                );
-              }),
-            ),
-        ],
+                  IconButton(
+                    onPressed: () =>
+                        vm.setEditingName(index: index, value: false),
+                    icon: const Icon(Icons.close),
+                    color: colClose,
+                  ),
+                ],
+              ),
+            if (!vm.isEditingName(index: index))
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: StatefulBuilder(builder: (_, setState) {
+                  return InkWell(
+                    onHover: (val) => setState(() => isHovered = val),
+                    onTap: () => vm.setEditingName(index: index, value: true),
+                    child: Icon(
+                      Icons.edit,
+                      color: isHovered ? Colors.blue : foreground2,
+                    ),
+                  );
+                }),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -256,8 +263,8 @@ class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
   Widget build(BuildContext context) {
     if (!isEnabled) {
       return IconButton(
-        icon: const Icon(Icons.delete),
-        color: const Color(0xff770505),
+        icon: const Icon(Icons.delete_sharp),
+        color: const Color(0xff770505 + 0x00222222),
         onPressed: () {
           setState(() {
             isEnabled = !isEnabled;

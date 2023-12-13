@@ -11,7 +11,9 @@ const bgColor = Color.fromARGB(255, 30, 30, 30);
 const timColor = Color.fromARGB(255, 52, 52, 52);
 
 class CompleteTimetable extends StatelessWidget {
-  const CompleteTimetable({super.key});
+  final bool asExport;
+  final int? index;
+  const CompleteTimetable({super.key, this.asExport = false, this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +32,14 @@ class CompleteTimetable extends StatelessWidget {
               ],
             ),
           ),
-          buildTimetableContainer(),
+          buildTimetableContainer(context),
         ],
       ),
     );
   }
 
-  Widget buildTimetableContainer() {
+  Widget buildTimetableContainer(BuildContext context) {
+    final vm = context.read<TimetableViewModel>();
     return Expanded(
       child: Container(
         padding: const EdgeInsets.only(top: 20.0),
@@ -46,14 +49,18 @@ class CompleteTimetable extends StatelessWidget {
             boxShadow: const [
               BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)
             ]),
-        child: view.Timetable(filter: Filter.all(), readOnly: true),
+        child: view.Timetable(
+          filter: Filter.all(),
+          readOnly: true,
+          timetable: vm.timetables[index ?? vm.active],
+        ),
       ),
     );
   }
 
   Selector<TimetableViewModel, Semester> buildSecondNameRow() {
     return Selector<TimetableViewModel, Semester>(
-      selector: (context, vm) => vm.currentTimetable.semester,
+      selector: (context, vm) => vm.timetables[index ?? vm.active].semester,
       builder: (context, sem, _) {
         return Row(
           children: [
@@ -68,56 +75,60 @@ class CompleteTimetable extends StatelessWidget {
                 fontSize: 27,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Switch(
-                activeThumbImage: const AssetImage("assets/snowflake.png"),
-                activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
-                inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
-                inactiveThumbColor: Colors.white,
-                inactiveThumbImage: const AssetImage("sun.png"),
-                value: sem == Semester.winter,
-                onChanged: (value) {
-                  final semester = value ? Semester.winter : Semester.summer;
-                  final tvm = context.read<TimetableViewModel>();
-                  tvm.changeSemester(semester);
-                  context.read<AppViewModel>().changeTerm(semester);
-                },
+            if (!asExport)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Switch(
+                  activeThumbImage: const AssetImage("images/snowflake.png"),
+                  activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
+                  inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
+                  inactiveThumbColor: Colors.white,
+                  inactiveThumbImage: const AssetImage("images/sun.png"),
+                  value: sem == Semester.winter,
+                  onChanged: (value) {
+                    final semester = value ? Semester.winter : Semester.summer;
+                    final tvm = context.read<TimetableViewModel>();
+                    tvm.changeSemester(semester);
+                    context.read<AppViewModel>().changeTerm(semester);
+                  },
+                ),
               ),
-            ),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ElevatedButton(
+            if (!asExport)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<TimetableViewModel>().saveAsJson();
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black),
+                        child: const Text("Export JSON",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w400)),
+                      ),
+                    ),
+                    ElevatedButton(
                       onPressed: () {
-                        context.read<TimetableViewModel>().saveAsJson();
+                        context.read<TimetableViewModel>().saveAsPng();
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black),
-                      child: const Text("Export JSON",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w400)),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                    child: const Text(
-                      "Export PNG",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w400,
+                      child: const Text(
+                        "Export PNG",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            )
+                  ],
+                ),
+              )
           ],
         );
       },
@@ -129,7 +140,7 @@ class CompleteTimetable extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Selector<TimetableViewModel, String>(
-            selector: (context, vm) => vm.currentTimetable.name,
+            selector: (context, vm) => vm.timetables[index ?? vm.active].name,
             builder: (context, timetableName, _) {
               return Text(
                 timetableName,
