@@ -3,6 +3,7 @@
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/views/complete_timetable.dart';
 import 'package:fit_schedule_maker_plus/views/generator.dart';
+import 'package:fit_schedule_maker_plus/views/offscreen_timetable.dart';
 import 'package:fit_schedule_maker_plus/views/side_bar.dart';
 import 'package:fit_schedule_maker_plus/views/tab_app_bar.dart';
 import 'package:fit_schedule_maker_plus/views/timetable_container.dart';
@@ -10,36 +11,51 @@ import 'package:fit_schedule_maker_plus/views/timetable_variants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../viewmodels/timetable.dart';
+
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: context.read<AppViewModel>().getAllStudyProgram(),
-      builder: (context, snapshot) {
-        switch (snapshot.connectionState) {
-          case ConnectionState.done:
-            return Content();
-          case ConnectionState.waiting:
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+    return Stack(
+      children: [
+        Selector<TimetableViewModel, int?>(
+          selector: (context, vm) => vm.toExport,
+          builder: (context, toExport, _) {
+            if (toExport == null) {
+              return Placeholder();
+            }
+            return OffScrTimetable(exportTimetable: toExport);
+          },
+        ),
+        FutureBuilder(
+          future: context.read<AppViewModel>().getAllStudyProgram(),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                return Content();
+              case ConnectionState.waiting:
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
 
-          default:
-            return Scaffold(
-              body: Center(
-                child: Text(
-                  "Error: Unable to fetch study programs",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 30,
+              default:
+                return Scaffold(
+                  body: Center(
+                    child: Text(
+                      "Error: Unable to fetch study programs",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 30,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-        }
-      },
+                );
+            }
+          },
+        ),
+      ],
     );
   }
 }

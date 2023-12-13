@@ -53,7 +53,7 @@ Widget buildStudiumBar(BuildContext context) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Image.asset('assets/vut_logo.png'),
+        Image.asset('assets/images/vut_logo.png'),
         SizedBox(height: 10),
         Expanded(
           child: ShaderMask(
@@ -204,11 +204,11 @@ Widget buildHeader(BuildContext context) {
         child: Transform.scale(
           scale: 0.9,
           child: Switch(
-            activeThumbImage: AssetImage("snowflake.png"),
+            activeThumbImage: AssetImage("images/snowflake.png"),
             activeTrackColor: Color.fromARGB(255, 91, 221, 252),
             inactiveTrackColor: Color.fromARGB(255, 249, 249, 107),
             inactiveThumbColor: white,
-            inactiveThumbImage: AssetImage("sun.png"),
+            inactiveThumbImage: AssetImage("images/sun.png"),
             value: currentSemester == Semester.winter,
             onChanged: (value) {
               Semester semester = value ? Semester.winter : Semester.summer;
