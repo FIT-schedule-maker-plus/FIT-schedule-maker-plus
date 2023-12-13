@@ -225,9 +225,13 @@ class AppViewModel extends ChangeNotifier {
   }
 
   CourseLesson? _parseLesson(element) {
+    if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
+      // It is not possible to register this class in Studis.
+      return null;
+    }
+
     RegExp exp = RegExp(r">(.*)</");
-    final html = element.html.replaceAll("<sup class=\"color-red\">*)</sup>", "");
-    final matches = exp.allMatches(html).map((e) => e[1]).toList();
+    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
 
     final type = switch (matches[1]) {
       "exercise" => LessonType.exercise,
