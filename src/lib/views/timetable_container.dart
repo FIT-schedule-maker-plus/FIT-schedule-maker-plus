@@ -244,7 +244,9 @@ class Timetable extends StatelessWidget {
                               Divider(thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
-                          ...generatedData[DayOfWeek.values[index]]!.second.map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth))
+                          ...generatedData[DayOfWeek.values[index]]!
+                              .second
+                              .map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, generatedData))
                         ],
                       );
                     }),
@@ -316,8 +318,9 @@ class Lesson extends StatefulWidget {
   final Course course;
   final SpecificLesson specLes;
   final double oneLessonWidth;
+  final Map<DayOfWeek, Pair<int, List<SpecificLesson>>> genData;
 
-  const Lesson(this.readOnly, this.course, this.specLes, this.oneLessonWidth, {super.key});
+  const Lesson(this.readOnly, this.course, this.specLes, this.oneLessonWidth, this.genData, {super.key});
 
   @override
   State<Lesson> createState() => _LessonState();
@@ -349,21 +352,23 @@ class _LessonState extends State<Lesson> {
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = switch (lesson.type) {
-      LessonType.lecture => Color(0xFF1C7C26),
+      LessonType.lecture => Color.fromARGB(255, 22, 106, 30),
       LessonType.seminar => Color(0xFF21A2A2),
-      LessonType.exercise => Color(0xFF286d88),
-      LessonType.computerLab => Color(0xFF760505),
-      LessonType.laboratory => Color(0xFF8d7626),
+      LessonType.exercise => Color.fromARGB(255, 21, 69, 88),
+      LessonType.computerLab => Color.fromARGB(255, 89, 3, 3),
+      LessonType.laboratory => Color.fromARGB(255, 111, 92, 24),
     };
 
     locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
     profesors = lesson.infos.map((info) => info.info).toSet().join(", ");
 
+    color = color
+        .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
+        .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
+        .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+
     if (!widget.specLes.selected) {
-      color = color
-          .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
-          .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
-          .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+      color = color.withAlpha(50);
     }
 
     final hourIndex = (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
@@ -378,6 +383,23 @@ class _LessonState extends State<Lesson> {
             if (widget.specLes.selected) {
               deselectLesson(timetableViewModel, widget.specLes);
             } else {
+              final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
+              final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
+
+              print(selectedLessons);
+
+              if (selectedLessons == null || selectedLessons.isNotEmpty) {
+                int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
+                if (id != -1) {
+                  var x = widget.genData.values
+                      .expand((element) => element.second)
+                      .where((element) => element.courseID == widget.course.id)
+                      .firstWhere((element) => element.lessonID == id);
+                  x.selected = false;
+                  timetableViewModel.currentTimetable.removeLesson(widget.course.id, id);
+                }
+              }
+
               selectLesson(timetableViewModel, widget.specLes);
             }
           },
