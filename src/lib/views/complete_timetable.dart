@@ -17,7 +17,7 @@ class CompleteTimetable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: bgColor,
-      padding: const EdgeInsets.symmetric(horizontal: 50.0),
+      padding: const EdgeInsets.only(left: 50.0, right: 50.0, bottom: 50.0),
       child: Column(
         children: [
           Padding(
@@ -36,17 +36,18 @@ class CompleteTimetable extends StatelessWidget {
     );
   }
 
-  Container buildTimetableContainer() {
-    return Container(
-      height: 100 * 5 + 150,
-      padding: const EdgeInsets.only(top: 20.0),
-      decoration: BoxDecoration(
-          color: timColor,
-          borderRadius: BorderRadius.circular(10.0),
-          boxShadow: const [
-            BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)
-          ]),
-      child: view.Timetable(filter: Filter.all(), readOnly: true),
+  Widget buildTimetableContainer() {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.only(top: 20.0),
+        decoration: BoxDecoration(
+            color: timColor,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: const [
+              BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)
+            ]),
+        child: view.Timetable(filter: Filter.all(), readOnly: true),
+      ),
     );
   }
 
