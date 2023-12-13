@@ -386,8 +386,6 @@ class _LessonState extends State<Lesson> {
               final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
               final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
 
-              print(selectedLessons);
-
               if (selectedLessons == null || selectedLessons.isNotEmpty) {
                 int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
                 if (id != -1) {
