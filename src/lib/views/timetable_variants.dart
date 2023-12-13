@@ -74,11 +74,11 @@ class VariantWidget extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Switch(
-                activeThumbImage: const AssetImage("snowflake.png"),
+                activeThumbImage: const AssetImage("images/snowflake.png"),
                 activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
                 inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
                 inactiveThumbColor: Colors.white,
-                inactiveThumbImage: const AssetImage("sun.png"),
+                inactiveThumbImage: const AssetImage("images/sun.png"),
                 value: sem == Semester.winter,
                 onChanged: (value) {
                   Semester semester = value ? Semester.winter : Semester.summer;

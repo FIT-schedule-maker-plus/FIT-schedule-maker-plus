@@ -71,7 +71,7 @@ class CompleteTimetable extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Switch(
-                activeThumbImage: const AssetImage("snowflake.png"),
+                activeThumbImage: const AssetImage("assets/snowflake.png"),
                 activeTrackColor: const Color.fromARGB(255, 91, 221, 252),
                 inactiveTrackColor: const Color.fromARGB(255, 249, 249, 107),
                 inactiveThumbColor: Colors.white,
