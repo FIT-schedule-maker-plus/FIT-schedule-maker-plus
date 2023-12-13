@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../disp_timetable_gen.dart';
 import '../models/program_course_group.dart';
+import '../models/timetable.dart';
 import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
+import '../views/timetable_container.dart' as custom_widget;
 
 enum ExportMenuItem { exportPNG, exportJSON }
 
@@ -44,8 +47,17 @@ class VariantWidget extends StatelessWidget {
           children: <Widget>[
             Container(
               height: 200,
-              color: Colors.blue,
-            )
+              child: Selector<TimetableViewModel, Timetable>(
+                selector: (ctx, vm) => vm.timetables[index],
+                builder: (ctx, tim, _) {
+                  return custom_widget.Timetable(
+                    filter: Filter.all(),
+                    timetable: tim,
+                    readOnly: true,
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -101,7 +113,9 @@ class VariantWidget extends StatelessWidget {
             PopupMenuItem<ExportMenuItem>(
               value: ExportMenuItem.exportJSON,
               child: Text("JSON", style: TextStyle(color: foreground2)),
-              onTap: () {},
+              onTap: () {
+                context.read<TimetableViewModel>().saveAsJson(index: index);
+              },
             ),
           ],
         ),
@@ -249,9 +263,11 @@ class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
             isEnabled = !isEnabled;
           });
           Future.delayed(const Duration(seconds: 2), () {
-            setState(() {
-              isEnabled = false;
-            });
+            if (mounted) {
+              setState(() {
+                isEnabled = false;
+              });
+            }
           });
         },
       );

@@ -8,6 +8,7 @@ import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
+import '../disp_timetable_gen.dart';
 import '../models/timetable.dart';
 
 class AppViewModel extends ChangeNotifier {
@@ -84,12 +85,8 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
     if (parser == null) return;
 
-    allStudyPrograms[programId]!.courseGroups = parser
-        .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
-        .map(_parseCourseGroup)
-        .where((value) => value != null)
-        .map((value) => value!)
-        .toList();
+    allStudyPrograms[programId]!.courseGroups =
+        parser.querySelectorAll("div.table-responsive__holder:nth-child(1) table").map(_parseCourseGroup).where((value) => value != null).map((value) => value!).toList();
   }
 
   ProgramCourseGroup? _parseCourseGroup(Result element) {
@@ -97,8 +94,7 @@ class AppViewModel extends ChangeNotifier {
     if (caption == null) return null;
     caption = caption.trimLeft();
 
-    final semester =
-        caption.contains("winter semester") ? Semester.winter : Semester.summer;
+    final semester = caption.contains("winter semester") ? Semester.winter : Semester.summer;
     final yearOfStudy = caption.startsWith("1st year")
         ? YearOfStudy.first
         : caption.startsWith("2nd year")
@@ -111,15 +107,9 @@ class AppViewModel extends ChangeNotifier {
 
     if (yearOfStudy == null) return null;
 
-    var courses = element
-        .querySelectorAll("tr")!
-        .map((res) => _parseAndStoreCourse(res, semester))
-        .where((value) => value != null)
-        .map((value) => value!)
-        .toList();
+    var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
 
-    return ProgramCourseGroup(
-        courses: courses, semester: semester, yearOfStudy: yearOfStudy);
+    return ProgramCourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
   }
 
   ProgramCourse? _parseAndStoreCourse(Result courseElement, Semester semester) {
@@ -165,14 +155,9 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
-  Future<void> getCourseData(int courseId) async {
+  Future<void> fetchCourseData(int courseId) async {
     if (!allCourses.containsKey(courseId)) {
       // Unknown course
-      return;
-    }
-
-    if (allCourses[courseId]!.loaded) {
-      // No need to do anything
       return;
     }
 
@@ -192,6 +177,28 @@ class AppViewModel extends ChangeNotifier {
     allCourses[courseId]!.loaded = true;
   }
 
+  bool isCourseLessonFetched(int courseId) {
+    return allCourses[courseId]!.loaded;
+  }
+
+  Future<List<CourseLesson>> getAllCourseLessonsAsync(Iterable<int> courseIds) async {
+    List<CourseLesson> lessons = [];
+    await Future.wait(courseIds.map((courseId) async {
+      if (isCourseLessonFetched(courseId)) {
+        lessons.addAll(allCourses[courseId]!.lessons);
+      } else {
+        await fetchCourseData(courseId);
+        lessons.addAll(allCourses[courseId]!.lessons);
+      }
+    }));
+    return lessons;
+  }
+
+  /// Get all course lessons synchronously. Expect that all lessons for a given course have already been fetched.
+  List<CourseLesson> getAllCourseLessonSync(Iterable<int> courseIds) {
+    return courseIds.map((courseId) => allCourses[courseId]!.lessons).expand((element) => element).toList();
+  }
+
   List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
     if (lesson == null) {
       return list;
@@ -201,11 +208,7 @@ class AppViewModel extends ChangeNotifier {
 
     for (var i = 0; i < list.length; i++) {
       final value = list[i];
-      if (value.dayOfWeek != lesson.dayOfWeek
-        || value.startsFrom != lesson.startsFrom
-        || value.endsAt != lesson.endsAt
-        || value.type != lesson.type
-      ) {
+      if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
         continue;
       }
 
@@ -223,7 +226,8 @@ class AppViewModel extends ChangeNotifier {
 
   CourseLesson? _parseLesson(element) {
     RegExp exp = RegExp(r">(.*)</");
-    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
+    final html = element.html.replaceAll("<sup class=\"color-red\">*)</sup>", "");
+    final matches = exp.allMatches(html).map((e) => e[1]).toList();
 
     final type = switch (matches[1]) {
       "exercise" => LessonType.exercise,
@@ -238,7 +242,7 @@ class AppViewModel extends ChangeNotifier {
 
     final dayOfWeek = switch (matches[0]) {
       "<th>Mon" => DayOfWeek.monday,
-      "<th>Tue" => DayOfWeek.tueday,
+      "<th>Tue" => DayOfWeek.tuesday,
       "<th>Wed" => DayOfWeek.wednesday,
       "<th>Thu" => DayOfWeek.thursday,
       "<th>Fri" => DayOfWeek.friday,
@@ -255,8 +259,7 @@ class AppViewModel extends ChangeNotifier {
     for (var i = 3; i < matches.length; i++) {
       final s = matches[i]!;
       if (s.startsWith("<td>")) {
-        final chunks =
-            s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
+        final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
         startsFrom = parseTime(chunks.elementAt(0));
         endsAt = parseTime(chunks.elementAt(1));
         capacity = int.parse(chunks.elementAt(2));
@@ -376,8 +379,7 @@ class AppViewModel extends ChangeNotifier {
 
   /// This function checks if the current study program has fetched its course group
   bool isProgramCourseGroupFetched() {
-    return allStudyPrograms.containsKey(currentStudyProgram) &&
-        allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
+    return allStudyPrograms.containsKey(currentStudyProgram) && allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
   }
 
   /// Synchronously loads the current programCourseGroup based on the current study program.
@@ -385,10 +387,7 @@ class AppViewModel extends ChangeNotifier {
   /// have already been fetched. Therefore, it is recommended to check this in advance
   /// using the `isProgramCourseGroupFetched` function.
   ProgramCourseGroup getProgramCourseGroup() {
-    return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere(
-        (group) =>
-            group.semester == currentSemester &&
-            group.yearOfStudy == currentGrade);
+    return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere((group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
   }
 }
 

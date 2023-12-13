@@ -29,6 +29,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: StatefulBuilder(builder: (_, setState) {
         return TabBar(
           indicatorColor: selectedUnderlineColor,
+          isScrollable: true,
           dividerColor: Colors.transparent,
           labelColor: Colors.white,
           unselectedLabelColor: unsTabCol,

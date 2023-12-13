@@ -48,7 +48,7 @@ class Generator extends StatelessWidget {
                 onPressed: () {
                   animationController.reverse();
                 },
-                child: Text("Generovať"))
+                child: Text("Generovat"))
           ],
         ),
       ),
