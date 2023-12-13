@@ -10,31 +10,46 @@ enum DayOfWeek {
   friday,
 }
 
-extension ParseToString on DayOfWeek {
-  String toCzechString() {
-    switch (this) {
-      case DayOfWeek.monday:
-        return "Po";
-      case DayOfWeek.tuesday:
-        return "Ut";
-      case DayOfWeek.wednesday:
-        return "St";
-      case DayOfWeek.thursday:
-        return "Čt";
-      case DayOfWeek.friday:
-        return "Pá";
-      default:
-        return "Unknown";
-    }
-  }
-}
-
 enum LessonType {
   lecture, // Přednáška
   seminar, // Demo cviko
   laboratory, // Laborator
   computerLab, // Computer laborator
   exercise, // cviko
+}
+
+extension ParseToString<T extends Enum> on T {
+  String toCzechString() {
+    if (this is DayOfWeek) {
+      switch (this as DayOfWeek) {
+        case DayOfWeek.monday:
+          return "Po";
+        case DayOfWeek.tuesday:
+          return "Ut";
+        case DayOfWeek.wednesday:
+          return "St";
+        case DayOfWeek.thursday:
+          return "Čt";
+        case DayOfWeek.friday:
+          return "Pá";
+      }
+    } else if (this is LessonType) {
+      switch (this as LessonType) {
+        case LessonType.lecture:
+          return "Přednáška";
+        case LessonType.seminar:
+          return "Demo cviko";
+        case LessonType.laboratory:
+          return "Laboratoř";
+        case LessonType.computerLab:
+          return "Cvičení s počítačovou podporou";
+        case LessonType.exercise:
+          return "Cvičení";
+      }
+    }
+    // Handle unknown cases
+    return "Unknown";
+  }
 }
 
 /// Represents a single lesson course.
