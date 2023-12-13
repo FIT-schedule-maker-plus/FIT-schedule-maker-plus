@@ -77,23 +77,23 @@ class AppViewModel extends ChangeNotifier {
   }
 
   Future<void> getAllLocations(BuildContext context) async {
-    String data = await DefaultAssetBundle.of(context).loadString("assets/data.json");
+    String data = await DefaultAssetBundle.of(context).loadString("locations.json");
     final jsonResult = jsonDecode(data) as Map<String, dynamic>;
     allLocations = jsonResult.map((key, value) {
       final faculty = switch (value) {
-        "FIT" => Faculty.fit,
+        "FIT"  => Faculty.fit,
         "FEKT" => Faculty.fekt,
         "CESA" => Faculty.cesa,
         "CVIS" => Faculty.cvis,
-        "FA" => Faculty.fa,
+        "FA"   => Faculty.fa,
         "FAST" => Faculty.fast,
         "FaVU" => Faculty.favu,
-        "FCH" => Faculty.fch,
-        "FP" => Faculty.fp,
-        "FSI" => Faculty.fsi,
-        "ICV" => Faculty.icv,
-        "RE" => Faculty.re,
-        "USI" => Faculty.usi,
+        "FCH"  => Faculty.fch,
+        "FP"   => Faculty.fp,
+        "FSI"  => Faculty.fsi,
+        "ICV"  => Faculty.icv,
+        "RE"   => Faculty.re,
+        "USI"  => Faculty.usi,
         _ => Faculty.fekt,
       };
 
@@ -212,6 +212,10 @@ class AppViewModel extends ChangeNotifier {
         await fetchCourseData(courseId);
       }
     }));
+  }
+
+  Faculty? getRoomLocation(String room) {
+    return allLocations[room];
   }
 
   /// Changes the grade and notifies all listeners
