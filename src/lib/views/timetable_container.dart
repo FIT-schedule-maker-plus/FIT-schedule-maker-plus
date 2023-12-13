@@ -484,6 +484,32 @@ class _LessonState extends State<Lesson> {
       borders = BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
     }
 
+    List<Widget> infos = lesson.infos.map((info) {
+      return <Widget>[
+        buildInfo("Vyučujíci: ", info.info),
+        SizedBox(height: 15),
+        buildInfo("Místnosti: ", info.locations.join(", ")),
+        SizedBox(height: 15),
+        Text("Vyučující týdny: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
+        SizedBox(height: 5),
+        Center(
+          child: Text(
+            info.weeks,
+            softWrap: true,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.clip,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+          ),
+        ),
+        Divider(color: Colors.black)
+      ];
+    })
+    .expand((i) => i)
+    .toList();
+
+    /// Remove last `Divider`
+    infos.removeLast();
+
     return Container(
       width: overlayWidth,
       height: overlayHeight,
@@ -499,7 +525,6 @@ class _LessonState extends State<Lesson> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
             child: Text(
@@ -509,25 +534,14 @@ class _LessonState extends State<Lesson> {
             ),
           ),
           SizedBox(height: 15),
-          buildInfo("Typ vyučování: ", lesson.type.toCzechString()),
-          SizedBox(height: 15),
-          buildInfo("Vyučujíci: ", profesors!),
-          SizedBox(height: 15),
-          buildInfo("Místnosti: ", locations!),
-          SizedBox(height: 15),
-          Text("Vyučující týdny: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
-          SizedBox(height: 5),
-          Center(
-            child: Text(
-              lesson.infos.map((info) => info.weeks).toSet().join(", "),
-              softWrap: true,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.clip,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+          Expanded(child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: infos
             ),
-          ),
-        ],
-      ),
+          ))
+        ]
+      )
     );
   }
 
