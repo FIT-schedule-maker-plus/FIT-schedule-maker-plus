@@ -30,7 +30,10 @@ class Homepage extends StatelessWidget {
           },
         ),
         FutureBuilder(
-          future: context.read<AppViewModel>().getAllStudyProgram(),
+          future: Future.wait([
+            context.read<AppViewModel>().getAllStudyProgram(),
+            context.read<AppViewModel>().getAllLocations(context),
+          ]),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
@@ -39,7 +42,6 @@ class Homepage extends StatelessWidget {
                 return Center(
                   child: CircularProgressIndicator(),
                 );
-
               default:
                 return Scaffold(
                   body: Center(
