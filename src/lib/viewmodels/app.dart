@@ -8,7 +8,6 @@ import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
-import '../disp_timetable_gen.dart';
 import '../models/timetable.dart';
 
 class AppViewModel extends ChangeNotifier {
@@ -161,18 +160,14 @@ class AppViewModel extends ChangeNotifier {
       return;
     }
 
-    final parser = await Chaleno()
-        .load("https://www.fit.vut.cz/study/course/$courseId/.en");
+    final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
 
     final html = parser.html;
     if (html == null) return;
 
     allCourses[courseId]!.prerequisites = _extractPrerequisites(html);
-    allCourses[courseId]!.lessons = parser
-        .querySelectorAll("#schedule tbody tr")
-        .map(_parseLesson)
-        .fold(<CourseLesson>[], _mergeSameLessons);
+    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).fold(<CourseLesson>[], _mergeSameLessons);
 
     allCourses[courseId]!.loaded = true;
   }
@@ -181,22 +176,13 @@ class AppViewModel extends ChangeNotifier {
     return allCourses[courseId]!.loaded;
   }
 
-  Future<List<CourseLesson>> getAllCourseLessonsAsync(List<int> courseIds) async {
-    List<CourseLesson> lessons = [];
+  Future<void> getAllCourseLessonsAsync(List<int> courseIds) async {
     await Future.wait(courseIds.map((courseId) async {
       if (isCourseLessonFetched(courseId)) {
-        lessons.addAll(allCourses[courseId]!.lessons);
       } else {
         await fetchCourseData(courseId);
-        lessons.addAll(allCourses[courseId]!.lessons);
       }
     }));
-    return lessons;
-  }
-
-  /// Get all course lessons synchronously. Expect that all lessons for a given course have already been fetched.
-  List<CourseLesson> getAllCourseLessonSync(Iterable<int> courseIds) {
-    return courseIds.map((courseId) => allCourses[courseId]!.lessons).expand((element) => element).toList();
   }
 
   List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
@@ -321,8 +307,7 @@ class AppViewModel extends ChangeNotifier {
       final numberOfLessons = switch (type) {
         PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
         PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
-        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises")
-                                  ?? _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises") ?? _extractNumberOfLessons(html, "lectures"),
         PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
         PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
         _ => 0,
@@ -330,11 +315,7 @@ class AppViewModel extends ChangeNotifier {
 
       if (numberOfLessons == null) continue;
 
-      list.add(CoursePrerequisite(
-        type: type,
-        requiredHours: hours,
-        numberOfLessons: numberOfLessons
-      ));
+      list.add(CoursePrerequisite(type: type, requiredHours: hours, numberOfLessons: numberOfLessons));
     }
 
     return list;
@@ -349,7 +330,6 @@ class AppViewModel extends ChangeNotifier {
     final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
     return numberOfLessons == 0 ? null : numberOfLessons;
   }
-
 
   /// Changes the grade and notifies all listeners
   void changeGrade(YearOfStudy grade) {
