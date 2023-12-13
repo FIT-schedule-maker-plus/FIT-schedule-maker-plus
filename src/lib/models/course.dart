@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
 
 import 'program_course_group.dart';
 
@@ -11,15 +12,17 @@ class Course {
   final String fullName;
   final Semester semester;
   List<CourseLesson> lessons;
-  bool loadedLessons;
+  List<CoursePrerequisite> prerequisites;
+  bool loaded;
 
   Course({
     required this.id,
     required this.fullName,
     required this.shortcut,
     required this.lessons,
+    required this.prerequisites,
     required this.semester,
-    required this.loadedLessons,
+    this.loaded = false,
   });
 
   factory Course.fromJson(Map<String, dynamic> json) => Course(
@@ -28,7 +31,8 @@ class Course {
         fullName: json["fullName"],
         semester: json["semester"],
         lessons: List<CourseLesson>.from(json["lessons"].map((lesson) => CourseLesson.fromJson(lesson))),
-        loadedLessons: false,
+        prerequisites: List<CoursePrerequisite>.from(json["prerequisites"].map((prerequisite) => CoursePrerequisite.fromJson(prerequisite))),
+        loaded: false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -37,5 +41,6 @@ class Course {
         "fullName": fullName,
         "semester": semester,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),
+        "prerequisites": List<dynamic>.from(prerequisites.map((prerequisite) => prerequisite.toJson())),
       };
 }
