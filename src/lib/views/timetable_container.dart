@@ -14,7 +14,7 @@ import '../models/timetable.dart' as model;
 
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
 const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
-const double daysBarWidth = 35;
+double daysBarWidth = 35;
 const lessonHeight = 100;
 
 class TimetableContainer extends StatelessWidget {
@@ -223,8 +223,10 @@ class Timetable extends StatelessWidget {
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           double oneLessonWidth = constraints.maxWidth / 15;
+          daysBarWidth = oneLessonWidth / 2;
 
           return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               buildTimeBar(),
               Divider(thickness: 2, height: 2, color: Colors.black),
@@ -287,7 +289,7 @@ class Timetable extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: daysBarWidth,
+            width: daysBarWidth - 0.5,  // There was always overflow by 0.5 pixels
             child: Text(
               dayOfWeek.toCzechString(),
               style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400),
@@ -312,7 +314,7 @@ class Timetable extends StatelessWidget {
   Widget buildLesson(BuildContext context, Course course, SpecificLesson specLes, double oneLessonWidth) {
     final lessonId = specLes.lessonID;
     final lessonLevel = specLes.height;
-    const int leftOffset = 5;
+    int leftOffset = (0.05 * oneLessonWidth).round();   // 5% of hour width.
     CourseLesson lesson = course.lessons[lessonId];
 
     Color color = switch (lesson.type) {
@@ -336,8 +338,9 @@ class Timetable extends StatelessWidget {
 
     // String locations = lesson.locations.join(", ");
     String locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
+    final hourIndex = (lesson.startsFrom / 60) - 7;    // Timetable starts from 7:00
     return Positioned(
-      left: daysBarWidth + leftOffset + ((lesson.startsFrom / 60) - 7) * (oneLessonWidth),
+      left: leftOffset + daysBarWidth + hourIndex * oneLessonWidth,
       top: lessonHeight * lessonLevel + 5,
       child: InkWell(
           onTap: () {
