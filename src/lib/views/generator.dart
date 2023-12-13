@@ -12,12 +12,11 @@ class Generator extends StatelessWidget {
     return SlideTransition(
       position: ofssetAnimation,
       child: Container(
-        // color: Colors.black.withOpacity(0.8),
         width: 300,
         height: double.infinity,
         decoration: BoxDecoration(boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withOpacity(0.9),
             offset: Offset(10.0, 0.0), // Shadow on the left side
             blurRadius: 6.0,
             spreadRadius: 6.0,
