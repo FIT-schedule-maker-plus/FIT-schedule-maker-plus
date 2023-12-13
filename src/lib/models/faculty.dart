@@ -1,0 +1,15 @@
+enum Faculty {
+  fit,
+  fekt,
+  cesa,
+  cvis,
+  fa,
+  fast,
+  favu,
+  fch,
+  fp,
+  fsi,
+  icv,
+  re,
+  usi,
+}

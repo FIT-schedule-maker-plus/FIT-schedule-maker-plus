@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:fit_schedule_maker_plus/models/course.dart';
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
 import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
 import 'package:fit_schedule_maker_plus/models/study.dart';
+import 'package:fit_schedule_maker_plus/models/faculty.dart';
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +17,7 @@ class AppViewModel extends ChangeNotifier {
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
   Map<int, StudyProgram> allStudyPrograms = {};
+  Map<String, Faculty> allLocations = {};
   YearOfStudy currentGrade = YearOfStudy.second;
   Semester currentSemester = Semester.winter;
   String currentYear = "2023/24";
@@ -70,6 +74,31 @@ class AppViewModel extends ChangeNotifier {
     for (final program in studyPrograms) {
       allStudyPrograms[program.id] = program;
     }
+  }
+
+  Future<void> getAllLocations(BuildContext context) async {
+    String data = await DefaultAssetBundle.of(context).loadString("assets/data.json");
+    final jsonResult = jsonDecode(data) as Map<String, dynamic>;
+    allLocations = jsonResult.map((key, value) {
+      final faculty = switch (value) {
+        "FIT" => Faculty.fit,
+        "FEKT" => Faculty.fekt,
+        "CESA" => Faculty.cesa,
+        "CVIS" => Faculty.cvis,
+        "FA" => Faculty.fa,
+        "FAST" => Faculty.fast,
+        "FaVU" => Faculty.favu,
+        "FCH" => Faculty.fch,
+        "FP" => Faculty.fp,
+        "FSI" => Faculty.fsi,
+        "ICV" => Faculty.icv,
+        "RE" => Faculty.re,
+        "USI" => Faculty.usi,
+        _ => Faculty.fekt,
+      };
+
+      return MapEntry(key, faculty);
+    });
   }
 
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
