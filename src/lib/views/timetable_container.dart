@@ -579,7 +579,7 @@ class _LessonState extends State<Lesson> {
         ]));
   }
 
-  Row buildRooms(BuildContext ctx, Set<String> rooms) {
+  Widget buildRooms(BuildContext ctx, Set<String> rooms) {
     List<Widget> widgets = [];
     Map<Faculty, List<String>> locations = {};
     List<String> unknownLocations = [];
@@ -629,11 +629,17 @@ class _LessonState extends State<Lesson> {
         Faculty.icv || Faculty.re  => Color(0xFFe4002b), // Don't know... Use the VUT one
       };
 
-      widgets.add(Row(children: [
+      widgets.add(Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
         Container(
           padding: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-          color: facultyColor,
           alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(7),
+            color: facultyColor,
+          ),
+          height: 19,
           child: Text(
             facultyName,
             style: TextStyle(
@@ -658,7 +664,7 @@ class _LessonState extends State<Lesson> {
       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
     ));
 
-    return Row(children: widgets);
+    return Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: widgets)));
   }
 
   Row buildInfo(String infoType, String infoValue) {
