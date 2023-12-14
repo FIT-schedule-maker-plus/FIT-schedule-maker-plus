@@ -134,7 +134,10 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
                   ? Positioned(
                       right: 20,
                       bottom: 20,
-                      child: BlackButton(onTap: () => _animationController.forward()),
+                      child: BlackButton(
+                        onTap: () => _animationController.forward(),
+                        child: Text("Generátor rozvrhu", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      ),
                     )
                   : Container(),
               Generator(animationController: _animationController, ofssetAnimation: _offsetAnimation),
@@ -150,7 +153,10 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
 
 class BlackButton extends StatefulWidget {
   void Function()? onTap;
-  BlackButton({this.onTap, super.key});
+  EdgeInsetsGeometry? padding;
+  Widget child;
+
+  BlackButton({this.onTap, super.key, this.padding, required this.child});
 
   @override
   State<BlackButton> createState() => _BlackButtonState();
@@ -166,9 +172,9 @@ class _BlackButtonState extends State<BlackButton> {
         onTap: widget.onTap,
         onHover: (value) => setState(() => isHovering = value),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: widget.padding ?? EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Center(
-            child: Text("Generátor rozvrhu", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+            child: widget.child, //,
           ),
           decoration: BoxDecoration(
               color: isHovering ? Color.fromARGB(255, 20, 20, 20) : Colors.black,
