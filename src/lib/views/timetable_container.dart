@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/models/course.dart';
+import 'package:fit_schedule_maker_plus/models/faculty.dart';
 
 import '../models/timetable.dart' as model;
 
@@ -469,11 +470,12 @@ class _LessonState extends State<Lesson> {
           overflow: TextOverflow.ellipsis,
         ),
         SizedBox(height: 10),
-        Text(
-          locations!,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-          overflow: TextOverflow.ellipsis,
-        )
+        buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
+        // Text(
+        //   locations!,
+        //   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+        //   overflow: TextOverflow.ellipsis,
+        // )
       ]),
     );
   }
@@ -575,6 +577,88 @@ class _LessonState extends State<Lesson> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: infos),
           ))
         ]));
+  }
+
+  Row buildRooms(BuildContext ctx, Set<String> rooms) {
+    List<Widget> widgets = [];
+    Map<Faculty, List<String>> locations = {};
+    List<String> unknownLocations = [];
+
+    AppViewModel appViewModel = context.read<AppViewModel>();
+
+    for (final room in rooms) {
+      final faculty = appViewModel.getRoomLocation(room);
+      if (faculty == null) {
+        unknownLocations.add(room);
+        continue;
+      }
+
+      locations.putIfAbsent(faculty, () => []);
+      locations[faculty]!.add(room);
+    }
+
+    for (final entry in locations.entries) {
+      final facultyName = switch (entry.key) {
+        Faculty.fit  => "FIT",
+        Faculty.fekt => "FEKT",
+        Faculty.cesa => "CESA",
+        Faculty.cvis => "CVIS",
+        Faculty.fa   => "FA",
+        Faculty.fast => "FAST",
+        Faculty.favu => "FaVU",
+        Faculty.fch  => "FCH",
+        Faculty.fp   => "FP",
+        Faculty.fsi  => "FSI",
+        Faculty.icv  => "ICV",
+        Faculty.re   => "RE",
+        Faculty.usi  => "ÚSI",
+      };
+
+      final facultyColor = switch (entry.key) {
+        Faculty.fit  => Color(0xFF00a9e0),
+        Faculty.fekt => Color(0xFF003da5),
+        Faculty.cesa => Color(0xFF009db1),
+        Faculty.cvis => Color(0xFF898d8d),
+        Faculty.fa   => Color(0xFF7a99ac),
+        Faculty.fast => Color(0xFF658d1b),
+        Faculty.favu => Color(0xFFe782a9),
+        Faculty.fch  => Color(0xFF00ab8e),
+        Faculty.fp   => Color(0xFF8246af),
+        Faculty.fsi  => Color(0xFF004f71),
+        Faculty.usi  => Color(0xFF211447),
+        Faculty.icv || Faculty.re  => Color(0xFFe4002b), // Don't know... Use the VUT one
+      };
+
+      widgets.add(Row(children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+          color: facultyColor,
+          alignment: Alignment.center,
+          child: Text(
+            facultyName,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            )
+          )
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 5),
+          child: Text(
+            entry.value.join(", "),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+            // overflow: TextOverflow.ellipsis,
+          )
+        )
+      ]));
+    }
+    widgets.add(Text(
+      unknownLocations.join(", "),
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+    ));
+
+    return Row(children: widgets);
   }
 
   Row buildInfo(String infoType, String infoValue) {
