@@ -33,7 +33,7 @@ class TimetableContainer extends StatelessWidget {
           Courses(),
           SizedBox(height: 40),
           Selector<TimetableViewModel, Filter>(
-              selector: (_, vm) => vm.filter,
+              selector: (_, vm) => Filter.courses(vm.filter.courses),
               builder: (context, filter, _) {
                 return Expanded(
                   child: Timetable(filter: filter),
@@ -229,10 +229,12 @@ class Timetable extends StatelessWidget {
             children: [
               buildTimeBar(),
               Divider(thickness: 2, height: 2, color: Colors.black),
-              Expanded(
+              Flexible(
+                fit: FlexFit.loose,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: List.generate(5, (index) {
                       return Stack(
                         children: [
@@ -242,13 +244,15 @@ class Timetable extends StatelessWidget {
                               Divider(thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
-                          ...generatedData[DayOfWeek.values[index]]!.second.map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth))
+                          ...generatedData[DayOfWeek.values[index]]!
+                              .second
+                              .map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, generatedData))
                         ],
                       );
                     }),
                   ),
                 ),
-              )
+              ),
             ],
           );
         },
@@ -314,8 +318,9 @@ class Lesson extends StatefulWidget {
   final Course course;
   final SpecificLesson specLes;
   final double oneLessonWidth;
+  final Map<DayOfWeek, Pair<int, List<SpecificLesson>>> genData;
 
-  const Lesson(this.readOnly, this.course, this.specLes, this.oneLessonWidth, {super.key});
+  const Lesson(this.readOnly, this.course, this.specLes, this.oneLessonWidth, this.genData, {super.key});
 
   @override
   State<Lesson> createState() => _LessonState();
@@ -332,6 +337,12 @@ class _LessonState extends State<Lesson> {
   String? profesors;
 
   @override
+  void dispose() {
+    entry?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final lessonId = widget.specLes.lessonID;
     final lessonLevel = widget.specLes.height;
@@ -341,21 +352,23 @@ class _LessonState extends State<Lesson> {
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = switch (lesson.type) {
-      LessonType.lecture => Color(0xFF1C7C26),
+      LessonType.lecture => Color.fromARGB(255, 22, 106, 30),
       LessonType.seminar => Color(0xFF21A2A2),
-      LessonType.exercise => Color(0xFF286d88),
-      LessonType.computerLab => Color(0xFF760505),
-      LessonType.laboratory => Color(0xFF8d7626),
+      LessonType.exercise => Color.fromARGB(255, 21, 69, 88),
+      LessonType.computerLab => Color.fromARGB(255, 89, 3, 3),
+      LessonType.laboratory => Color.fromARGB(255, 111, 92, 24),
     };
 
     locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
     profesors = lesson.infos.map((info) => info.info).toSet().join(", ");
 
+    color = color
+        .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
+        .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
+        .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+
     if (!widget.specLes.selected) {
-      color = color
-          .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
-          .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
-          .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+      color = color.withAlpha(50);
     }
 
     final hourIndex = (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
@@ -370,75 +383,98 @@ class _LessonState extends State<Lesson> {
             if (widget.specLes.selected) {
               deselectLesson(timetableViewModel, widget.specLes);
             } else {
+              final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
+              final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
+
+              if (selectedLessons == null || selectedLessons.isNotEmpty) {
+                int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
+                if (id != -1) {
+                  var x = widget.genData.values
+                      .expand((element) => element.second)
+                      .where((element) => element.courseID == widget.course.id)
+                      .firstWhere((element) => element.lessonID == id);
+                  x.selected = false;
+                  timetableViewModel.currentTimetable.removeLesson(widget.course.id, id);
+                }
+              }
+
               selectLesson(timetableViewModel, widget.specLes);
             }
           },
-          child: MouseRegion(
-            onExit: (details) async {
-              _timer?.cancel();
-              Future.delayed(Duration(milliseconds: 100), () {
-                if (!entryHasFocus) {
-                  hideOverlay();
-                }
-              });
-            },
-            onHover: (details) {
-              if (entry != null) {
-                Timer(Duration(milliseconds: 100), () {
-                  if (!entryHasFocus) {
-                    hideOverlay();
-                  }
-                });
-              } else {
-                _timer?.cancel();
-                _timer = Timer(Duration(seconds: 1), () {
-                  overlayPosition = details.position;
-                  overlayTriggerPosition = details.position;
-                  if (details.position.dx + overlayWidth > screenSize.width) {
-                    overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
-                  }
-                  if (details.position.dy + overlayHeight > screenSize.height) {
-                    overlayPosition = overlayPosition!.translate(0, -overlayHeight);
-                  }
-                  showOverlay(widget.course, lesson);
-                  entry!.markNeedsBuild();
-                });
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-              width: (lesson.endsAt - lesson.startsFrom) / 60 * widget.oneLessonWidth,
-              decoration: ShapeDecoration(
-                  color: color,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(width: 1),
-                    borderRadius: BorderRadius.circular(10.0),
-                  )),
-              height: 90,
-              alignment: Alignment.center,
-              child: Column(children: [
-                Text(
-                  widget.course.shortcut,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  profesors!,
-                  style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 10),
-                Text(
-                  locations!,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-                  overflow: TextOverflow.ellipsis,
-                )
-              ]),
-            ),
+          child: widget.readOnly
+              ? buildLesson(lesson, color)
+              : MouseRegion(
+                  onExit: (details) async {
+                    _timer?.cancel();
+                    Future.delayed(Duration(milliseconds: 100), () {
+                      if (!entryHasFocus) {
+                        hideOverlay();
+                      }
+                    });
+                  },
+                  onHover: (details) {
+                    if (entry != null) {
+                      Timer(Duration(milliseconds: 100), () {
+                        if (!entryHasFocus) {
+                          hideOverlay();
+                        }
+                      });
+                    } else {
+                      _timer?.cancel();
+                      _timer = Timer(Duration(milliseconds: 600), () {
+                        overlayPosition = details.position;
+                        overlayTriggerPosition = details.position;
+                        if (details.position.dx + overlayWidth > screenSize.width) {
+                          overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
+                        }
+                        if (details.position.dy + overlayHeight > screenSize.height) {
+                          overlayPosition = overlayPosition!.translate(0, -overlayHeight);
+                        }
+                        if (mounted) {
+                          showOverlay(widget.course, lesson);
+                          entry!.markNeedsBuild();
+                        }
+                      });
+                    }
+                  },
+                  child: buildLesson(lesson, color),
+                )),
+    );
+  }
+
+  Container buildLesson(CourseLesson lesson, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      width: (lesson.endsAt - lesson.startsFrom) / 60 * widget.oneLessonWidth,
+      decoration: ShapeDecoration(
+          color: color,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(width: 1),
+            borderRadius: BorderRadius.circular(10.0),
           )),
+      height: 90,
+      alignment: Alignment.center,
+      child: Column(children: [
+        Text(
+          widget.course.shortcut,
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          profesors!,
+          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
+          overflow: TextOverflow.ellipsis,
+        ),
+        SizedBox(height: 10),
+        Text(
+          locations!,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+          overflow: TextOverflow.ellipsis,
+        )
+      ]),
     );
   }
 
@@ -484,48 +520,48 @@ class _LessonState extends State<Lesson> {
       borders = BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
     }
 
-    List<Widget> infos = lesson.infos.map((info) {
-      return <Widget>[
-        buildInfo("Vyučujíci: ", info.info),
-        SizedBox(height: 15),
-        buildInfo("Místnosti: ", info.locations.join(", ")),
-        SizedBox(height: 15),
-        Text("Vyučující týdny: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
-        SizedBox(height: 5),
-        Center(
-          child: Text(
-            info.weeks,
-            softWrap: true,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.clip,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
-          ),
-        ),
-        Divider(color: Colors.black)
-      ];
-    })
-    .expand((i) => i)
-    .toList();
+    List<Widget> infos = lesson.infos
+        .map((info) {
+          return <Widget>[
+            buildInfo("Vyučujíci: ", info.info),
+            SizedBox(height: 15),
+            buildInfo("Místnosti: ", info.locations.join(", ")),
+            SizedBox(height: 15),
+            Text("Vyučující týdny: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
+            SizedBox(height: 5),
+            Center(
+              child: Text(
+                info.weeks,
+                softWrap: true,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.clip,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+              ),
+            ),
+            Divider(color: Colors.black)
+          ];
+        })
+        .expand((i) => i)
+        .toList();
 
     /// Remove last `Divider`
     infos.removeLast();
 
     return Container(
-      width: overlayWidth,
-      height: overlayHeight,
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      decoration: BoxDecoration(
-        color: overlayColor,
-        borderRadius: borders,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 6,
-            color: overlayColor,
-          )
-        ],
-      ),
-      child: Column(
-        children: [
+        width: overlayWidth,
+        height: overlayHeight,
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          color: overlayColor,
+          borderRadius: borders,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 6,
+              color: overlayColor,
+            )
+          ],
+        ),
+        child: Column(children: [
           Center(
             child: Text(
               course.fullName,
@@ -534,15 +570,11 @@ class _LessonState extends State<Lesson> {
             ),
           ),
           SizedBox(height: 15),
-          Expanded(child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: infos
-            ),
+          Expanded(
+              child: SingleChildScrollView(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: infos),
           ))
-        ]
-      )
-    );
+        ]));
   }
 
   Row buildInfo(String infoType, String infoValue) {

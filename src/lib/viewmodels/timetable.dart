@@ -9,6 +9,16 @@ class TimetableViewModel extends ChangeNotifier {
   final List<Timetable> timetables;
   int active;
 
+  /// Timetable to export on next build.
+  int? _toExport;
+  int? get toExport => _toExport;
+  set toExport(int? val) {
+    if (_toExport != val) {
+      _toExport = val;
+      notifyListeners();
+    }
+  }
+
   final Map<int, String> _isEditing = {};
 
   Timetable get currentTimetable => timetables[active];
@@ -40,6 +50,13 @@ class TimetableViewModel extends ChangeNotifier {
     } catch (e) {
       print("Error saving file: $e");
     }
+  }
+
+  void saveAsPng({int? index}) {
+    if (_toExport != null) {
+      return;
+    }
+    toExport = index ?? active;
   }
 
   bool isEditingName({required int index}) {
