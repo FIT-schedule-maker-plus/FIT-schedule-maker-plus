@@ -58,5 +58,5 @@ enum YearOfStudy {
   first, // prvni rocnik
   second, // druhy rocnik
   third, // treti rocnik
-  any // libovolny
+  all,  // libovolny
 }
