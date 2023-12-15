@@ -132,7 +132,7 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
               TimetableContainer(),
               _animationController.status == AnimationStatus.dismissed
                   ? Positioned(
-                      right: 20,
+                      right: 60,
                       bottom: 20,
                       child: BlackButton(
                         onTap: () => _animationController.forward(),
