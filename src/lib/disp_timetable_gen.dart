@@ -1,3 +1,13 @@
+/*
+ * Filename: disp_timetable_gen.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file encompasses the logic for filtering lessons and the representation
+ *    of the currently displayed timetable. It includes information about the positions
+ *    of lessons, such as their level in a given day within the week.
+ */
+
 import 'dart:math';
 
 import 'models/course_lesson.dart';
@@ -29,8 +39,7 @@ class Filter {
 
   Filter({required this.courses, required this.allCourses});
 
-  Filter.courses(List<CourseID> courses)
-      : this(courses: courses, allCourses: false);
+  Filter.courses(List<CourseID> courses) : this(courses: courses, allCourses: false);
   Filter.all() : this(courses: [], allCourses: true);
   Filter.none() : this(courses: [], allCourses: false);
 }
@@ -106,9 +115,7 @@ void fillHeights(
       if (lessonA.startsFrom != lessonB.startsFrom) {
         return lessonA.startsFrom - lessonB.startsFrom;
       }
-      return courses[a.courseID]!
-          .shortcut
-          .compareTo(courses[b.courseID]!.shortcut);
+      return courses[a.courseID]!.shortcut.compareTo(courses[b.courseID]!.shortcut);
     });
 
     final List<int> levels = [];

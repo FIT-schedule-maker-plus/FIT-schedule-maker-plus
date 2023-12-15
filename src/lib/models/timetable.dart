@@ -1,12 +1,26 @@
+/*
+ * Filename: timetable.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub xkloub03
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a timetable.
+ */
+
 import 'program_course_group.dart';
 
-/// Index into AppViewModel::allCourser
+/// Index into AppViewModel::allCourses
 typedef CourseID = int;
 
 /// Index into Course::lessons
 typedef LessonID = int;
 
 class Timetable {
+  /// Unique name of the timetable used for differenciating variants
+  String name;
+
+  /// Currently chosen semester
+  Semester semester = Semester.winter;
+
   /// Contains all information about the content of this timetable. The structure is as follows:
   /// -> Semester
   ///     -> All CourseID's that this semester Contains
@@ -16,15 +30,13 @@ class Timetable {
     Semester.summer: {},
   };
 
+  /// selected lessons in the currently chosen semester
   Map<CourseID, Set<LessonID>> get currentContent => selected[semester]!;
-  Semester semester = Semester.winter;
-
-  /// Unique name of the timetable used for differenciating variants
-  String name;
 
   Timetable({
     required this.name,
     Map<Semester, Map<CourseID, Set<LessonID>>>? courseContent,
+    this.semester = Semester.winter,
   }) {
     if (courseContent != null) {
       selected = courseContent;
@@ -77,7 +89,18 @@ class Timetable {
 
   factory Timetable.fromJson(Map<String, dynamic> json) => Timetable(
         name: json["name"],
-        courseContent: json["content"],
+        semester: Semester.values[json["sel_semester"]],
+        courseContent: Map.from(json["selected"]).map(
+          (sem, val) => MapEntry(
+            Semester.values[int.parse(sem)],
+            Map.from(val).map(
+              (key, val) => MapEntry(
+                int.parse(key),
+                Set<int>.from(val),
+              ),
+            ),
+          ),
+        ),
       );
 
   Map<String, dynamic> toJson() => {

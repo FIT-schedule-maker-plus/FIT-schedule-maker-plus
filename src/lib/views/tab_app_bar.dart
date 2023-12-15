@@ -1,3 +1,11 @@
+/*
+ * Filename: tab_app_bar.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file defines the tab bar that changes content of the main page.
+ */
+
 import 'package:flutter/material.dart';
 
 const selTabCol = Color.fromARGB(255, 255, 255, 255);

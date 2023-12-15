@@ -1,3 +1,11 @@
+/*
+ * Filename: main.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file contains utility functions for saving data to files and images.
+ */
+
 import 'dart:convert';
 import 'dart:js' as js;
 import 'dart:html' as html;

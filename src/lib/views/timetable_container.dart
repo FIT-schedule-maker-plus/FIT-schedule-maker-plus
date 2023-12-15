@@ -1,26 +1,32 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+/*
+ * Filename: timetable_container.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Matúš Moravčík (xmorav48)
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file defines the view of timetable, its lessons and overlay for that shows lesson infos. Its a content of the 'Pracovní rozvrh' tab.
+ */
 
 import 'dart:async';
 import 'dart:math';
-
-import 'package:fit_schedule_maker_plus/disp_timetable_gen.dart';
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/models/faculty.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
-import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
-import 'package:fit_schedule_maker_plus/models/course.dart';
-import 'package:fit_schedule_maker_plus/models/faculty.dart';
 
+import '../disp_timetable_gen.dart';
+import '../models/course.dart';
+import '../models/course_lesson.dart';
 import '../models/timetable.dart' as model;
+import '../viewmodels/timetable.dart';
+import '../viewmodels/app.dart';
 
 const appBarCol = Color.fromARGB(255, 52, 52, 52);
 const timetableVerticalLinesColor = Color.fromARGB(255, 83, 83, 83);
-double daysBarWidth = 35;
 const lessonHeight = 100;
 const overlayColor = Color.fromARGB(255, 220, 220, 220);
 const double overlayWidth = 220;
 const double overlayHeight = 250;
+double daysBarWidth = 35;
 
 class TimetableContainer extends StatelessWidget {
   const TimetableContainer({super.key});
@@ -31,8 +37,8 @@ class TimetableContainer extends StatelessWidget {
       color: appBarCol,
       child: Column(
         children: [
-          Courses(),
-          SizedBox(height: 40),
+          const Courses(),
+          const SizedBox(height: 40),
           Selector<TimetableViewModel, Filter>(
               selector: (_, vm) => Filter.courses(vm.filter.courses),
               builder: (context, filter, _) {
@@ -46,6 +52,7 @@ class TimetableContainer extends StatelessWidget {
   }
 }
 
+// Le Duy Nguyen
 class Courses extends StatefulWidget {
   const Courses({super.key});
 
@@ -63,13 +70,13 @@ class _CoursesState extends State<Courses> {
     isCollapsed = courseIDs.isEmpty;
 
     return AnimatedSwitcher(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       child: isCollapsed
-          ? Container(key: ValueKey(1))
+          ? Container(key: const ValueKey(1))
           : Container(
-              key: ValueKey(2),
+              key: const ValueKey(2),
               width: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [appBarCol, Colors.black],
                     begin: Alignment.topCenter,
@@ -103,7 +110,7 @@ class _CoursesState extends State<Courses> {
                         ),
                         const SizedBox(height: 17),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          padding: const EdgeInsets.symmetric(horizontal: 50),
                           alignment: Alignment.center,
                           child: Wrap(
                             alignment: WrapAlignment.center,
@@ -126,7 +133,7 @@ class _CoursesState extends State<Courses> {
       width: 180,
       height: 30,
       decoration: ShapeDecoration(
-        color: Color(0xFF1BD30B),
+        color: const Color(0xFF1BD30B),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -135,7 +142,7 @@ class _CoursesState extends State<Courses> {
         children: [
           StatefulBuilder(builder: (ctx, setState) {
             return Tooltip(
-              waitDuration: Duration(milliseconds: 500),
+              waitDuration: const Duration(milliseconds: 500),
               message: "Skrýt",
               child: IconButton(
                 onPressed: () {
@@ -169,7 +176,7 @@ class _CoursesState extends State<Courses> {
             ),
           ),
           Tooltip(
-            waitDuration: Duration(milliseconds: 500),
+            waitDuration: const Duration(milliseconds: 500),
             message: "Vymazat",
             child: IconButton(
               onPressed: () => context.read<TimetableViewModel>().removeCourse(course.id),
@@ -184,6 +191,7 @@ class _CoursesState extends State<Courses> {
   }
 }
 
+// Matúš Moravčík
 class Timetable extends StatelessWidget {
   /// Timetable to display explicitly. This is useful when we want to display a timetable
   /// from some variant. When this is null, then we display current timetable.
@@ -207,7 +215,7 @@ class Timetable extends StatelessWidget {
                 case ConnectionState.done:
                   return buildTimetable(context);
                 default:
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
               }
             });
   }
@@ -218,7 +226,7 @@ class Timetable extends StatelessWidget {
     final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
-      padding: EdgeInsets.only(left: 30, right: 30, bottom: 30),
+      padding: const EdgeInsets.only(left: 30, right: 30, bottom: 30),
       width: double.infinity,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -229,7 +237,7 @@ class Timetable extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               buildTimeBar(),
-              Divider(thickness: 2, height: 2, color: Colors.black),
+              const Divider(thickness: 2, height: 2, color: Colors.black),
               Flexible(
                 fit: FlexFit.loose,
                 child: SingleChildScrollView(
@@ -242,7 +250,7 @@ class Timetable extends StatelessWidget {
                           Column(
                             children: [
                               buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
-                              Divider(thickness: 2, height: 2, color: Colors.black),
+                              const Divider(thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
                           ...generatedData[DayOfWeek.values[index]]!
@@ -291,21 +299,18 @@ class Timetable extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: daysBarWidth - 0.5, // There was always overflow by 0.5 pixels
-            child: Text(
-              dayOfWeek.toCzechString(),
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400),
-            ),
+            width: daysBarWidth - 0.5, // There was always overflow by 0.5 pixels due to floating point arithmetic
+            child: Text(dayOfWeek.toCzechString(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400)),
           ),
           Padding(
             padding: EdgeInsets.only(right: lessonWidth / 2),
-            child: VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+            child: const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
           ),
           ...List.generate(
             14,
             (index) => Padding(
               padding: EdgeInsets.symmetric(horizontal: lessonWidth / 2),
-              child: VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+              child: const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
             ),
           ),
         ],
@@ -314,6 +319,7 @@ class Timetable extends StatelessWidget {
   }
 }
 
+// Le Duy Nguyen
 class Lesson extends StatefulWidget {
   final bool readOnly;
   final Course course;
@@ -353,11 +359,11 @@ class _LessonState extends State<Lesson> {
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = switch (lesson.type) {
-      LessonType.lecture => Color.fromARGB(255, 22, 106, 30),
-      LessonType.seminar => Color(0xFF21A2A2),
-      LessonType.exercise => Color.fromARGB(255, 21, 69, 88),
-      LessonType.computerLab => Color.fromARGB(255, 89, 3, 3),
-      LessonType.laboratory => Color.fromARGB(255, 111, 92, 24),
+      LessonType.lecture => const Color.fromARGB(255, 22, 106, 30),
+      LessonType.seminar => const Color(0xFF21A2A2),
+      LessonType.exercise => const Color.fromARGB(255, 21, 69, 88),
+      LessonType.computerLab => const Color.fromARGB(255, 89, 3, 3),
+      LessonType.laboratory => const Color.fromARGB(255, 111, 92, 24),
     };
 
     locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
@@ -377,80 +383,79 @@ class _LessonState extends State<Lesson> {
       left: leftOffset + daysBarWidth + hourIndex * widget.oneLessonWidth,
       top: lessonHeight * lessonLevel + 5,
       child: InkWell(
-          onTap: () {
-            if (widget.readOnly) {
-              return;
-            }
-            if (widget.specLes.selected) {
-              deselectLesson(timetableViewModel, widget.specLes);
-            } else {
-              final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
-              final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
+        onTap: () {
+          if (widget.readOnly) return;
+          if (widget.specLes.selected) {
+            deselectLesson(timetableViewModel, widget.specLes);
+          } else {
+            final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
+            final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
 
-              if (selectedLessons == null || selectedLessons.isNotEmpty) {
-                int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
-                if (id != -1) {
-                  var x = widget.genData.values
-                      .expand((element) => element.second)
-                      .where((element) => element.courseID == widget.course.id)
-                      .firstWhere((element) => element.lessonID == id);
-                  x.selected = false;
-                  timetableViewModel.currentTimetable.removeLesson(widget.course.id, id);
-                }
+            if (selectedLessons == null || selectedLessons.isNotEmpty) {
+              int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
+              if (id != -1) {
+                var x = widget.genData.values
+                    .expand((element) => element.second)
+                    .where((element) => element.courseID == widget.course.id)
+                    .firstWhere((element) => element.lessonID == id);
+                x.selected = false;
+                timetableViewModel.currentTimetable.removeLesson(widget.course.id, id);
               }
-
-              selectLesson(timetableViewModel, widget.specLes);
             }
-          },
-          child: widget.readOnly
-              ? buildLesson(lesson, color)
-              : MouseRegion(
-                  onExit: (details) async {
-                    _timer?.cancel();
-                    Future.delayed(Duration(milliseconds: 100), () {
+
+            selectLesson(timetableViewModel, widget.specLes);
+          }
+        },
+        child: widget.readOnly
+            ? buildLesson(lesson, color)
+            : MouseRegion(
+                onExit: (details) async {
+                  _timer?.cancel();
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (!entryHasFocus) {
+                      hideOverlay();
+                    }
+                  });
+                },
+                onHover: (details) {
+                  if (entry != null) {
+                    Timer(const Duration(milliseconds: 100), () {
                       if (!entryHasFocus) {
                         hideOverlay();
                       }
                     });
-                  },
-                  onHover: (details) {
-                    if (entry != null) {
-                      Timer(Duration(milliseconds: 100), () {
-                        if (!entryHasFocus) {
-                          hideOverlay();
-                        }
-                      });
-                    } else {
-                      _timer?.cancel();
-                      _timer = Timer(Duration(milliseconds: 600), () {
-                        overlayPosition = details.position;
-                        overlayTriggerPosition = details.position;
-                        if (details.position.dx + overlayWidth > screenSize.width) {
-                          overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
-                        }
-                        if (details.position.dy + overlayHeight > screenSize.height) {
-                          overlayPosition = overlayPosition!.translate(0, -overlayHeight);
-                        }
-                        if (mounted) {
-                          showOverlay(widget.course, lesson);
-                          entry!.markNeedsBuild();
-                        }
-                      });
-                    }
-                  },
-                  child: buildLesson(lesson, color),
-                )),
+                  } else {
+                    _timer?.cancel();
+                    _timer = Timer(const Duration(milliseconds: 600), () {
+                      overlayPosition = details.position;
+                      overlayTriggerPosition = details.position;
+                      if (details.position.dx + overlayWidth > screenSize.width) {
+                        overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
+                      }
+                      if (details.position.dy + overlayHeight > screenSize.height) {
+                        overlayPosition = overlayPosition!.translate(0, -overlayHeight);
+                      }
+                      if (mounted) {
+                        showOverlay(widget.course, lesson);
+                        entry!.markNeedsBuild();
+                      }
+                    });
+                  }
+                },
+                child: buildLesson(lesson, color),
+              ),
+      ),
     );
   }
 
   Container buildLesson(CourseLesson lesson, Color color) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       width: (lesson.endsAt - lesson.startsFrom) / 60 * widget.oneLessonWidth,
       decoration: ShapeDecoration(
           color: color,
           shape: RoundedRectangleBorder(
-            side: BorderSide(width: 1),
+            side: const BorderSide(width: 1),
             borderRadius: BorderRadius.circular(10.0),
           )),
       height: 90,
@@ -458,7 +463,7 @@ class _LessonState extends State<Lesson> {
       child: Column(children: [
         Text(
           widget.course.shortcut,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -466,16 +471,15 @@ class _LessonState extends State<Lesson> {
         ),
         Text(
           profesors!,
-          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
+          style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
           overflow: TextOverflow.ellipsis,
         ),
-        SizedBox(height: 10),
-        buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
-        // Text(
-        //   locations!,
-        //   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-        //   overflow: TextOverflow.ellipsis,
-        // )
+        const SizedBox(height: 10),
+        Text(
+          locations!,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+          overflow: TextOverflow.ellipsis,
+        )
       ]),
     );
   }
@@ -512,35 +516,49 @@ class _LessonState extends State<Lesson> {
     const overlayZeroRadius = Radius.zero;
     BorderRadiusGeometry? borders;
 
+    // the border where the mouse is pointing should be sharp, the other are rounded
     if (overlayPosition == overlayTriggerPosition) {
-      borders = BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayZeroRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayZeroRadius);
     } else if (overlayPosition!.translate(overlayWidth, 0) == overlayTriggerPosition) {
-      borders = BorderRadius.only(topRight: overlayZeroRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayZeroRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
     } else if (overlayPosition!.translate(0, overlayHeight) == overlayTriggerPosition) {
-      borders = BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayZeroRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayZeroRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
     } else {
-      borders = BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
     }
 
     List<Widget> infos = lesson.infos
         .map((info) {
           return <Widget>[
             buildInfo("Vyučujíci: ", info.info),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
             buildInfo("Místnosti: ", info.locations.join(", ")),
-            SizedBox(height: 15),
-            Text("Vyučující týdny: ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
-            SizedBox(height: 5),
+            const SizedBox(height: 15),
+            const Text(
+              "Vyučující týdny: ",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w200,
+                color: Color.fromARGB(255, 100, 100, 100),
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 5),
             Center(
               child: Text(
                 info.weeks,
                 softWrap: true,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.clip,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
-            Divider(color: Colors.black)
+            const Divider(color: Colors.black)
           ];
         })
         .expand((i) => i)
@@ -552,11 +570,11 @@ class _LessonState extends State<Lesson> {
     return Container(
         width: overlayWidth,
         height: overlayHeight,
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         decoration: BoxDecoration(
           color: overlayColor,
           borderRadius: borders,
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               blurRadius: 6,
               color: overlayColor,
@@ -568,10 +586,10 @@ class _LessonState extends State<Lesson> {
             child: Text(
               course.fullName,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
             ),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Expanded(
               child: SingleChildScrollView(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: infos),
@@ -599,64 +617,58 @@ class _LessonState extends State<Lesson> {
 
     for (final entry in locations.entries) {
       final facultyName = switch (entry.key) {
-        Faculty.fit  => "FIT",
+        Faculty.fit => "FIT",
         Faculty.fekt => "FEKT",
         Faculty.cesa => "CESA",
         Faculty.cvis => "CVIS",
-        Faculty.fa   => "FA",
+        Faculty.fa => "FA",
         Faculty.fast => "FAST",
         Faculty.favu => "FaVU",
-        Faculty.fch  => "FCH",
-        Faculty.fp   => "FP",
-        Faculty.fsi  => "FSI",
-        Faculty.icv  => "ICV",
-        Faculty.re   => "RE",
-        Faculty.usi  => "ÚSI",
+        Faculty.fch => "FCH",
+        Faculty.fp => "FP",
+        Faculty.fsi => "FSI",
+        Faculty.icv => "ICV",
+        Faculty.re => "RE",
+        Faculty.usi => "ÚSI",
       };
 
       final facultyColor = switch (entry.key) {
-        Faculty.fit  => Color(0xFF00a9e0),
+        Faculty.fit => Color(0xFF00a9e0),
         Faculty.fekt => Color(0xFF003da5),
         Faculty.cesa => Color(0xFF009db1),
         Faculty.cvis => Color(0xFF898d8d),
-        Faculty.fa   => Color(0xFF7a99ac),
+        Faculty.fa => Color(0xFF7a99ac),
         Faculty.fast => Color(0xFF658d1b),
         Faculty.favu => Color(0xFFe782a9),
-        Faculty.fch  => Color(0xFF00ab8e),
-        Faculty.fp   => Color(0xFF8246af),
-        Faculty.fsi  => Color(0xFF004f71),
-        Faculty.usi  => Color(0xFF211447),
-        Faculty.icv || Faculty.re  => Color(0xFFe4002b), // Don't know... Use the VUT one
+        Faculty.fch => Color(0xFF00ab8e),
+        Faculty.fp => Color(0xFF8246af),
+        Faculty.fsi => Color(0xFF004f71),
+        Faculty.usi => Color(0xFF211447),
+        Faculty.icv || Faculty.re => Color(0xFFe4002b), // Don't know... Use the VUT one
       };
 
-      widgets.add(Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+      widgets.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
-            color: facultyColor,
-          ),
-          height: 19,
-          child: Text(
-            facultyName,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            )
-          )
-        ),
+            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(7),
+              color: facultyColor,
+            ),
+            height: 19,
+            child: Text(facultyName,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ))),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 5),
-          child: Text(
-            entry.value.join(", "),
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-            // overflow: TextOverflow.ellipsis,
-          )
-        )
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: Text(
+              entry.value.join(", "),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+              // overflow: TextOverflow.ellipsis,
+            ))
       ]));
     }
     widgets.add(Text(
@@ -670,13 +682,13 @@ class _LessonState extends State<Lesson> {
   Row buildInfo(String infoType, String infoValue) {
     return Row(
       children: [
-        Text(infoType, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
+        Text(infoType, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
         Expanded(
           child: Text(
             infoValue,
             softWrap: true,
             overflow: TextOverflow.clip,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
           ),
         ),
       ],

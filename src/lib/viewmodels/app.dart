@@ -1,37 +1,95 @@
+/*
+ * Filename: app.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27) (where author not listed)
+ * Author: Matúš Moravčík (xmorav48)
+ * Date: 15/12/2023
+ * Description: This file contains the view model that serves as the central
+ *    component in the application's architecture, managing data related to courses, study programs,
+ *    and timetables. It facilitates the fetching of information from the web.
+ */
+
 import 'dart:convert';
 
-import 'package:fit_schedule_maker_plus/models/course.dart';
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
-import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
-import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
-import 'package:fit_schedule_maker_plus/models/study.dart';
-import 'package:fit_schedule_maker_plus/models/faculty.dart';
-import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
-import 'package:fit_schedule_maker_plus/models/program_course.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
+import '../models/course.dart';
+import '../models/course_lesson.dart';
+import '../models/course_prerequisite.dart';
+import '../models/faculty.dart';
+import '../models/lesson_info.dart';
+import '../models/study.dart';
+import '../models/program_course_group.dart';
+import '../models/program_course.dart';
 import '../models/timetable.dart';
+import '../viewmodels/timetable.dart';
 
 class AppViewModel extends ChangeNotifier {
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
+
   Map<int, StudyProgram> allStudyPrograms = {};
   Map<String, Faculty> allLocations = {};
   YearOfStudy currentGrade = YearOfStudy.second;
   Semester currentSemester = Semester.winter;
   String currentYear = "2023/24";
-  int currentStudyProgram = 15803;
-
-  int activeTabIndex = 0;
+  int currentStudyProgram = 15803; // BIT
 
   /// Load stored timetables from disk
-  List<Timetable> getTimetables() {
-    return [
-      Timetable(name: "Ver. 1"),
-      Timetable(name: "Ver. 2"),
-      Timetable(name: "Ver. 3"),
-    ];
+  List<Timetable> get timetables => [
+        Timetable(name: "Ver. 1"),
+        Timetable(name: "Ver. 2"),
+        Timetable(name: "Ver. 3"),
+      ];
+
+  // Matúš Moravčík
+  /// Changes the grade and notifies all listeners
+  void changeGrade(YearOfStudy grade) {
+    currentGrade = grade;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the semester to winter or summer and notifies all listeners
+  void changeSemester(Semester semester) {
+    currentSemester = semester;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the year and notifies all listeners that the year has been changed
+  void changeYear(String year) {
+    currentYear = year;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the stady and notifies all listeners
+  void changeStudy(int programId) {
+    currentStudyProgram = programId;
+    getProgramCourses(programId);
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  // FIXME: Right now it only selects the first lesson of each type from each course
+  /// Generates a timetable based on user defined constraints.
+  void generateTimetable(int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
+    for (var courseId in tvm.currentTimetable.currentContent.keys) {
+      final lessons = allCourses[courseId]!.lessons;
+
+      final lessonTypes = lessons.map((lesson) => lesson.type).toSet();
+      tvm.currentTimetable.currentContent[courseId]?.clear();
+      lessonTypes.forEach((type) {
+        final index = lessons.indexWhere((element) => element.type == type && !selected.contains(element.dayOfWeek));
+        if (index > -1) {
+          tvm.addLesson(courseId, index);
+        }
+      });
+    }
+
+    notifyListeners();
   }
 
   /// https://www.fit.vut.cz/study/study-plan/.en
@@ -81,19 +139,19 @@ class AppViewModel extends ChangeNotifier {
     final jsonResult = jsonDecode(data) as Map<String, dynamic>;
     allLocations = jsonResult.map((key, value) {
       final faculty = switch (value) {
-        "FIT"  => Faculty.fit,
+        "FIT" => Faculty.fit,
         "FEKT" => Faculty.fekt,
         "CESA" => Faculty.cesa,
         "CVIS" => Faculty.cvis,
-        "FA"   => Faculty.fa,
+        "FA" => Faculty.fa,
         "FAST" => Faculty.fast,
         "FaVU" => Faculty.favu,
-        "FCH"  => Faculty.fch,
-        "FP"   => Faculty.fp,
-        "FSI"  => Faculty.fsi,
-        "ICV"  => Faculty.icv,
-        "RE"   => Faculty.re,
-        "USI"  => Faculty.usi,
+        "FCH" => Faculty.fch,
+        "FP" => Faculty.fp,
+        "FSI" => Faculty.fsi,
+        "ICV" => Faculty.icv,
+        "RE" => Faculty.re,
+        "USI" => Faculty.usi,
         _ => Faculty.fekt,
       };
 
@@ -102,7 +160,7 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
-
+  /// Asynchronously fetches courses for a given study program if not already loaded.
   Future<void> getProgramCourses(int programId) async {
     if (allStudyPrograms.containsKey(programId)) {
       if (allStudyPrograms[programId]!.courseGroups.isNotEmpty) {
@@ -183,11 +241,11 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
+  /// Asynchronously fetches and updates data for a specific course if not already loaded.
   Future<void> fetchCourseData(int courseId) async {
-    if (!allCourses.containsKey(courseId)) {
-      // Unknown course
-      return;
-    }
+    if (!allCourses.containsKey(courseId)) return; // unknown course
+
+    if (isCourseLessonFetched(courseId)) return;
 
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
@@ -201,10 +259,14 @@ class AppViewModel extends ChangeNotifier {
     allCourses[courseId]!.loaded = true;
   }
 
+  // Matúš Moravčík
+  /// Checks if lessons for a given course have already been fetched.
   bool isCourseLessonFetched(int courseId) {
     return allCourses[courseId]!.loaded;
   }
 
+  // Matúš Moravčík
+  /// Asynchronously fetches lessons for multiple courses if not already loaded.
   Future<void> getAllCourseLessonsAsync(List<int> courseIds) async {
     await Future.wait(courseIds.map((courseId) async {
       if (isCourseLessonFetched(courseId)) {
@@ -216,36 +278,6 @@ class AppViewModel extends ChangeNotifier {
 
   Faculty? getRoomLocation(String room) {
     return allLocations[room];
-  }
-
-  /// Changes the grade and notifies all listeners
-  void changeGrade(YearOfStudy grade) {
-    currentGrade = grade;
-    notifyListeners();
-  }
-
-  /// Changes the term to winter or summer and notifies all listeners
-  void changeTerm(Semester semester) {
-    currentSemester = semester;
-    notifyListeners();
-  }
-
-  /// Changes the year and notifies all listeners that the year has been changed
-  void changeYear(String year) {
-    currentYear = year;
-    notifyListeners();
-  }
-
-  /// Changes the stady and notifies all listeners
-  void changeStudy(int programId) {
-    currentStudyProgram = programId;
-    getProgramCourses(programId);
-    notifyListeners();
-  }
-
-  void changeTab(int index) {
-    activeTabIndex = index;
-    notifyListeners();
   }
 
   /// This function checks if the current study program has fetched its course group
@@ -260,6 +292,158 @@ class AppViewModel extends ChangeNotifier {
   ProgramCourseGroup getProgramCourseGroup() {
     return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere((group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
   }
+
+  /// This function takes a string in the format of "hh:mm" and returns the total number of minutes
+  int parseTime(String str) {
+    final chunks = str.split(":").map((v) => int.parse(v));
+    return chunks.elementAt(0) * 60 + chunks.elementAt(1);
+  }
+
+  int? _extractNumberOfLessons(String html, String delimiter) {
+    final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
+    if (part == null) return null;
+    final content = part.split("<div class=\"b-detail__content\">").elementAtOrNull(1);
+    if (content == null) return null;
+
+    final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
+    return numberOfLessons == 0 ? null : numberOfLessons;
+  }
+
+  List<CoursePrerequisite> _extractPrerequisites(String html) {
+    List<CoursePrerequisite> list = [];
+
+    var part = html.split("Time span").elementAtOrNull(1);
+    if (part == null) return list;
+    part = part.split("</ul>")[0];
+    RegExp exp = RegExp(r"<li>(.*)</li>");
+
+    for (final match in exp.allMatches(part)) {
+      final data = match[1];
+      if (data == null) continue;
+
+      final split = data.split(" hrs ");
+      final hours = int.tryParse(split[0]);
+      if (hours == null) continue;
+
+      final type = switch (split[1]) {
+        "lectures" => PrerequisiteType.lecture,
+        "seminars" => PrerequisiteType.seminar,
+        "exercises" => PrerequisiteType.exercise,
+        "laboratories" => PrerequisiteType.laborator,
+        "projects" => PrerequisiteType.project,
+        "pc labs" => PrerequisiteType.pcLab,
+        _ => null
+      };
+
+      if (type == null) continue;
+
+      final numberOfLessons = switch (type) {
+        PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
+        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises") ?? _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
+        PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
+        _ => 0,
+      };
+
+      if (numberOfLessons == null) continue;
+
+      list.add(CoursePrerequisite(type: type, requiredHours: hours, numberOfLessons: numberOfLessons));
+    }
+
+    return list;
+  }
+
+  List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
+    if (lesson == null) {
+      return list;
+    }
+
+    bool found = false;
+
+    for (var i = 0; i < list.length; i++) {
+      final value = list[i];
+      if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
+        continue;
+      }
+
+      list[i].infos.addAll(lesson.infos);
+      found = true;
+      break;
+    }
+
+    if (!found) {
+      list.add(lesson);
+    }
+
+    return list;
+  }
+
+  CourseLesson? _parseLesson(element) {
+    if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
+      // It is not possible to register this class in Studis.
+      return null;
+    }
+
+    RegExp exp = RegExp(r">(.*)</");
+    final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
+
+    final type = switch (matches[1]) {
+      "exercise" => LessonType.exercise,
+      "lecture" => LessonType.lecture,
+      "laboratory" => LessonType.laboratory,
+      "seminar" => LessonType.seminar,
+      "comp.lab" => LessonType.computerLab,
+      _ => null
+    };
+
+    if (type == null) return null;
+
+    final dayOfWeek = switch (matches[0]) {
+      "<th>Mon" => DayOfWeek.monday,
+      "<th>Tue" => DayOfWeek.tuesday,
+      "<th>Wed" => DayOfWeek.wednesday,
+      "<th>Thu" => DayOfWeek.thursday,
+      "<th>Fri" => DayOfWeek.friday,
+      _ => null
+    };
+
+    if (dayOfWeek == null) return null;
+
+    List<String> locations = [];
+    int? startsFrom;
+    int? endsAt;
+    int? capacity;
+
+    for (var i = 3; i < matches.length; i++) {
+      final s = matches[i]!;
+      if (s.startsWith("<td>")) {
+        final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
+        startsFrom = parseTime(chunks.elementAt(0));
+        endsAt = parseTime(chunks.elementAt(1));
+        capacity = int.parse(chunks.elementAt(2));
+
+        break;
+      }
+
+      locations.add(s);
+    }
+
+    if (startsFrom == null || endsAt == null || capacity == null) return null;
+
+    final weeks = matches[2];
+    final info = exp.firstMatch(matches.last!)![1];
+
+    if (weeks == null || info == null) return null;
+
+    return CourseLesson(
+      dayOfWeek: dayOfWeek,
+      type: type,
+      infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
+      startsFrom: startsFrom,
+      endsAt: endsAt,
+    );
+  }
 }
 
 /// This function takes a string in the format of "hh:mm" and returns the total number of minutes
@@ -267,156 +451,3 @@ int parseTime(String str) {
   final chunks = str.split(":").map((v) => int.parse(v));
   return chunks.elementAt(0) * 60 + chunks.elementAt(1);
 }
-
-int? _extractNumberOfLessons(String html, String delimiter) {
-  final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
-  if (part == null) return null;
-  final content = part.split("<div class=\"b-detail__content\">").elementAtOrNull(1);
-  if (content == null) return null;
-
-  final numberOfLessons = content.split("</div>")[0].split("</ol>")[0].split("</li>").length - 1;
-  return numberOfLessons == 0 ? null : numberOfLessons;
-}
-
-
-List<CoursePrerequisite> _extractPrerequisites(String html) {
-  List<CoursePrerequisite> list = [];
-
-  var part = html.split("Time span").elementAtOrNull(1);
-  if (part == null) return list;
-  part = part.split("</ul>")[0];
-  RegExp exp = RegExp(r"<li>(.*)</li>");
-
-  for (final match in exp.allMatches(part)) {
-    final data = match[1];
-    if (data == null) continue;
-
-    final split = data.split(" hrs ");
-    final hours = int.tryParse(split[0]);
-    if (hours == null) continue;
-
-    final type = switch (split[1]) {
-      "lectures" => PrerequisiteType.lecture,
-      "seminars" => PrerequisiteType.seminar,
-      "exercises" => PrerequisiteType.exercise,
-      "laboratories" => PrerequisiteType.laborator,
-      "projects" => PrerequisiteType.project,
-      "pc labs" => PrerequisiteType.pcLab,
-      _ => null
-    };
-
-    if (type == null) continue;
-
-    final numberOfLessons = switch (type) {
-      PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
-      PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
-      PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises")
-                                ?? _extractNumberOfLessons(html, "lectures"),
-      PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
-      PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
-      _ => 0,
-    };
-
-    if (numberOfLessons == null) continue;
-
-    list.add(CoursePrerequisite(
-      type: type,
-      requiredHours: hours,
-      numberOfLessons: numberOfLessons
-    ));
-  }
-
-  return list;
-}
-
-List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
-  if (lesson == null) {
-    return list;
-  }
-
-  bool found = false;
-
-  for (var i = 0; i < list.length; i++) {
-    final value = list[i];
-    if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
-      continue;
-    }
-
-    list[i].infos.addAll(lesson.infos);
-    found = true;
-    break;
-  }
-
-  if (!found) {
-    list.add(lesson);
-  }
-
-  return list;
-}
-
-CourseLesson? _parseLesson(element) {
-  if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
-    // It is not possible to register this class in Studis.
-    return null;
-  }
-
-  RegExp exp = RegExp(r">(.*)</");
-  final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
-
-  final type = switch (matches[1]) {
-    "exercise" => LessonType.exercise,
-    "lecture" => LessonType.lecture,
-    "laboratory" => LessonType.laboratory,
-    "seminar" => LessonType.seminar,
-    "comp.lab" => LessonType.computerLab,
-    _ => null
-  };
-
-  if (type == null) return null;
-
-  final dayOfWeek = switch (matches[0]) {
-    "<th>Mon" => DayOfWeek.monday,
-    "<th>Tue" => DayOfWeek.tuesday,
-    "<th>Wed" => DayOfWeek.wednesday,
-    "<th>Thu" => DayOfWeek.thursday,
-    "<th>Fri" => DayOfWeek.friday,
-    _ => null
-  };
-
-  if (dayOfWeek == null) return null;
-
-  List<String> locations = [];
-  int? startsFrom;
-  int? endsAt;
-  int? capacity;
-
-  for (var i = 3; i < matches.length; i++) {
-    final s = matches[i]!;
-    if (s.startsWith("<td>")) {
-      final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
-      startsFrom = parseTime(chunks.elementAt(0));
-      endsAt = parseTime(chunks.elementAt(1));
-      capacity = int.parse(chunks.elementAt(2));
-
-      break;
-    }
-
-    locations.add(s);
-  }
-
-  if (startsFrom == null || endsAt == null || capacity == null) return null;
-
-  final weeks = matches[2];
-  final info = exp.firstMatch(matches.last!)![1];
-
-  if (weeks == null || info == null) return null;
-
-  return CourseLesson(
-    dayOfWeek: dayOfWeek,
-    type: type,
-    infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
-    startsFrom: startsFrom,
-    endsAt: endsAt,
-  );
-}
-

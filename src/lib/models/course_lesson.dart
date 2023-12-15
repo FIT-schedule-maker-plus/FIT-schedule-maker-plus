@@ -1,6 +1,49 @@
-// ignore_for_file: non_constant_identifier_names
+/*
+ * Filename: course_lesson.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a single lesson course.
+ */
 
-import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
+import 'lesson_info.dart';
+
+class CourseLesson {
+  /// When the lesson starts
+  final int startsFrom;
+
+  /// When the lesson ends
+  final int endsAt;
+
+  final LessonType type;
+  final DayOfWeek dayOfWeek;
+
+  List<LessonInfo> infos;
+
+  CourseLesson({
+    required this.dayOfWeek,
+    required this.type,
+    required this.startsFrom,
+    required this.endsAt,
+    required this.infos,
+  });
+
+  factory CourseLesson.fromJson(Map<String, dynamic> json) => CourseLesson(
+        startsFrom: int.parse(json["starts_from"]),
+        endsAt: int.parse(json["ends_at"]),
+        type: LessonType.values[int.parse(json["type"])],
+        dayOfWeek: DayOfWeek.values[int.parse(json["day_of_week"])],
+        infos: List<LessonInfo>.from(json["infos"].map((info) => LessonInfo.fromJson(info))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "starts_from": startsFrom,
+        "ends_at": endsAt,
+        "type": type.index,
+        "day_of_week": dayOfWeek.index,
+        "infos": List<dynamic>.from(infos.map((info) => info.toJson())),
+      };
+}
 
 enum DayOfWeek {
   monday,
@@ -50,42 +93,4 @@ extension ParseToString<T extends Enum> on T {
     // Handle unknown cases
     return "Unknown";
   }
-}
-
-/// Represents a single lesson course.
-class CourseLesson {
-  /// When the lesson starts
-  final int startsFrom;
-
-  /// When the lesson ends
-  final int endsAt;
-
-  final LessonType type;
-  final DayOfWeek dayOfWeek;
-
-  List<LessonInfo> infos;
-
-  CourseLesson({
-    required this.dayOfWeek,
-    required this.type,
-    required this.startsFrom,
-    required this.endsAt,
-    required this.infos,
-  });
-
-  factory CourseLesson.fromJson(Map<String, dynamic> json) => CourseLesson(
-        startsFrom: int.parse(json["starts_from"]),
-        endsAt: int.parse(json["ends_at"]),
-        type: LessonType.values[int.parse(json["type"])],
-        dayOfWeek: DayOfWeek.values[int.parse(json["day_of_week"])],
-        infos: List<LessonInfo>.from(json["infos"].map((info) => LessonInfo.fromJson(info))),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "starts_from": startsFrom,
-        "ends_at": endsAt,
-        "type": type.index,
-        "day_of_week": dayOfWeek.index,
-        "infos": List<dynamic>.from(infos.map((info) => info.toJson())),
-      };
 }
