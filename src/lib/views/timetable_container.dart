@@ -475,11 +475,12 @@ class _LessonState extends State<Lesson> {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 10),
-        Text(
-          locations!,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-          overflow: TextOverflow.ellipsis,
-        )
+        buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
+        // Text(
+        //   locations!,
+        //   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+        //   overflow: TextOverflow.ellipsis,
+        // )
       ]),
     );
   }
