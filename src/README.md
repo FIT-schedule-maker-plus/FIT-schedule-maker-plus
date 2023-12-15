@@ -1,7 +1,9 @@
 # FIT schedule maker plus
 
-## Used Libraries
+## Instalation and run
+flutter run -d chrome --web-browser-flag "--disable-web-security"
 
+## Used Libraries
 - provider: ^6.0.5    [https://pub.dev/packages/provider]
 - convert: ^3.1.1      [https://pub.dev/packages/convert]
 - chaleno: ^0.0.6      [https://pub.dev/packages/chaleno]
