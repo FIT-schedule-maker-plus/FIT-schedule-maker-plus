@@ -8,6 +8,7 @@
  *    delete, and modify timetable versions. Additionally, users can export these versions
  *    to JSON or PNG formats.
  */
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,8 @@ import '../models/program_course_group.dart';
 import '../models/timetable.dart';
 import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
-import '../views/timetable_container.dart' as custom_widget;
+import '../views/timetable_container.dart' as view;
+import 'homepage.dart' as view;
 
 enum ExportMenuItem { exportPNG, exportJSON }
 
@@ -58,11 +60,11 @@ class VariantWidget extends StatelessWidget {
           ),
           children: <Widget>[
             SizedBox(
-              height: 200,
+              height: 600,
               child: Selector<TimetableViewModel, Timetable>(
                 selector: (ctx, vm) => vm.timetables[index],
                 builder: (ctx, tim, _) {
-                  return custom_widget.Timetable(
+                  return view.Timetable(
                     filter: Filter.all(),
                     timetable: tim,
                     readOnly: true,
@@ -109,7 +111,8 @@ class VariantWidget extends StatelessWidget {
             backgroundColor: Colors.transparent,
           ),
           child: const Text('Zvolit'),
-          onPressed: () => context.read<TimetableViewModel>().setActive(index: index),
+          onPressed: () =>
+              context.read<TimetableViewModel>().setActive(index: index),
         ),
         PopupMenuButton<ExportMenuItem>(
           onSelected: (item) {},
@@ -127,7 +130,10 @@ class VariantWidget extends StatelessWidget {
               value: ExportMenuItem.exportJSON,
               child: Text("JSON", style: TextStyle(color: foreground2)),
               onTap: () {
-                context.read<TimetableViewModel>().saveAsJson(index: index);
+                context.read<TimetableViewModel>().saveAsJson(
+                      index: index,
+                      avm: context.read<AppViewModel>(),
+                    );
               },
             ),
           ],
@@ -147,8 +153,10 @@ class VariantWidget extends StatelessWidget {
             if (vm.isEditingName(index: index))
               Expanded(
                 child: TextField(
-                    controller: TextEditingController()..text = vm.timetables[index].name,
-                    onChanged: (newText) => vm.updateEditingName(index, newText),
+                    controller: TextEditingController()
+                      ..text = vm.timetables[index].name,
+                    onChanged: (newText) =>
+                        vm.updateEditingName(index, newText),
                     focusNode: FocusNode()..requestFocus(),
                     style: const TextStyle(color: Color(0xffffffff))),
               ),
@@ -157,7 +165,9 @@ class VariantWidget extends StatelessWidget {
                 vm.timetables[index].name,
                 style: TextStyle(
                   fontSize: 16,
-                  color: index == vm.active ? foreground : const Color.fromARGB(255, 255, 255, 255),
+                  color: index == vm.active
+                      ? foreground
+                      : const Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
             if (vm.isEditingName(index: index))
@@ -169,7 +179,8 @@ class VariantWidget extends StatelessWidget {
                     color: colConfirm,
                   ),
                   IconButton(
-                    onPressed: () => vm.setEditingName(index: index, value: false),
+                    onPressed: () =>
+                        vm.setEditingName(index: index, value: false),
                     icon: const Icon(Icons.close),
                     color: colClose,
                   ),
@@ -201,45 +212,67 @@ class TimetableVariants extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xff171616),
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.only(top: 20.0),
-          constraints: const BoxConstraints(
-            minWidth: 200,
-            maxWidth: 1000,
-          ),
-          child: Column(
-            children: [
-              Container(
-                color: Colors.transparent,
-                child: Selector<TimetableViewModel, int>(
-                  selector: (ctx, vm) => vm.timetables.length,
-                  builder: (ctx, length, _) => ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: length,
-                    itemBuilder: (ctx, i) => VariantWidget(index: i),
-                  ),
-                ),
+    return Stack(
+      children: [
+        Container(
+          color: const Color(0xff171616),
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 20.0),
+              constraints: BoxConstraints(
+                minWidth: 0,
+                maxWidth: max(700, MediaQuery.of(context).size.width * 0.7),
               ),
-              Container(
-                alignment: Alignment.center,
-                child: IconButton(
-                  onPressed: () {
-                    context.read<TimetableViewModel>().createNewTimetable();
-                  },
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xff292727),
+              child: Column(
+                children: [
+                  Container(
+                    color: Colors.transparent,
+                    child: Selector<TimetableViewModel, int>(
+                      selector: (ctx, vm) => vm.timetables.length,
+                      builder: (ctx, length, _) => ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: length,
+                        itemBuilder: (ctx, i) => VariantWidget(index: i),
+                      ),
+                    ),
                   ),
-                ),
+                  Container(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      onPressed: () {
+                        context.read<TimetableViewModel>().createNewTimetable();
+                      },
+                      icon: const Icon(Icons.add),
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xff292727),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        Positioned(
+          right: 20,
+          bottom: 20,
+          child: view.BlackButton(
+            onTap: () {
+              context
+                  .read<TimetableViewModel>()
+                  .loadFromJson(context.read<AppViewModel>());
+            },
+            child: Text(
+              "Import",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -288,7 +321,9 @@ class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
           icon: const Icon(Icons.check),
           color: const Color(0xff00ff00),
           onPressed: () {
-            context.read<TimetableViewModel>().removeTimetable(index: widget.variantIndex);
+            context
+                .read<TimetableViewModel>()
+                .removeTimetable(index: widget.variantIndex);
             isEnabled = false;
           });
     }

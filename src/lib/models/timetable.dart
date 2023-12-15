@@ -36,6 +36,7 @@ class Timetable {
   Timetable({
     required this.name,
     Map<Semester, Map<CourseID, Set<LessonID>>>? courseContent,
+    this.semester = Semester.winter,
   }) {
     if (courseContent != null) {
       selected = courseContent;
@@ -44,7 +45,8 @@ class Timetable {
 
   /// Check if current semester timetable contains a given course lesson.
   bool containsLesson(CourseID course, LessonID lesson) {
-    return currentContent.containsKey(course) && currentContent[course]!.contains(lesson);
+    return currentContent.containsKey(course) &&
+        currentContent[course]!.contains(lesson);
   }
 
   /// Add course lesson to current semester timetable.
@@ -87,7 +89,18 @@ class Timetable {
 
   factory Timetable.fromJson(Map<String, dynamic> json) => Timetable(
         name: json["name"],
-        courseContent: json["content"],
+        semester: Semester.values[json["sel_semester"]],
+        courseContent: Map.from(json["selected"]).map(
+          (sem, val) => MapEntry(
+            Semester.values[int.parse(sem)],
+            Map.from(val).map(
+              (key, val) => MapEntry(
+                int.parse(key),
+                Set<int>.from(val),
+              ),
+            ),
+          ),
+        ),
       );
 
   Map<String, dynamic> toJson() => {
@@ -108,7 +121,10 @@ class Timetable {
 
   @override
   bool operator ==(Object other) {
-    return (other is Timetable) && semester == other.semester && selected == other.selected && name == other.name;
+    return (other is Timetable) &&
+        semester == other.semester &&
+        selected == other.selected &&
+        name == other.name;
   }
 
   @override
