@@ -4,10 +4,15 @@
 - Internet connection
 - Chrome or chromium-based browser (for dev version)
 ## Build and run
-Clone the project
+(git) Clone the project
 
     git clone https://github.com/FIT-schedule-maker-plus/FIT-schedule-maker-plus scheduler
     cd scheduler/src
+
+(submitted archive) Make sure you are in the `src` directory. It should contain:
+- `lib/`
+- `web/`
+- ...
     
 Build and run with
 
@@ -21,10 +26,10 @@ For other chrome binaries:
 Without this flag, the web scraping won't work because of CORS problems. We would have to solve this with help from our faculty first.
 
 ## Used Libraries
-- provider: ^6.0.5    [https://pub.dev/packages/provider]
-- convert: ^3.1.1      [https://pub.dev/packages/convert]
-- chaleno: ^0.0.6      [https://pub.dev/packages/chaleno]
-- screenshot: ^2.1.0   [https://pub.dev/packages/screenshot]
-- file_picker: ^6.1.1  [https://pub.dev/packages/file_picker]
+- [provider](https://pub.dev/packages/provider): ^6.0.5 
+- [convert](https://pub.dev/packages/convert): ^3.1.1 
+- [chaleno](https://pub.dev/packages/chaleno): ^0.0.6 
+- [screenshot](https://pub.dev/packages/screenshot): ^2.1.0 
+- [file_picker](https://pub.dev/packages/file_picker): ^6.1.1 
 
 
