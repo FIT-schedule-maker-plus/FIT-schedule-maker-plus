@@ -53,7 +53,7 @@ Widget buildStudiumBar(BuildContext context) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Image.asset('assets/images/vut_logo.png'),
+        Image.asset('images/vut_logo.png'),
         SizedBox(height: 10),
         Expanded(
           child: ShaderMask(
