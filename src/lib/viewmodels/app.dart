@@ -5,6 +5,7 @@ import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
 import 'package:fit_schedule_maker_plus/models/study.dart';
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/models/program_course.dart';
+import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
@@ -358,6 +359,23 @@ class AppViewModel extends ChangeNotifier {
 
   void changeTab(int index) {
     activeTabIndex = index;
+    notifyListeners();
+  }
+
+  // FIXME: Right now it only selects the first lesson of each type from each course
+  void generateTimetable(int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
+    for (var courseId in tvm.currentTimetable.currentContent.keys) {
+      final lessons = allCourses[courseId]!.lessons;
+
+      final lessonTypes = lessons.map((lesson) => lesson.type).toSet();
+      lessonTypes.forEach((type) {
+        final index = lessons.indexWhere((element) => element.type == type && !selected.contains(element.dayOfWeek));
+        if (index > -1) {
+          tvm.addLesson(courseId, index);
+        }
+      });
+    }
+
     notifyListeners();
   }
 
