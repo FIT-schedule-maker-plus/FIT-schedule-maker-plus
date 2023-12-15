@@ -1,5 +1,5 @@
 /*
- * Filename: main.dart
+ * Filename: utils.dart
  * Project: FIT-schedule-maker-plus
  * Author: Jakub Kloub (xkloub03)
  * Date: 15/12/2023
