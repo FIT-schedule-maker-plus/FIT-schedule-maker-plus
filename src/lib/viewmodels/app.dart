@@ -38,9 +38,8 @@ class AppViewModel extends ChangeNotifier {
 
   /// Load stored timetables from disk
   List<Timetable> get timetables => [
-        Timetable(name: "Ver. 1"),
-        Timetable(name: "Ver. 2"),
-        Timetable(name: "Ver. 3"),
+        Timetable(name: "Varianta A"),
+        Timetable(name: "Varianta B"),
       ];
 
   // Matúš Moravčík
