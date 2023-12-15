@@ -224,13 +224,11 @@ class TimetableVariants extends StatelessWidget {
                     constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 150),
                     child: Selector<TimetableViewModel, int>(
                       selector: (ctx, vm) => vm.timetables.length,
-                      builder: (ctx, length, _) => Expanded(
-                        child: SingleChildScrollView(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: length,
-                            itemBuilder: (ctx, i) => VariantWidget(index: i),
-                          ),
+                      builder: (ctx, length, _) => SingleChildScrollView(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: length,
+                          itemBuilder: (ctx, i) => VariantWidget(index: i),
                         ),
                       ),
                     ),
