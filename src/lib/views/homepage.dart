@@ -45,8 +45,11 @@ class Homepage extends StatelessWidget {
               case ConnectionState.done:
                 return const Content();
               case ConnectionState.waiting:
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               default:
                 return const Scaffold(
