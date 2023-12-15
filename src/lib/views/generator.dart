@@ -1,8 +1,11 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_key_in_widget_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_key_in_widget_constructors, avoid_unnecessary_containers
 
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
+import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class Generator extends StatelessWidget {
   final AnimationController animationController;
@@ -74,23 +77,23 @@ class Generator extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 10),
-                      Text("Vyučovací dny: ", style: TextStyle(color: Colors.white, fontSize: 16)),
+                      Text("Dny volna: ", style: TextStyle(color: Colors.white, fontSize: 16)),
                       DayPicker(selected),
                     ],
                   ),
                 ),
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-              ),
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
+                context.read<AppViewModel>().generateTimetable(
+                    int.parse(_textEditingControllerLessons.text), int.parse(_textEditingControllerPractices.text), selected, context.read<TimetableViewModel>());
                 animationController.reverse();
               },
-              child: Text(
-                "Vygenerovat",
-                style: TextStyle(color: Colors.black),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 6, horizontal: 30),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.white, blurRadius: 3)]),
+                child: Text("Vygenerovat", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             )
           ],
@@ -109,6 +112,8 @@ class DayPicker extends StatefulWidget {
 }
 
 class _DayPickerState extends State<DayPicker> {
+  int idOfHoveredDay = -1;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -127,16 +132,28 @@ class _DayPickerState extends State<DayPicker> {
         }
         setState(() {});
       },
-      child: Container(
-        padding: EdgeInsets.all(8),
-        margin: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: widget.selected.contains(dayOfWeek) ? const Color.fromARGB(18, 255, 255, 255) : Color.fromARGB(6, 255, 255, 255),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Text(
-          dayOfWeek.toCzechString(),
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+      child: MouseRegion(
+        onEnter: (value) => setState(() {
+          idOfHoveredDay = dayOfWeek.index;
+        }),
+        onExit: (value) => setState(() {
+          idOfHoveredDay = -1;
+        }),
+        child: Container(
+          padding: EdgeInsets.all(8),
+          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: widget.selected.contains(dayOfWeek)
+                ? Color.fromARGB(255, 45, 2, 2)
+                : idOfHoveredDay == dayOfWeek.index
+                    ? Color.fromARGB(10, 255, 255, 255)
+                    : Color.fromARGB(0, 255, 255, 255),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Text(
+            dayOfWeek.toCzechString(),
+            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );
