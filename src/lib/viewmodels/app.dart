@@ -1,34 +1,91 @@
-import 'package:fit_schedule_maker_plus/models/course.dart';
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
-import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
-import 'package:fit_schedule_maker_plus/models/lesson_info.dart';
-import 'package:fit_schedule_maker_plus/models/study.dart';
-import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
-import 'package:fit_schedule_maker_plus/models/program_course.dart';
-import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
+/*
+ * Filename: app.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27) (where author not listed)
+ * Author: Matúš Moravčík (xmorav48)
+ * Date: 15/12/2023
+ * Description: This file contains the view model that serves as the central
+ *    component in the application's architecture, managing data related to courses, study programs,
+ *    and timetables. It facilitates the fetching of information from the web.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
 
+import '../models/course.dart';
+import '../models/course_lesson.dart';
+import '../models/course_prerequisite.dart';
+import '../models/lesson_info.dart';
+import '../models/study.dart';
+import '../models/program_course_group.dart';
+import '../models/program_course.dart';
 import '../models/timetable.dart';
+import '../viewmodels/timetable.dart';
 
 class AppViewModel extends ChangeNotifier {
   /// Stores all courses loaded from disk or from web.
   Map<int, Course> allCourses = {};
+
   Map<int, StudyProgram> allStudyPrograms = {};
   YearOfStudy currentGrade = YearOfStudy.second;
   Semester currentSemester = Semester.winter;
   String currentYear = "2023/24";
-  int currentStudyProgram = 15803;
-
-  int activeTabIndex = 0;
+  int currentStudyProgram = 15803; // BIT
 
   /// Load stored timetables from disk
-  List<Timetable> getTimetables() {
-    return [
-      Timetable(name: "Ver. 1"),
-      Timetable(name: "Ver. 2"),
-      Timetable(name: "Ver. 3"),
-    ];
+  List<Timetable> get timetables => [
+        Timetable(name: "Ver. 1"),
+        Timetable(name: "Ver. 2"),
+        Timetable(name: "Ver. 3"),
+      ];
+
+  // Matúš Moravčík
+  /// Changes the grade and notifies all listeners
+  void changeGrade(YearOfStudy grade) {
+    currentGrade = grade;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the semester to winter or summer and notifies all listeners
+  void changeSemester(Semester semester) {
+    currentSemester = semester;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the year and notifies all listeners that the year has been changed
+  void changeYear(String year) {
+    currentYear = year;
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  /// Changes the stady and notifies all listeners
+  void changeStudy(int programId) {
+    currentStudyProgram = programId;
+    getProgramCourses(programId);
+    notifyListeners();
+  }
+
+  // Matúš Moravčík
+  // FIXME: Right now it only selects the first lesson of each type from each course
+  /// Generates a timetable based on user defined constraints.
+  void generateTimetable(int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
+    for (var courseId in tvm.currentTimetable.currentContent.keys) {
+      final lessons = allCourses[courseId]!.lessons;
+
+      final lessonTypes = lessons.map((lesson) => lesson.type).toSet();
+      tvm.currentTimetable.currentContent[courseId]?.clear();
+      lessonTypes.forEach((type) {
+        final index = lessons.indexWhere((element) => element.type == type && !selected.contains(element.dayOfWeek));
+        if (index > -1) {
+          tvm.addLesson(courseId, index);
+        }
+      });
+    }
+
+    notifyListeners();
   }
 
   /// https://www.fit.vut.cz/study/study-plan/.en
@@ -74,7 +131,7 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
-
+  /// Asynchronously fetches courses for a given study program if not already loaded.
   Future<void> getProgramCourses(int programId) async {
     if (allStudyPrograms.containsKey(programId)) {
       if (allStudyPrograms[programId]!.courseGroups.isNotEmpty) {
@@ -155,11 +212,11 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
+  /// Asynchronously fetches and updates data for a specific course if not already loaded.
   Future<void> fetchCourseData(int courseId) async {
-    if (!allCourses.containsKey(courseId)) {
-      // Unknown course
-      return;
-    }
+    if (!allCourses.containsKey(courseId)) return; // unknown course
+
+    if (isCourseLessonFetched(courseId)) return;
 
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
@@ -173,10 +230,14 @@ class AppViewModel extends ChangeNotifier {
     allCourses[courseId]!.loaded = true;
   }
 
+  // Matúš Moravčík
+  /// Checks if lessons for a given course have already been fetched.
   bool isCourseLessonFetched(int courseId) {
     return allCourses[courseId]!.loaded;
   }
 
+  // Matúš Moravčík
+  /// Asynchronously fetches lessons for multiple courses if not already loaded.
   Future<void> getAllCourseLessonsAsync(List<int> courseIds) async {
     await Future.wait(courseIds.map((courseId) async {
       if (isCourseLessonFetched(courseId)) {
@@ -332,58 +393,13 @@ class AppViewModel extends ChangeNotifier {
     return numberOfLessons == 0 ? null : numberOfLessons;
   }
 
-  /// Changes the grade and notifies all listeners
-  void changeGrade(YearOfStudy grade) {
-    currentGrade = grade;
-    notifyListeners();
-  }
-
-  /// Changes the term to winter or summer and notifies all listeners
-  void changeTerm(Semester semester) {
-    currentSemester = semester;
-    notifyListeners();
-  }
-
-  /// Changes the year and notifies all listeners that the year has been changed
-  void changeYear(String year) {
-    currentYear = year;
-    notifyListeners();
-  }
-
-  /// Changes the stady and notifies all listeners
-  void changeStudy(int programId) {
-    currentStudyProgram = programId;
-    getProgramCourses(programId);
-    notifyListeners();
-  }
-
-  void changeTab(int index) {
-    activeTabIndex = index;
-    notifyListeners();
-  }
-
-  // FIXME: Right now it only selects the first lesson of each type from each course
-  void generateTimetable(int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
-    for (var courseId in tvm.currentTimetable.currentContent.keys) {
-      final lessons = allCourses[courseId]!.lessons;
-
-      final lessonTypes = lessons.map((lesson) => lesson.type).toSet();
-      lessonTypes.forEach((type) {
-        final index = lessons.indexWhere((element) => element.type == type && !selected.contains(element.dayOfWeek));
-        if (index > -1) {
-          tvm.addLesson(courseId, index);
-        }
-      });
-    }
-
-    notifyListeners();
-  }
-
+  // Matúš Moravčík
   /// This function checks if the current study program has fetched its course group
   bool isProgramCourseGroupFetched() {
     return allStudyPrograms.containsKey(currentStudyProgram) && allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
   }
 
+  // Matúš Moravčík
   /// Synchronously loads the current programCourseGroup based on the current study program.
   /// This function assumes that the study program and its program course groups
   /// have already been fetched. Therefore, it is recommended to check this in advance

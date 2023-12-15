@@ -1,3 +1,14 @@
+/*
+ * Filename: timetable_variants.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file represents the content of the 'Verze rozvrhu' tab. It outlines the
+ *    view for different timetable versions, providing users with the capability to create,
+ *    delete, and modify timetable versions. Additionally, users can export these versions
+ *    to JSON or PNG formats.
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +57,7 @@ class VariantWidget extends StatelessWidget {
             ],
           ),
           children: <Widget>[
-            Container(
+            SizedBox(
               height: 200,
               child: Selector<TimetableViewModel, Timetable>(
                 selector: (ctx, vm) => vm.timetables[index],
@@ -86,7 +97,7 @@ class VariantWidget extends StatelessWidget {
                   final tvm = context.read<TimetableViewModel>();
                   tvm.changeSemester(semester, index: index);
                   if (index == tvm.active) {
-                    context.read<AppViewModel>().changeTerm(semester);
+                    context.read<AppViewModel>().changeSemester(semester);
                   }
                 },
               ),
@@ -98,8 +109,7 @@ class VariantWidget extends StatelessWidget {
             backgroundColor: Colors.transparent,
           ),
           child: const Text('Zvolit'),
-          onPressed: () =>
-              context.read<TimetableViewModel>().setActive(index: index),
+          onPressed: () => context.read<TimetableViewModel>().setActive(index: index),
         ),
         PopupMenuButton<ExportMenuItem>(
           onSelected: (item) {},
@@ -137,10 +147,8 @@ class VariantWidget extends StatelessWidget {
             if (vm.isEditingName(index: index))
               Expanded(
                 child: TextField(
-                    controller: TextEditingController()
-                      ..text = vm.timetables[index].name,
-                    onChanged: (newText) =>
-                        vm.updateEditingName(index, newText),
+                    controller: TextEditingController()..text = vm.timetables[index].name,
+                    onChanged: (newText) => vm.updateEditingName(index, newText),
                     focusNode: FocusNode()..requestFocus(),
                     style: const TextStyle(color: Color(0xffffffff))),
               ),
@@ -149,9 +157,7 @@ class VariantWidget extends StatelessWidget {
                 vm.timetables[index].name,
                 style: TextStyle(
                   fontSize: 16,
-                  color: index == vm.active
-                      ? foreground
-                      : const Color.fromARGB(255, 255, 255, 255),
+                  color: index == vm.active ? foreground : const Color.fromARGB(255, 255, 255, 255),
                 ),
               ),
             if (vm.isEditingName(index: index))
@@ -163,8 +169,7 @@ class VariantWidget extends StatelessWidget {
                     color: colConfirm,
                   ),
                   IconButton(
-                    onPressed: () =>
-                        vm.setEditingName(index: index, value: false),
+                    onPressed: () => vm.setEditingName(index: index, value: false),
                     icon: const Icon(Icons.close),
                     color: colClose,
                   ),
@@ -283,9 +288,7 @@ class _ConfirmDeleteButtonState extends State<ConfirmDeleteButton> {
           icon: const Icon(Icons.check),
           color: const Color(0xff00ff00),
           onPressed: () {
-            context
-                .read<TimetableViewModel>()
-                .removeTimetable(index: widget.variantIndex);
+            context.read<TimetableViewModel>().removeTimetable(index: widget.variantIndex);
             isEnabled = false;
           });
     }

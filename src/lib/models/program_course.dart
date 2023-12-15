@@ -1,28 +1,12 @@
-enum CourseDuty {
-  compulsory, // povinny
-  elective, // volitelny
-  compulsoryElective, // povinne volitelny
-  recommended, // doporuceny
-}
+/*
+ * Filename: program_course.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a course in a progr`ProgramCourseGroup`.
+ */
 
-extension ParseToString on CourseDuty {
-  String toCzechString() {
-    switch (this) {
-      case CourseDuty.compulsory:
-        return "Povinne predmety";
-      case CourseDuty.compulsoryElective:
-        return "Povinne volitelne predmety";
-      case CourseDuty.elective:
-        return "Volitelne predmety";
-      case CourseDuty.recommended:
-        return "Doporucene predmety";
-      default:
-        return "Unknown";
-    }
-  }
-}
-
-/// Represent a course in a program. This contain
+/// Represent a course in a `ProgramCourseGroup`.
 class ProgramCourse {
   final int courseId;
   final CourseDuty duty;
@@ -41,4 +25,28 @@ class ProgramCourse {
         "course_id": courseId,
         "duty": duty.index,
       };
+}
+
+enum CourseDuty {
+  compulsory, // povinny
+  elective, // volitelny
+  compulsoryElective, // povinne volitelny
+  recommended, // doporuceny
+}
+
+extension ParseToString on CourseDuty {
+  String toCzechString() {
+    switch (this) {
+      case CourseDuty.compulsory:
+        return "Povinne předměty";
+      case CourseDuty.compulsoryElective:
+        return "Povinne volitelne předměty";
+      case CourseDuty.elective:
+        return "Volitelne předměty";
+      case CourseDuty.recommended:
+        return "Doporučene předměty";
+      default:
+        return "Unknown";
+    }
+  }
 }

@@ -1,3 +1,11 @@
+/*
+ * Filename: offscreen_timetable.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file defines offscreen timetable widget that is used for exporting timetable into a PNG.
+ */
+
 import 'package:fit_schedule_maker_plus/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -41,8 +49,7 @@ class _OffScrTimetableState extends State<OffScrTimetable> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _captureWidget(context.read<TimetableViewModel>()));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _captureWidget(context.read<TimetableViewModel>()));
 
     return OverflowBox(
       // FIXME: Compute the size dynamically so that the timetable always fits.

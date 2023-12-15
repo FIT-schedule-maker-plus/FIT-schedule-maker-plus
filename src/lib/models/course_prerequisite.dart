@@ -1,19 +1,18 @@
-// ignore_for_file: non_constant_identifier_names
-
-enum PrerequisiteType {
-  lecture,
-  seminar,
-  laborator,
-  exercise,
-  project,
-  pcLab,
-}
+/*
+ * Filename: course_prerequisite.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a course prerequisities.
+ */
 
 class CoursePrerequisite {
   /// number of required hours for this type of prerequisite
   final int requiredHours;
+
   /// Number of lessons for during the course
   final int numberOfLessons;
+
   /// Type of the prerequisite
   final PrerequisiteType type;
 
@@ -40,4 +39,13 @@ class CoursePrerequisite {
         "number_of_lessons": numberOfLessons,
         "type": type.index,
       };
+}
+
+enum PrerequisiteType {
+  lecture,
+  seminar,
+  laborator,
+  exercise,
+  project,
+  pcLab,
 }

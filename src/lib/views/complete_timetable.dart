@@ -1,9 +1,17 @@
-import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
+/*
+ * Filename: complete_timetable.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub (xkloub03)
+ * Date: 15/12/2023
+ * Description: This file defines the view of the 'Výsledný rozvrh' tab.
+ */
+
 import 'package:flutter/material.dart';
-import 'package:fit_schedule_maker_plus/views/timetable_container.dart' as view;
 import 'package:provider/provider.dart';
 
 import '../disp_timetable_gen.dart';
+import '../models/program_course_group.dart';
+import '../views/timetable_container.dart' as view;
 import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
 
@@ -43,12 +51,7 @@ class CompleteTimetable extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.only(top: 20.0),
-        decoration: BoxDecoration(
-            color: timColor,
-            borderRadius: BorderRadius.circular(10.0),
-            boxShadow: const [
-              BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)
-            ]),
+        decoration: BoxDecoration(color: timColor, borderRadius: BorderRadius.circular(10.0), boxShadow: const [BoxShadow(blurRadius: 20.0, spreadRadius: 5.0, color: timColor)]),
         child: view.Timetable(
           filter: Filter.all(),
           readOnly: true,
@@ -89,7 +92,7 @@ class CompleteTimetable extends StatelessWidget {
                     final semester = value ? Semester.winter : Semester.summer;
                     final tvm = context.read<TimetableViewModel>();
                     tvm.changeSemester(semester);
-                    context.read<AppViewModel>().changeTerm(semester);
+                    context.read<AppViewModel>().changeSemester(semester);
                   },
                 ),
               ),
@@ -104,20 +107,15 @@ class CompleteTimetable extends StatelessWidget {
                         onPressed: () {
                           context.read<TimetableViewModel>().saveAsJson();
                         },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black),
-                        child: const Text("Export JSON",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w400)),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                        child: const Text("Export JSON", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400)),
                       ),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         context.read<TimetableViewModel>().saveAsPng();
                       },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                       child: const Text(
                         "Export PNG",
                         style: TextStyle(

@@ -1,12 +1,21 @@
-// ignore_for_file: non_constant_identifier_names
+/*
+ * Filename: lesson_info.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of information about lessons.
+ */
 
 class LessonInfo {
   /// Capacity of this lesson
   final int capacity;
+
   /// Weeks that have this lesson
   final String weeks;
+
   /// Info about the lesson
   final String info;
+
   /// Location of the lesson. For example: B/D105
   final List<String> locations;
 
@@ -31,4 +40,3 @@ class LessonInfo {
         "weeks": weeks,
       };
 }
-

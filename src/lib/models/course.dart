@@ -1,8 +1,13 @@
-// ignore_for_file: non_constant_identifier_names
+/*
+ * Filename: course.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a single course. This course contains multiple `CourseLessons` with different times.
+ */
 
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
-import 'package:fit_schedule_maker_plus/models/course_prerequisite.dart';
-
+import 'course_lesson.dart';
+import 'course_prerequisite.dart';
 import 'program_course_group.dart';
 
 /// Represents a single course. This course contains multiple CourseLessons with different times

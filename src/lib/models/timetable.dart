@@ -1,12 +1,26 @@
+/*
+ * Filename: timetable.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Jakub Kloub xkloub03
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a timetable.
+ */
+
 import 'program_course_group.dart';
 
-/// Index into AppViewModel::allCourser
+/// Index into AppViewModel::allCourses
 typedef CourseID = int;
 
 /// Index into Course::lessons
 typedef LessonID = int;
 
 class Timetable {
+  /// Unique name of the timetable used for differenciating variants
+  String name;
+
+  /// Currently chosen semester
+  Semester semester = Semester.winter;
+
   /// Contains all information about the content of this timetable. The structure is as follows:
   /// -> Semester
   ///     -> All CourseID's that this semester Contains
@@ -16,11 +30,8 @@ class Timetable {
     Semester.summer: {},
   };
 
+  /// selected lessons in the currently chosen semester
   Map<CourseID, Set<LessonID>> get currentContent => selected[semester]!;
-  Semester semester = Semester.winter;
-
-  /// Unique name of the timetable used for differenciating variants
-  String name;
 
   Timetable({
     required this.name,
@@ -33,8 +44,7 @@ class Timetable {
 
   /// Check if current semester timetable contains a given course lesson.
   bool containsLesson(CourseID course, LessonID lesson) {
-    return currentContent.containsKey(course) &&
-        currentContent[course]!.contains(lesson);
+    return currentContent.containsKey(course) && currentContent[course]!.contains(lesson);
   }
 
   /// Add course lesson to current semester timetable.
@@ -98,10 +108,7 @@ class Timetable {
 
   @override
   bool operator ==(Object other) {
-    return (other is Timetable) &&
-        semester == other.semester &&
-        selected == other.selected &&
-        name == other.name;
+    return (other is Timetable) && semester == other.semester && selected == other.selected && name == other.name;
   }
 
   @override

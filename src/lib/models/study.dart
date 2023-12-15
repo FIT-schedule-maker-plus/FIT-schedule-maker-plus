@@ -1,22 +1,12 @@
-import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
+/*
+ * Filename: study.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Le Duy Nguyen (xnguye27)
+ * Date: 15/12/2023
+ * Description: This file contains the representation of a a single study program at FIT.
+ */
 
-enum StudyType {
-  bachelor,
-  magister,
-}
-
-extension ParseToString on StudyType {
-  String toCzechString() {
-    switch (this) {
-      case StudyType.bachelor:
-        return "Bakalárske";
-      case StudyType.magister:
-        return "Magisterské";
-      default:
-        return "Unknown";
-    }
-  }
-}
+import 'program_course_group.dart';
 
 /// Represents a single study program at FIT.
 class StudyProgram {
@@ -50,6 +40,24 @@ class StudyProgram {
         "fullname": fullName,
         "type": type,
         "duration": duration,
-        "courseGroups": List<dynamic>.from(courseGroups.map((group) => group.toJson()))
+        "courseGroups": List<dynamic>.from(courseGroups.map((group) => group.toJson())),
       };
+}
+
+enum StudyType {
+  bachelor,
+  magister,
+}
+
+extension ParseToString on StudyType {
+  String toCzechString() {
+    switch (this) {
+      case StudyType.bachelor:
+        return "Bakalárske";
+      case StudyType.magister:
+        return "Magisterske";
+      default:
+        return "Unknown";
+    }
+  }
 }

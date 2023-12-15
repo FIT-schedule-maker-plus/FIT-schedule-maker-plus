@@ -1,4 +1,10 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_key_in_widget_constructors, avoid_unnecessary_containers
+/*
+ * Filename: generator.dart
+ * Project: FIT-schedule-maker-plus
+ * Author: Matúš Moravčík (xmorav48)
+ * Date: 15/12/2023
+ * Description: This file defines an overlay view that contains interface for timetable generation.
+ */
 
 import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
@@ -13,9 +19,10 @@ class Generator extends StatelessWidget {
 
   Generator({required this.animationController, required this.ofssetAnimation, super.key});
 
+  // filters for timetable generation
   final TextEditingController _textEditingControllerLessons = TextEditingController(text: "0");
   final TextEditingController _textEditingControllerPractices = TextEditingController(text: "0");
-  final List<DayOfWeek> selected = [];
+  final List<DayOfWeek> freeDaysSelected = [];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +37,7 @@ class Generator extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.9),
-              offset: Offset(10.0, 5.0), // Shadow on the left side
+              offset: const Offset(10.0, 5.0), // Shadow on the left side
               blurRadius: 6.0,
               spreadRadius: 0.0,
             ),
@@ -42,11 +49,11 @@ class Generator extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () => animationController.reverse(),
-                  icon: Icon(Icons.keyboard_arrow_right),
+                  icon: const Icon(Icons.keyboard_arrow_right),
                   color: Colors.white,
                   tooltip: "Hide",
                 ),
-                Expanded(
+                const Expanded(
                   child: Text(
                     "Generátor rozvrhu",
                     textAlign: TextAlign.center,
@@ -55,30 +62,30 @@ class Generator extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(color: Colors.white, indent: 15),
+            const Divider(color: Colors.white, indent: 15),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: 16.0, left: 16, top: 20, bottom: 20),
+                padding: const EdgeInsets.only(right: 16.0, left: 16, top: 20, bottom: 20),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Expanded(child: Text("Max počet hodin na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
+                          const Expanded(child: Text("Max počet hodin na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
                           NumberPicker(_textEditingControllerLessons),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: Text("Max počet cvičení na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
+                          const Expanded(child: Text("Max počet cvičení na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
                           NumberPicker(_textEditingControllerPractices),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      Text("Dny volna: ", style: TextStyle(color: Colors.white, fontSize: 16)),
-                      DayPicker(selected),
+                      const SizedBox(height: 10),
+                      const Text("Dny volna: ", style: TextStyle(color: Colors.white, fontSize: 16)),
+                      DaySelector(freeDaysSelected),
                     ],
                   ),
                 ),
@@ -87,13 +94,16 @@ class Generator extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 context.read<AppViewModel>().generateTimetable(
-                    int.parse(_textEditingControllerLessons.text), int.parse(_textEditingControllerPractices.text), selected, context.read<TimetableViewModel>());
+                    int.parse(_textEditingControllerLessons.text), int.parse(_textEditingControllerPractices.text), freeDaysSelected, context.read<TimetableViewModel>());
                 animationController.reverse();
               },
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 6, horizontal: 30),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.white, blurRadius: 3)]),
-                child: Text("Vygenerovat", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 30),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 3)]),
+                  child: const Text("Vygenerovat", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
               ),
             )
           ],
@@ -103,15 +113,15 @@ class Generator extends StatelessWidget {
   }
 }
 
-class DayPicker extends StatefulWidget {
+class DaySelector extends StatefulWidget {
   final List<DayOfWeek> selected;
-  const DayPicker(this.selected, {super.key});
+  const DaySelector(this.selected, {super.key});
 
   @override
-  State<DayPicker> createState() => _DayPickerState();
+  State<DaySelector> createState() => _DaySelectorState();
 }
 
-class _DayPickerState extends State<DayPicker> {
+class _DaySelectorState extends State<DaySelector> {
   int idOfHoveredDay = -1;
 
   @override
@@ -140,19 +150,19 @@ class _DayPickerState extends State<DayPicker> {
           idOfHoveredDay = -1;
         }),
         child: Container(
-          padding: EdgeInsets.all(8),
-          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
           decoration: BoxDecoration(
             color: widget.selected.contains(dayOfWeek)
-                ? Color.fromARGB(255, 45, 2, 2)
+                ? const Color.fromARGB(255, 45, 2, 2)
                 : idOfHoveredDay == dayOfWeek.index
-                    ? Color.fromARGB(10, 255, 255, 255)
-                    : Color.fromARGB(0, 255, 255, 255),
+                    ? const Color.fromARGB(10, 255, 255, 255)
+                    : const Color.fromARGB(0, 255, 255, 255),
             borderRadius: BorderRadius.circular(5),
           ),
           child: Text(
             dayOfWeek.toCzechString(),
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -185,28 +195,28 @@ class _NumberPickerState extends State<NumberPicker> {
       width: 60,
       child: Row(
         children: [
-          buildButton(Icons.remove, () => changeText(-1), Color.fromARGB(255, 136, 82, 82)),
+          buildButton(Icons.remove, () => changeText(-1), const Color.fromARGB(255, 136, 82, 82)),
           Expanded(
             child: TextField(
-              decoration: InputDecoration(hintText: null, counterText: "", border: InputBorder.none),
+              decoration: const InputDecoration(hintText: null, counterText: "", border: InputBorder.none),
               textAlign: TextAlign.center,
               maxLength: 2,
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
               controller: widget._textEditingController,
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
               onChanged: (value) {
                 int? intValue = int.tryParse(value);
                 if (intValue != null) {
                   widget._textEditingController.value = widget._textEditingController.value.copyWith(
                     text: intValue.clamp(0, 15).toString(),
-                    selection: TextSelection.collapsed(offset: 2),
+                    selection: const TextSelection.collapsed(offset: 2),
                   );
                 }
               },
             ),
           ),
-          buildButton(Icons.add, () => changeText(1), Color.fromARGB(255, 88, 124, 75)),
+          buildButton(Icons.add, () => changeText(1), const Color.fromARGB(255, 88, 124, 75)),
         ],
       ),
     );
@@ -218,10 +228,10 @@ class _NumberPickerState extends State<NumberPicker> {
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Container(
-          padding: EdgeInsets.all(2.0),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.all(2.0),
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color.fromARGB(11, 255, 255, 255),
+            color: Color.fromARGB(11, 255, 255, 255),
           ),
           child: Icon(icon, size: 14, color: color),
         ),
