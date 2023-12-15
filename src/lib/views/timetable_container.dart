@@ -4,7 +4,8 @@
  * Author: Matúš Moravčík (xmorav48)
  * Author: Le Duy Nguyen (xnguye27)
  * Date: 15/12/2023
- * Description: This file defines the view of timetable, its lessons and overlay for that shows lesson infos. Its a content of the 'Pracovní rozvrh' tab.
+ * Description: This file provides the implementation of the timetable view, including lessons and an overlay
+ *              displaying lesson information. It serves as the content for the 'Pracovní rozvrh' tab.
  */
 
 import 'dart:async';
@@ -634,23 +635,23 @@ class _LessonState extends State<Lesson> {
       };
 
       final facultyColor = switch (entry.key) {
-        Faculty.fit => Color(0xFF00a9e0),
-        Faculty.fekt => Color(0xFF003da5),
-        Faculty.cesa => Color(0xFF009db1),
-        Faculty.cvis => Color(0xFF898d8d),
-        Faculty.fa => Color(0xFF7a99ac),
-        Faculty.fast => Color(0xFF658d1b),
-        Faculty.favu => Color(0xFFe782a9),
-        Faculty.fch => Color(0xFF00ab8e),
-        Faculty.fp => Color(0xFF8246af),
-        Faculty.fsi => Color(0xFF004f71),
-        Faculty.usi => Color(0xFF211447),
-        Faculty.icv || Faculty.re => Color(0xFFe4002b), // Don't know... Use the VUT one
+        Faculty.fit => const Color(0xFF00a9e0),
+        Faculty.fekt => const Color(0xFF003da5),
+        Faculty.cesa => const Color(0xFF009db1),
+        Faculty.cvis => const Color(0xFF898d8d),
+        Faculty.fa => const Color(0xFF7a99ac),
+        Faculty.fast => const Color(0xFF658d1b),
+        Faculty.favu => const Color(0xFFe782a9),
+        Faculty.fch => const Color(0xFF00ab8e),
+        Faculty.fp => const Color(0xFF8246af),
+        Faculty.fsi => const Color(0xFF004f71),
+        Faculty.usi => const Color(0xFF211447),
+        Faculty.icv || Faculty.re => const Color(0xFFe4002b), // Don't know... Use the VUT one
       };
 
       widgets.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
-            padding: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
@@ -658,23 +659,23 @@ class _LessonState extends State<Lesson> {
             ),
             height: 19,
             child: Text(facultyName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ))),
         Container(
-            padding: EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             child: Text(
               entry.value.join(", "),
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
               // overflow: TextOverflow.ellipsis,
             ))
       ]));
     }
     widgets.add(Text(
       unknownLocations.join(", "),
-      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
     ));
 
     return Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: widgets)));
