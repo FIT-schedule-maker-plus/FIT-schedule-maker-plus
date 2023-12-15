@@ -6,6 +6,7 @@
  * Description: This file contains the representation of information about lessons.
  */
 
+/// Contains information about lesson location, capacity, teachers and weeks when the lesson is held.
 class LessonInfo {
   /// Capacity of this lesson
   final int capacity;

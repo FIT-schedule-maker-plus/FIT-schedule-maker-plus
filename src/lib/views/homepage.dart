@@ -109,9 +109,7 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
   }
 
   void handleChangeTab(int value) {
-    setState(() {
-      activeTab = value;
-    });
+    setState(() => activeTab = value);
   }
 
   @override
@@ -160,6 +158,7 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
   }
 }
 
+/// Generic black button
 class BlackButton extends StatefulWidget {
   final void Function()? onTap;
   final EdgeInsetsGeometry? padding;

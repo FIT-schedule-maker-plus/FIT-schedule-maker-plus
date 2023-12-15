@@ -7,10 +7,10 @@
  *    the `MultiProvider` widget to manage state using providers (`AppViewModel`, `TimetableViewModel`).
  */
 
-import 'package:fit_schedule_maker_plus/views/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../views/homepage.dart';
 import 'viewmodels/app.dart';
 import 'viewmodels/timetable.dart';
 
@@ -30,6 +30,7 @@ class Scheduler extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => TimetableViewModel(timetables: ctx.read<AppViewModel>().timetables))
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'FIT Schedule Maker+',
         theme: ThemeData(
           elevatedButtonTheme: ElevatedButtonThemeData(
@@ -44,7 +45,6 @@ class Scheduler extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const Homepage(),
-        debugShowCheckedModeBanner: false,
       ),
     );
   }

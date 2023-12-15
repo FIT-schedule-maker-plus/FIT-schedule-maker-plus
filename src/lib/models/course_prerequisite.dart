@@ -6,6 +6,7 @@
  * Description: This file contains the representation of a course prerequisities.
  */
 
+/// Contains information about course lesson requirements.
 class CoursePrerequisite {
   /// number of required hours for this type of prerequisite
   final int requiredHours;

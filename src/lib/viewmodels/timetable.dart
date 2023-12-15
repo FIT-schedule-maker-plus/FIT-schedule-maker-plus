@@ -10,10 +10,10 @@
 
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
-import 'package:fit_schedule_maker_plus/models/export_timetable.dart';
 import 'package:flutter/material.dart';
 
 import '../disp_timetable_gen.dart';
+import '../models/export_timetable.dart';
 import '../models/program_course_group.dart';
 import '../models/timetable.dart';
 import '../utils.dart';

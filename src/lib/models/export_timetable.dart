@@ -6,8 +6,7 @@
  * Description: This file contains datastructure representing exported timetable as JSON.
  */
 
-import 'package:fit_schedule_maker_plus/models/timetable.dart';
-
+import '../models/timetable.dart';
 import '../viewmodels/app.dart';
 
 /// Class for representing timetable to be exported.
@@ -26,10 +25,7 @@ class ExportTimetable {
     required AppViewModel avm,
   }) {
     // All course ids used by this timetable.
-    final usedCourseIds = timetable.selected.keys
-        .map((k) => timetable.selected[k]!.keys)
-        .expand((l) => l)
-        .toList();
+    final usedCourseIds = timetable.selected.keys.map((k) => timetable.selected[k]!.keys).expand((l) => l).toList();
 
     // Get all program IDs of used course IDs (get all programs the timetable uses).
     Set<int> programIds = avm.allStudyPrograms.keys.where((id) {
@@ -48,8 +44,7 @@ class ExportTimetable {
         "programIds": programIds,
       };
 
-  factory ExportTimetable.fromJson(Map<String, dynamic> json) =>
-      ExportTimetable(
+  factory ExportTimetable.fromJson(Map<String, dynamic> json) => ExportTimetable(
         Timetable.fromJson(json["timetable"]),
         List<int>.from(json["programIds"]),
       );

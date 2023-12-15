@@ -1,7 +1,7 @@
 /*
  * Filename: app.dart
  * Project: FIT-schedule-maker-plus
- * Author: Le Duy Nguyen (xnguye27) (where author not listed)
+ * Author: Le Duy Nguyen (xnguye27) (where author is not listed)
  * Author: Matúš Moravčík (xmorav48)
  * Date: 15/12/2023
  * Description: This file contains the view model that serves as the central
@@ -134,6 +134,7 @@ class AppViewModel extends ChangeNotifier {
     }
   }
 
+  /// Load from `assets/locations.json` all faculties
   Future<void> getAllLocations(BuildContext context) async {
     String data = await DefaultAssetBundle.of(context).loadString("locations.json");
     final jsonResult = jsonDecode(data) as Map<String, dynamic>;
@@ -180,15 +181,21 @@ class AppViewModel extends ChangeNotifier {
     if (caption == null) return null;
     caption = caption.trimLeft().toLowerCase();
 
-    final semester = caption.contains("winter semester") ? Semester.winter
-        : caption.contains("summer semester") ? Semester.summer
-        : null;
+    final semester = caption.contains("winter semester")
+        ? Semester.winter
+        : caption.contains("summer semester")
+            ? Semester.summer
+            : null;
 
-    final yearOfStudy = caption.startsWith("1st year") ? YearOfStudy.first
-        : caption.startsWith("2nd year") ? YearOfStudy.second
-        : caption.startsWith("3rd year") ? YearOfStudy.third
-        : caption.startsWith("all years") ? YearOfStudy.all
-        : null;
+    final yearOfStudy = caption.startsWith("1st year")
+        ? YearOfStudy.first
+        : caption.startsWith("2nd year")
+            ? YearOfStudy.second
+            : caption.startsWith("3rd year")
+                ? YearOfStudy.third
+                : caption.startsWith("all years")
+                    ? YearOfStudy.all
+                    : null;
 
     if (yearOfStudy == null || semester == null) return null;
 
@@ -268,8 +275,7 @@ class AppViewModel extends ChangeNotifier {
   /// Asynchronously fetches lessons for multiple courses if not already loaded.
   Future<void> getAllCourseLessonsAsync(List<int> courseIds) async {
     await Future.wait(courseIds.map((courseId) async {
-      if (isCourseLessonFetched(courseId)) {
-      } else {
+      if (!isCourseLessonFetched(courseId)) {
         await fetchCourseData(courseId);
       }
     }));
@@ -284,6 +290,7 @@ class AppViewModel extends ChangeNotifier {
     return allStudyPrograms.containsKey(currentStudyProgram) && allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
   }
 
+  // Matúš Moravčík
   /// Synchronously loads the current programCourseGroup based on the current study program.
   /// This function assumes that the study program and its program course groups
   /// have already been fetched. Therefore, it is recommended to check this in advance
@@ -443,10 +450,4 @@ class AppViewModel extends ChangeNotifier {
       endsAt: endsAt,
     );
   }
-}
-
-/// This function takes a string in the format of "hh:mm" and returns the total number of minutes
-int parseTime(String str) {
-  final chunks = str.split(":").map((v) => int.parse(v));
-  return chunks.elementAt(0) * 60 + chunks.elementAt(1);
 }
