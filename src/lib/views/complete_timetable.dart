@@ -102,7 +102,9 @@ class CompleteTimetable extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<TimetableViewModel>().saveAsJson();
+                          context
+                              .read<TimetableViewModel>()
+                              .saveAsJson(avm: context.read<AppViewModel>());
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black),

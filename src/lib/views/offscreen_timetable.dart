@@ -1,3 +1,4 @@
+import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,10 @@ class _OffScrTimetableState extends State<OffScrTimetable> {
     try {
       final image = await screenshotController.capture();
       if (image != null) {
-        saveImage(image, "test.png", mimetype: "image/png");
+        final tm = vm.timetables[vm.toExport!];
+        saveImage(
+            image, "timetable_${tm.semester.toEngString()}_${tm.name}.png",
+            mimetype: "image/png");
       } else {
         print("Failed capturing image.");
       }
