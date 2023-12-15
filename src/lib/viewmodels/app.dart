@@ -178,20 +178,19 @@ class AppViewModel extends ChangeNotifier {
   ProgramCourseGroup? _parseCourseGroup(Result element) {
     var caption = element.querySelector("caption")?.text;
     if (caption == null) return null;
-    caption = caption.trimLeft();
+    caption = caption.trimLeft().toLowerCase();
 
-    final semester = caption.contains("winter semester") ? Semester.winter : Semester.summer;
-    final yearOfStudy = caption.startsWith("1st year")
-        ? YearOfStudy.first
-        : caption.startsWith("2nd year")
-            ? YearOfStudy.second
-            : caption.startsWith("3rd year")
-                ? YearOfStudy.third
-                : caption.startsWith("Any")
-                    ? YearOfStudy.any
-                    : null;
+    final semester = caption.contains("winter semester") ? Semester.winter
+        : caption.contains("summer semester") ? Semester.summer
+        : null;
 
-    if (yearOfStudy == null) return null;
+    final yearOfStudy = caption.startsWith("1st year") ? YearOfStudy.first
+        : caption.startsWith("2nd year") ? YearOfStudy.second
+        : caption.startsWith("3rd year") ? YearOfStudy.third
+        : caption.startsWith("all years") ? YearOfStudy.all
+        : null;
+
+    if (yearOfStudy == null || semester == null) return null;
 
     var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
 
