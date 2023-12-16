@@ -91,6 +91,8 @@ class AppViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Fetch all study program avaiable on the web
   /// https://www.fit.vut.cz/study/study-plan/.en
   /// TODO Fetch from the site instead of hardcoding them
   Future<void> getAllStudyProgram() async {
@@ -130,10 +132,11 @@ class AppViewModel extends ChangeNotifier {
 
     for (final program in studyPrograms) {
       allStudyPrograms[program.id] = program;
-    }
+      }
   }
 
-  /// Load from `assets/locations.json` all faculties
+  /// Nguyen Le Duy (xnguye27)
+  /// Load from `assets/locations.json` all lecture rooms and in which faculty their are located
   Future<void> getAllLocations(BuildContext context) async {
     String data = await DefaultAssetBundle.of(context).loadString("locations.json");
     final jsonResult = jsonDecode(data) as Map<String, dynamic>;
@@ -159,6 +162,8 @@ class AppViewModel extends ChangeNotifier {
     });
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Retrieve all courses within the specified study program asynchronously.
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
   /// Asynchronously fetches courses for a given study program if not already loaded.
   Future<void> getProgramCourses(int programId) async {
@@ -171,58 +176,67 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
     if (parser == null) return;
 
-    allStudyPrograms[programId]!.courseGroups =
-        parser.querySelectorAll("div.table-responsive__holder:nth-child(1) table").map(_parseCourseGroup).where((value) => value != null).map((value) => value!).toList();
+    allStudyPrograms[programId]!.courseGroups = parser
+      .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
+      .map(_parseCourseGroup)
+      .where((value) => value != null)
+      .map((value) => value!)
+      .toList();
   }
 
+  /// Le Duy Nguyen
+  /// Helper function used in `getProgramCourses` function for parsing group of courses
   ProgramCourseGroup? _parseCourseGroup(Result element) {
     var caption = element.querySelector("caption")?.text;
     if (caption == null) return null;
     caption = caption.trimLeft().toLowerCase();
 
-    final semester = caption.contains("winter semester")
-        ? Semester.winter
-        : caption.contains("summer semester")
-            ? Semester.summer
-            : null;
+    final semester = caption.contains("winter semester") ? Semester.winter
+                   : caption.contains("summer semester") ? Semester.summer
+                   : null;
 
-    final yearOfStudy = caption.startsWith("1st year")
-        ? YearOfStudy.first
-        : caption.startsWith("2nd year")
-            ? YearOfStudy.second
-            : caption.startsWith("3rd year")
-                ? YearOfStudy.third
-                : caption.startsWith("all years")
-                    ? YearOfStudy.all
-                    : null;
+    final yearOfStudy = switch(caption.split("year")[0].trim()) {
+      "1st" => YearOfStudy.first,
+      "2nd" => YearOfStudy.second,
+      "3rd" => YearOfStudy.third,
+      "all" => YearOfStudy.all,
+      _ => null
+    };
 
     if (yearOfStudy == null || semester == null) return null;
 
-    var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
+    var courses = element
+      .querySelectorAll("tr")!
+      .map((res) => _parseAndStoreCourse(res, semester))
+      .where((value) => value != null)
+      .map((value) => value!)
+      .toList();
 
     return ProgramCourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Helper function used in `_parseCourseGroup` to parse and store course data
   ProgramCourse? _parseAndStoreCourse(Result courseElement, Semester semester) {
     final html = courseElement.html!;
     if (!html.contains("w15p")) return null;
 
     final nameElement = courseElement.querySelector("a");
     if (nameElement == null) return null;
+
     final courseIdString = nameElement.href?.split("/")[5];
     if (courseIdString == null) return null;
+
     final id = int.parse(courseIdString);
 
+    /// the library has problem with `tr` `td` elements, that why parsing them manually here
     final dutyText = html.split("class=\"w5p\">")[2].split("<")[0];
-    final duty = dutyText.startsWith("CE")
-        ? CourseDuty.compulsoryElective
-        : dutyText == "C"
-            ? CourseDuty.compulsory
-            : dutyText == "E"
-                ? CourseDuty.elective
-                : dutyText == "R"
-                    ? CourseDuty.recommended
-                    : null;
+    final duty = switch(dutyText) {
+      "C" => CourseDuty.compulsory,
+      "E" => CourseDuty.elective,
+      "R" => CourseDuty.recommended,
+      _ => dutyText.startsWith("CE") ? CourseDuty.compulsoryElective : null,
+    };
 
     if (duty == null) return null;
 
@@ -245,11 +259,13 @@ class AppViewModel extends ChangeNotifier {
     return ProgramCourse(courseId: id, duty: duty);
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Get all data related to the course (prerequisites and lessons)
+  /// Lessons that have same lecture time will be merged into one
   /// https://www.fit.vut.cz/study/course/{course_id}/.en
   /// Asynchronously fetches and updates data for a specific course if not already loaded.
   Future<void> fetchCourseData(int courseId) async {
     if (!allCourses.containsKey(courseId)) return; // unknown course
-
     if (isCourseLessonFetched(courseId)) return;
 
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
@@ -259,7 +275,10 @@ class AppViewModel extends ChangeNotifier {
     if (html == null) return;
 
     allCourses[courseId]!.prerequisites = _extractPrerequisites(html);
-    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).fold(<CourseLesson>[], _mergeSameLessons);
+    allCourses[courseId]!.lessons = parser
+        .querySelectorAll("#schedule tbody tr")
+        .map(_parseLesson)
+        .fold(<CourseLesson>[], _mergeSameLessons);
 
     allCourses[courseId]!.loaded = true;
   }
@@ -280,6 +299,10 @@ class AppViewModel extends ChangeNotifier {
     }));
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Retrieve the faculty in which the room is located.
+  /// Use this method instead of accessing allLocations directly,
+  /// as the data structure may change later.
   Faculty? getRoomLocation(String room) {
     return allLocations[room];
   }
@@ -298,12 +321,16 @@ class AppViewModel extends ChangeNotifier {
     return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere((group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
   }
 
+  /// Nguyen Le Duy (xnguye27)
   /// This function takes a string in the format of "hh:mm" and returns the total number of minutes
+  /// use for parsing the course lesson
   int parseTime(String str) {
     final chunks = str.split(":").map((v) => int.parse(v));
     return chunks.elementAt(0) * 60 + chunks.elementAt(1);
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Helper method for extracting number of lessons required during a semester
   int? _extractNumberOfLessons(String html, String delimiter) {
     final part = html.split("Syllabus of $delimiter").elementAtOrNull(1);
     if (part == null) return null;
@@ -314,6 +341,8 @@ class AppViewModel extends ChangeNotifier {
     return numberOfLessons == 0 ? null : numberOfLessons;
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Helper method for extracting prerequisites of the course
   List<CoursePrerequisite> _extractPrerequisites(String html) {
     List<CoursePrerequisite> list = [];
 
@@ -345,10 +374,11 @@ class AppViewModel extends ChangeNotifier {
       final numberOfLessons = switch (type) {
         PrerequisiteType.lecture => _extractNumberOfLessons(html, "lectures"),
         PrerequisiteType.seminar => _extractNumberOfLessons(html, "seminars"),
-        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises") ?? _extractNumberOfLessons(html, "lectures"),
+        PrerequisiteType.exercise => _extractNumberOfLessons(html, "numerical exercises")
+                                  ?? _extractNumberOfLessons(html, "lectures"), // the numerical execises can be the same as lectures
         PrerequisiteType.laborator => _extractNumberOfLessons(html, "laboratory exercises"),
         PrerequisiteType.pcLab => _extractNumberOfLessons(html, "computer exercises"),
-        _ => 0,
+        _ => 0, // Not required
       };
 
       if (numberOfLessons == null) continue;
@@ -359,6 +389,9 @@ class AppViewModel extends ChangeNotifier {
     return list;
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Helper function that take a list of (on going) merged lesson and a lesson to be added into the list
+  /// used in the `fetchCourseData` function
   List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
     if (lesson == null) {
       return list;
@@ -384,12 +417,16 @@ class AppViewModel extends ChangeNotifier {
     return list;
   }
 
+  /// Nguyen Le Duy (xnguye27)
+  /// Helper function to parse the selected lesson element into inner data structure
+  /// used in the `fetchCourseData` function
   CourseLesson? _parseLesson(element) {
     if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
       // It is not possible to register this class in Studis.
       return null;
     }
 
+    /// match every >data</ inside a html tag
     RegExp exp = RegExp(r">(.*)</");
     final matches = exp.allMatches(element.html).map((e) => e[1]).toList();
 
@@ -415,6 +452,11 @@ class AppViewModel extends ChangeNotifier {
 
     if (dayOfWeek == null) return null;
 
+    final weeks = matches[2];
+    final info = exp.firstMatch(matches.last!)![1];
+
+    if (weeks == null || info == null) return null;
+
     List<String> locations = [];
     int? startsFrom;
     int? endsAt;
@@ -423,7 +465,11 @@ class AppViewModel extends ChangeNotifier {
     for (var i = 3; i < matches.length; i++) {
       final s = matches[i]!;
       if (s.startsWith("<td>")) {
-        final chunks = s.split(">").map((v) => v.split("<")[0]).where((v) => v.isNotEmpty);
+        final chunks = s
+            .split(">")
+            .map((v) => v.split("<")[0])
+            .where((v) => v.isNotEmpty);
+
         startsFrom = parseTime(chunks.elementAt(0));
         endsAt = parseTime(chunks.elementAt(1));
         capacity = int.parse(chunks.elementAt(2));
@@ -435,11 +481,6 @@ class AppViewModel extends ChangeNotifier {
     }
 
     if (startsFrom == null || endsAt == null || capacity == null) return null;
-
-    final weeks = matches[2];
-    final info = exp.firstMatch(matches.last!)![1];
-
-    if (weeks == null || info == null) return null;
 
     return CourseLesson(
       dayOfWeek: dayOfWeek,

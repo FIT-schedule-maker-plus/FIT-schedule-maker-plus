@@ -53,7 +53,7 @@ class TimetableContainer extends StatelessWidget {
   }
 }
 
-// Le Duy Nguyen
+// Le Duy Nguyen (xnguye27)
 class Courses extends StatefulWidget {
   const Courses({super.key});
 
@@ -599,6 +599,7 @@ class _LessonState extends State<Lesson> {
         ]));
   }
 
+  /// Le Duy Nguyen (xnguye27)
   Widget buildRooms(BuildContext ctx, Set<String> rooms) {
     List<Widget> widgets = [];
     Map<Faculty, List<String>> locations = {};
@@ -618,47 +619,17 @@ class _LessonState extends State<Lesson> {
     }
 
     for (final entry in locations.entries) {
-      final facultyName = switch (entry.key) {
-        Faculty.fit => "FIT",
-        Faculty.fekt => "FEKT",
-        Faculty.cesa => "CESA",
-        Faculty.cvis => "CVIS",
-        Faculty.fa => "FA",
-        Faculty.fast => "FAST",
-        Faculty.favu => "FaVU",
-        Faculty.fch => "FCH",
-        Faculty.fp => "FP",
-        Faculty.fsi => "FSI",
-        Faculty.icv => "ICV",
-        Faculty.re => "RE",
-        Faculty.usi => "ÚSI",
-      };
-
-      final facultyColor = switch (entry.key) {
-        Faculty.fit => const Color(0xFF00a9e0),
-        Faculty.fekt => const Color(0xFF003da5),
-        Faculty.cesa => const Color(0xFF009db1),
-        Faculty.cvis => const Color(0xFF898d8d),
-        Faculty.fa => const Color(0xFF7a99ac),
-        Faculty.fast => const Color(0xFF658d1b),
-        Faculty.favu => const Color(0xFFe782a9),
-        Faculty.fch => const Color(0xFF00ab8e),
-        Faculty.fp => const Color(0xFF8246af),
-        Faculty.fsi => const Color(0xFF004f71),
-        Faculty.usi => const Color(0xFF211447),
-        Faculty.icv || Faculty.re => const Color(0xFFe4002b), // Don't know... Use the VUT one
-      };
-
       widgets.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
-              color: facultyColor,
+              color: Color(entry.key.getColorThemeInHex()),
             ),
             height: 19,
-            child: Text(facultyName,
+            child: Text(
+                entry.key.getAcronym(),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.white,
