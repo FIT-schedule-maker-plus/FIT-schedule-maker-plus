@@ -128,7 +128,7 @@ class _CoursesState extends State<Courses> {
   }
 
   Widget buildCourseWidget(Course course, BuildContext context) {
-    bool isHiden = false;
+    bool isHidden = context.read<TimetableViewModel>().filter.courses.contains(course.id);
 
     return Container(
       width: 180,
@@ -148,16 +148,16 @@ class _CoursesState extends State<Courses> {
               child: IconButton(
                 onPressed: () {
                   final tvm = ctx.read<TimetableViewModel>();
-                  if (isHiden) {
+                  if (isHidden) {
                     tvm.removeCourseFromFilter(course.id);
                   } else {
                     tvm.addCourseToFilter(course.id);
                   }
-                  setState(() => isHiden = !isHiden);
+                  setState(() => isHidden = !isHidden);
                 },
                 padding: EdgeInsets.zero,
                 color: Colors.white,
-                icon: Icon(isHiden ? Icons.visibility_off : Icons.visibility),
+                icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
               ),
             );
           }),
@@ -477,11 +477,6 @@ class _LessonState extends State<Lesson> {
         ),
         const SizedBox(height: 10),
         buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
-        // Text(
-        //   locations!,
-        //   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-        //   overflow: TextOverflow.ellipsis,
-        // )
       ]),
     );
   }
@@ -570,20 +565,21 @@ class _LessonState extends State<Lesson> {
     infos.removeLast();
 
     return Container(
-        width: overlayWidth,
-        height: overlayHeight,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-        decoration: BoxDecoration(
-          color: overlayColor,
-          borderRadius: borders,
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 6,
-              color: overlayColor,
-            )
-          ],
-        ),
-        child: Column(children: [
+      width: overlayWidth,
+      height: overlayHeight,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      decoration: BoxDecoration(
+        color: overlayColor,
+        borderRadius: borders,
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 6,
+            color: overlayColor,
+          )
+        ],
+      ),
+      child: Column(
+        children: [
           Center(
             child: Text(
               course.fullName,
@@ -593,10 +589,20 @@ class _LessonState extends State<Lesson> {
           ),
           const SizedBox(height: 15),
           Expanded(
-              child: SingleChildScrollView(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: infos),
-          ))
-        ]));
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildInfo("Typ vyučování: ", lesson.type.toCzechString()),
+                  const SizedBox(height: 15),
+                  ...infos,
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   /// Le Duy Nguyen (xnguye27)
@@ -621,15 +627,14 @@ class _LessonState extends State<Lesson> {
     for (final entry in locations.entries) {
       widgets.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
               color: Color(entry.key.getColorThemeInHex()),
             ),
             height: 19,
-            child: Text(
-                entry.key.getAcronym(),
+            child: Text(entry.key.getAcronym(),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.white,
@@ -640,7 +645,6 @@ class _LessonState extends State<Lesson> {
             child: Text(
               entry.value.join(", "),
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
-              // overflow: TextOverflow.ellipsis,
             ))
       ]));
     }
