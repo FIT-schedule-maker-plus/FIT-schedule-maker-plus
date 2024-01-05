@@ -44,18 +44,12 @@ class Filter {
   Filter.none() : this(courses: {}, allCourses: false);
 }
 
-void selectLesson(
-  TimetableViewModel vm,
-  SpecificLesson lesson,
-) {
+void selectLesson(TimetableViewModel vm, SpecificLesson lesson) {
   lesson.selected = true;
   vm.addLesson(lesson.courseID, lesson.lessonID);
 }
 
-void deselectLesson(
-  TimetableViewModel vm,
-  SpecificLesson lesson,
-) {
+void deselectLesson(TimetableViewModel vm, SpecificLesson lesson) {
   lesson.selected = false;
   vm.removeLesson(lesson.courseID, lesson.lessonID);
 }
@@ -68,11 +62,7 @@ class Pair<T, U> {
 
 typedef DisplayedTimetable = Map<DayOfWeek, Pair<int, List<SpecificLesson>>>;
 
-DisplayedTimetable genDispTimetableSpecific(
-  AppViewModel avm,
-  Timetable tim,
-  Filter filter,
-) {
+DisplayedTimetable genDispTimetableSpecific(AppViewModel avm, Timetable tim, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -85,11 +75,7 @@ DisplayedTimetable genDispTimetableSpecific(
   return res;
 }
 
-DisplayedTimetable genDispTimetable(
-  AppViewModel avm,
-  TimetableViewModel tvm,
-  Filter filter,
-) {
+DisplayedTimetable genDispTimetable(AppViewModel avm, TimetableViewModel tvm, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -143,12 +129,7 @@ void fillHeights(
   });
 }
 
-void fillDays(
-  Map<CourseID, Course> courses,
-  Timetable tim,
-  Filter filter,
-  DisplayedTimetable outTim,
-) {
+void fillDays(Map<CourseID, Course> courses, Timetable tim, Filter filter, DisplayedTimetable outTim) {
   if (filter.allCourses) {
     tim.currentContent.forEach((courseID, lessons) {
       for (final lessonID in lessons) {

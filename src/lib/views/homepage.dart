@@ -137,16 +137,14 @@ class _ContentState extends State<Content> with TickerProviderStateMixin {
             alignment: Alignment.centerRight,
             children: [
               const TimetableContainer(),
-              _animationController.status == AnimationStatus.dismissed
-                  ? Positioned(
-                      right: 60,
-                      bottom: 20,
-                      child: BlackButton(
-                        onTap: () => _animationController.forward(),
-                        child: const Text("Generátor rozvrhu", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                    )
-                  : Container(),
+              Positioned(
+                right: 60,
+                bottom: 20,
+                child: BlackButton(
+                  onTap: () => _animationController.forward(),
+                  child: const Text("Generátor rozvrhu", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
               Generator(animationController: _animationController, ofssetAnimation: _offsetAnimation),
             ],
           ),
