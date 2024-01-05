@@ -6,6 +6,7 @@
  * Description: This file defines offscreen timetable widget that is used for exporting timetable into a PNG.
  */
 
+import 'dart:developer' as dev;
 import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
 import 'package:fit_schedule_maker_plus/utils.dart';
 import 'package:flutter/material.dart';
@@ -43,10 +44,10 @@ class _OffScrTimetableState extends State<OffScrTimetable> {
             image, "timetable_${tm.semester.toEngString()}_${tm.name}.png",
             mimetype: "image/png");
       } else {
-        print("Failed capturing image.");
+        dev.log("Failed capturing image.");
       }
     } catch (e) {
-      print("Exception caught during widget capture: $e");
+      dev.log("Exception caught during widget capture: $e");
     }
     vm.toExport = null;
   }
