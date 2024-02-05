@@ -6,6 +6,10 @@
  * Description: This file contains the representation of a timetable.
  */
 
+import 'package:fit_schedule_maker_plus/models/course.dart';
+import 'package:fit_schedule_maker_plus/views/timetable_container.dart';
+
+import 'course_lesson.dart';
 import 'program_course_group.dart';
 
 /// Index into AppViewModel::allCourses
@@ -25,13 +29,13 @@ class Timetable {
   /// -> Semester
   ///     -> All CourseID's that this semester Contains
   ///         -> All LessonID's this course contains.
-  Map<Semester, Map<CourseID, Set<LessonID>>> selected = {
+  Map<Semester, Map<Course, Set<CourseLesson>>> selected = {
     Semester.winter: {},
     Semester.summer: {},
   };
 
   /// selected lessons in the currently chosen semester
-  Map<CourseID, Set<LessonID>> get currentContent => selected[semester]!;
+  Map<Course, Set<CourseLesson>> get currentContent => selected[semester]!;
 
   Timetable({
     required this.name,

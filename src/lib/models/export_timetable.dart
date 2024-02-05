@@ -24,19 +24,7 @@ class ExportTimetable {
     required Timetable timetable,
     required AppViewModel avm,
   }) {
-    // All course ids used by this timetable.
-    final usedCourseIds = timetable.selected.keys.map((k) => timetable.selected[k]!.keys).expand((l) => l).toList();
-
-    // Get all program IDs of used course IDs (get all programs the timetable uses).
-    Set<int> programIds = avm.allStudyPrograms.keys.where((id) {
-      return avm.allStudyPrograms[id]!.courseGroups.any(
-        (group) => group.courses.any(
-          (course) => usedCourseIds.contains(course.id),
-        ),
-      );
-    }).toSet();
-
-    return ExportTimetable(timetable, programIds.toList());
+    throw UnimplementedError();
   }
 
   Map<String, dynamic> toJson() => {
@@ -44,7 +32,8 @@ class ExportTimetable {
         "programIds": programIds,
       };
 
-  factory ExportTimetable.fromJson(Map<String, dynamic> json) => ExportTimetable(
+  factory ExportTimetable.fromJson(Map<String, dynamic> json) =>
+      ExportTimetable(
         Timetable.fromJson(json["timetable"]),
         List<int>.from(json["programIds"]),
       );
