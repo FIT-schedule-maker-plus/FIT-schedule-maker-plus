@@ -12,12 +12,6 @@ import 'package:fit_schedule_maker_plus/views/timetable_container.dart';
 import 'course_lesson.dart';
 import 'program_course_group.dart';
 
-/// Index into AppViewModel::allCourses
-typedef CourseID = int;
-
-/// Index into Course::lessons
-typedef LessonID = int;
-
 class Timetable {
   /// Unique name of the timetable used for differenciating variants
   String name;
@@ -25,10 +19,7 @@ class Timetable {
   /// Currently chosen semester
   Semester semester = Semester.winter;
 
-  /// Contains all information about the content of this timetable. The structure is as follows:
-  /// -> Semester
-  ///     -> All CourseID's that this semester Contains
-  ///         -> All LessonID's this course contains.
+  /// Contains all information about the content of this timetable.
   Map<Semester, Map<Course, Set<CourseLesson>>> selected = {
     Semester.winter: {},
     Semester.summer: {},
@@ -39,7 +30,7 @@ class Timetable {
 
   Timetable({
     required this.name,
-    Map<Semester, Map<CourseID, Set<LessonID>>>? courseContent,
+    Map<Semester, Map<Course, Set<CourseLesson>>>? courseContent,
     this.semester = Semester.winter,
   }) {
     if (courseContent != null) {
@@ -48,25 +39,24 @@ class Timetable {
   }
 
   /// Check if current semester timetable contains a given course lesson.
-  bool containsLesson(CourseID course, LessonID lesson) {
-    return currentContent.containsKey(course) &&
-        currentContent[course]!.contains(lesson);
+  bool containsLesson(CourseLesson lesson) {
+    return currentContent.containsKey(lesson.course) &&
+        currentContent[lesson.course]!.contains(lesson);
   }
 
   /// Add course lesson to current semester timetable.
-  void addLesson(CourseID course, LessonID lesson) {
-    if (currentContent[course] == null) {
-      currentContent[course] = {};
+  void addLesson(CourseLesson lesson) {
+    if (currentContent[lesson.course] == null) {
+      currentContent[lesson.course] = {};
     }
-    currentContent[course]!.add(lesson);
+    currentContent[lesson.course]!.add(lesson);
   }
 
   /// Remove lesson from current semester timetable.
-  void removeLesson(CourseID course, LessonID lesson) {
-    if (!containsLesson(course, lesson)) {
-      return;
+  void removeLesson(CourseLesson lesson) {
+    if (containsLesson(lesson)) {
+      currentContent[lesson.course]!.remove(lesson);
     }
-    currentContent[course]!.remove(lesson);
   }
 
   /// Clear all lessons in current semester timetable.
@@ -77,51 +67,23 @@ class Timetable {
   /// Add course to timetable, but without any selected lessons. This is used
   /// for the case when user selected that they have a given course, but haven't selected
   /// any lessons yet.
-  void addCourse(CourseID courseID) {
-    currentContent[courseID] = {};
+  void addCourse(Course course) {
+    currentContent[course] = {};
   }
 
   /// Remove course and all its course lessons from currect semester timetable.
-  void removeCourse(CourseID courseID) {
-    currentContent.remove(courseID);
+  void removeCourse(Course course) {
+    currentContent.remove(course);
   }
 
   /// Check if currect semester timetable contains a given course.
-  bool containsCourse(CourseID courseID) {
+  bool containsCourse(Course courseID) {
     return currentContent.containsKey(courseID);
   }
 
-  factory Timetable.fromJson(Map<String, dynamic> json) => Timetable(
-        name: json["name"],
-        semester: Semester.values[json["sel_semester"]],
-        courseContent: Map.from(json["selected"]).map(
-          (sem, val) => MapEntry(
-            Semester.values[int.parse(sem)],
-            Map.from(val).map(
-              (key, val) => MapEntry(
-                int.parse(key),
-                Set<int>.from(val),
-              ),
-            ),
-          ),
-        ),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "sel_semester": semester.index,
-        "name": name,
-        "selected": selected.map(
-          (sem, val) => MapEntry(
-            sem.index.toString(),
-            val.map(
-              (key, val) => MapEntry(
-                key.toString(),
-                val.toList(),
-              ),
-            ),
-          ),
-        ),
-      };
+  factory Timetable.fromJson(Map<String, dynamic> json) =>
+      Timetable(name: "TODO");
+  Map<String, dynamic> toJson() => {};
 
   @override
   bool operator ==(Object other) {

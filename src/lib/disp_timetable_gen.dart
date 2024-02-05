@@ -17,8 +17,8 @@ import 'viewmodels/app.dart';
 import 'viewmodels/timetable.dart';
 
 class SpecificLesson {
-  final CourseID courseID;
-  final LessonID lessonID;
+  final Course courseID;
+  final CourseLesson lessonID;
   int height;
   bool selected;
 
@@ -32,14 +32,15 @@ class SpecificLesson {
 
 class Filter {
   /// List of all courses which will have their unselected lessons filtered out.
-  Set<CourseID> courses;
+  Set<Course> courses;
 
   /// Filter all unselected courses.
   bool allCourses;
 
   Filter({required this.courses, required this.allCourses});
 
-  Filter.courses(Set<CourseID> courses) : this(courses: courses, allCourses: false);
+  Filter.courses(Set<Course> courses)
+      : this(courses: courses, allCourses: false);
   Filter.all() : this(courses: {}, allCourses: true);
   Filter.none() : this(courses: {}, allCourses: false);
 }
@@ -62,7 +63,8 @@ class Pair<T, U> {
 
 typedef DisplayedTimetable = Map<DayOfWeek, Pair<int, List<SpecificLesson>>>;
 
-DisplayedTimetable genDispTimetableSpecific(AppViewModel avm, Timetable tim, Filter filter) {
+DisplayedTimetable genDispTimetableSpecific(
+    AppViewModel avm, Timetable tim, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -75,7 +77,8 @@ DisplayedTimetable genDispTimetableSpecific(AppViewModel avm, Timetable tim, Fil
   return res;
 }
 
-DisplayedTimetable genDispTimetable(AppViewModel avm, TimetableViewModel tvm, Filter filter) {
+DisplayedTimetable genDispTimetable(
+    AppViewModel avm, TimetableViewModel tvm, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -91,7 +94,7 @@ DisplayedTimetable genDispTimetable(AppViewModel avm, TimetableViewModel tvm, Fi
 }
 
 void fillHeights(
-  Map<CourseID, Course> courses,
+  Map<Course, Course> courses,
   DisplayedTimetable outTim,
 ) {
   outTim.forEach((_, pair) {
@@ -101,7 +104,9 @@ void fillHeights(
       if (lessonA.startsFrom != lessonB.startsFrom) {
         return lessonA.startsFrom - lessonB.startsFrom;
       }
-      return courses[a.courseID]!.shortcut.compareTo(courses[b.courseID]!.shortcut);
+      return courses[a.courseID]!
+          .shortcut
+          .compareTo(courses[b.courseID]!.shortcut);
     });
 
     final List<int> levels = [];
@@ -129,7 +134,8 @@ void fillHeights(
   });
 }
 
-void fillDays(Map<CourseID, Course> courses, Timetable tim, Filter filter, DisplayedTimetable outTim) {
+void fillDays(Map<Course, Course> courses, Timetable tim, Filter filter,
+    DisplayedTimetable outTim) {
   if (filter.allCourses) {
     tim.currentContent.forEach((courseID, lessons) {
       for (final lessonID in lessons) {

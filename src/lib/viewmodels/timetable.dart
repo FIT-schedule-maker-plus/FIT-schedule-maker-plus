@@ -169,18 +169,18 @@ class TimetableViewModel extends ChangeNotifier {
   }
 
   /// Check if current timtable contains lesson.
-  bool containsLesson(CourseID course, LessonID lesson) {
+  bool containsLesson(Course course, CourseLesson lesson) {
     return currentTimetable.containsLesson(course, lesson);
   }
 
   /// Add lesson to current timetable.
-  void addLesson(CourseID course, LessonID lesson) {
+  void addLesson(Course course, CourseLesson lesson) {
     currentTimetable.addLesson(course, lesson);
     notifyListeners();
   }
 
   /// Remove lesson from current timetable.
-  void removeLesson(CourseID course, LessonID lesson) {
+  void removeLesson(Course course, CourseLesson lesson) {
     currentTimetable.removeLesson(course, lesson);
     notifyListeners();
   }
