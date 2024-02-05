@@ -9,7 +9,7 @@
  * Description: This file provides the implementation of the timetable view, including lessons and an overlay
  *              displaying lesson information. It serves as the content for the 'Pracovní rozvrh' tab.
  */
-
+import 'dart:developer' as dev;
 import 'dart:async';
 import 'dart:math';
 import 'package:fit_schedule_maker_plus/models/faculty.dart';
@@ -313,6 +313,7 @@ class Timetable extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(5, (index) {
+                      dev.log(generatedData[DayOfWeek.values[index]].toString());
                       return Stack(
                         children: [
                           Column(
@@ -323,8 +324,12 @@ class Timetable extends StatelessWidget {
                             ],
                           ),
                           ...generatedData[DayOfWeek.values[index]]!.second.map((specLes) =>
-                              LessonView(readOnly, appViewModel.allCourses[specLes.lesson.course]!,
-                                  specLes, oneLessonWidth, generatedData))
+                              LessonView(
+                                  readOnly,
+                                  appViewModel.allCourses[specLes.lesson.course.id]!,
+                                  specLes,
+                                  oneLessonWidth,
+                                  generatedData))
                         ],
                       );
                     }),
