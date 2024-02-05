@@ -6,6 +6,8 @@
  * Description: This file contains the representation of a single lesson course.
  */
 
+import 'package:fit_schedule_maker_plus/models/course.dart';
+
 import 'lesson_info.dart';
 
 class CourseLesson {
@@ -18,6 +20,9 @@ class CourseLesson {
   final LessonType type;
   final DayOfWeek dayOfWeek;
 
+  /// Course this lesson belongs to.
+  final Course course;
+
   List<LessonInfo> infos;
 
   CourseLesson({
@@ -26,6 +31,7 @@ class CourseLesson {
     required this.startsFrom,
     required this.endsAt,
     required this.infos,
+    required this.course,
   });
 
   factory CourseLesson.fromJson(Map<String, dynamic> json) => CourseLesson(
@@ -33,7 +39,8 @@ class CourseLesson {
         endsAt: int.parse(json["ends_at"]),
         type: LessonType.values[int.parse(json["type"])],
         dayOfWeek: DayOfWeek.values[int.parse(json["day_of_week"])],
-        infos: List<LessonInfo>.from(json["infos"].map((info) => LessonInfo.fromJson(info))),
+        infos: List<LessonInfo>.from(
+            json["infos"].map((info) => LessonInfo.fromJson(info))),
       );
 
   Map<String, dynamic> toJson() => {
