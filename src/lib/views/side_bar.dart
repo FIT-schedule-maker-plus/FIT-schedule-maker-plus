@@ -283,28 +283,22 @@ class SubjectsExpansionTiles extends StatelessWidget {
       iconColor: white,
       controlAffinity: ListTileControlAffinity.leading,
       maintainState: true,
-      children: programCourseGroup.courses.where((course) => course.duty == courseDuty).map((course) => SubjectButton(course)).toList(),
+      children: programCourseGroup.courses.where((course) => course.duty == courseDuty).map((course) => buildSubjectButton(course)).toList(),
     );
   }
 }
 
-class SubjectButton extends StatelessWidget {
-  final ProgramCourse programCourse;
-  const SubjectButton(this.programCourse, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    TimetableViewModel timetableViewModel = Provider.of<TimetableViewModel>(context, listen: false);
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-    bool isSelected = context.select((TimetableViewModel timetableViewModel) => timetableViewModel.containsCourse(programCourse.courseId));
-
-    return Padding(
+Widget buildSubjectButton(ProgramCourse programCourse) {
+  return Selector<TimetableViewModel, bool>(
+    selector: (context, tvm) => tvm.containsCourse(programCourse.courseId),
+    builder: (context, isSelected, _) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Tooltip(
         waitDuration: const Duration(milliseconds: 1000),
-        message: appViewModel.allCourses[programCourse.courseId]!.fullName,
+        message: context.read<AppViewModel>().allCourses[programCourse.courseId]!.fullName,
         child: ElevatedButton(
-          onPressed: () => isSelected ? timetableViewModel.removeCourse(programCourse.courseId) : timetableViewModel.addCourse(programCourse.courseId),
+          onPressed: () =>
+              isSelected ? context.read<TimetableViewModel>().removeCourse(programCourse.courseId) : context.read<TimetableViewModel>().addCourse(programCourse.courseId),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 40),
             alignment: Alignment.centerLeft,
@@ -314,11 +308,11 @@ class SubjectButton extends StatelessWidget {
             elevation: 0,
           ),
           child: Text(
-            appViewModel.allCourses[programCourse.courseId]!.shortcut,
+            context.read<AppViewModel>().allCourses[programCourse.courseId]!.shortcut,
             style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

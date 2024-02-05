@@ -6,6 +6,8 @@
  * Description: This file contains the representation of a course prerequisities.
  */
 
+import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+
 /// Contains information about course lesson requirements.
 class CoursePrerequisite {
   /// number of required hours for this type of prerequisite
@@ -15,7 +17,7 @@ class CoursePrerequisite {
   final int numberOfLessons;
 
   /// Type of the prerequisite
-  final PrerequisiteType type;
+  final LessonType type;
 
   CoursePrerequisite({
     required this.requiredHours,
@@ -32,7 +34,7 @@ class CoursePrerequisite {
   factory CoursePrerequisite.fromJson(Map<String, dynamic> json) => CoursePrerequisite(
         requiredHours: int.parse(json["required_hours"]),
         numberOfLessons: int.parse(json["number_of_lessons"]),
-        type: PrerequisiteType.values[int.parse(json["type"])],
+        type: LessonType.values[int.parse(json["type"])],
       );
 
   Map<String, dynamic> toJson() => {
@@ -40,13 +42,4 @@ class CoursePrerequisite {
         "number_of_lessons": numberOfLessons,
         "type": type.index,
       };
-}
-
-enum PrerequisiteType {
-  lecture,
-  seminar,
-  laborator,
-  exercise,
-  project,
-  pcLab,
 }

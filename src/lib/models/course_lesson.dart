@@ -55,10 +55,11 @@ enum DayOfWeek {
 
 enum LessonType {
   lecture, // Přednáška
-  seminar, // Demo cviko
   laboratory, // Laborator
   computerLab, // Computer laborator
   exercise, // cviko
+  seminar, // Demo cviko
+  project, // projekt
 }
 
 extension ParseToString<T extends Enum> on T {
@@ -88,6 +89,8 @@ extension ParseToString<T extends Enum> on T {
           return "Cvičení s počítačovou podporou";
         case LessonType.exercise:
           return "Cvičení";
+        case LessonType.project:
+          return "Projekt";
       }
     }
     // Handle unknown cases
