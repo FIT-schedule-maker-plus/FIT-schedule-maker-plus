@@ -6,7 +6,7 @@
  * Description: This file contains the representation of a a single study program at FIT.
  */
 
-import 'program_course_group.dart';
+import 'course_group.dart';
 
 /// Represents a single study program at FIT.
 class StudyProgram {
@@ -32,7 +32,8 @@ class StudyProgram {
       fullName: json["fullname"],
       type: json["type"],
       duration: json["duration"],
-      courseGroups: List<CourseGroup>.from(json["courseGroups"].map((group) => CourseGroup.fromJson(group))));
+      courseGroups:
+          List<CourseGroup>.from(json["courseGroups"].map((group) => CourseGroup.fromJson(group))));
 
   Map<String, dynamic> toJson() => {
         "id": id,

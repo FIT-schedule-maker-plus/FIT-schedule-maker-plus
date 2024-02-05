@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/course.dart';
-import '../models/program_course_group.dart';
+import '../models/course_group.dart';
 import '../models/study.dart';
 import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
@@ -44,7 +44,8 @@ class SideBar extends StatelessWidget {
 
   Widget buildStudiumBar(BuildContext context) {
     AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-    final activeStudy = context.select((AppViewModel appViewModel) => appViewModel.currentStudyProgram);
+    final activeStudy =
+        context.select((AppViewModel appViewModel) => appViewModel.currentStudyProgram);
     Map<int, StudyProgram> studies = appViewModel.allStudyPrograms;
     final int studyTypeCount = StudyType.values.length + 1;
 
@@ -76,9 +77,13 @@ class SideBar extends StatelessWidget {
                   if (index == 0) {
                     return Container(padding: EdgeInsets.zero);
                   } else {
-                    List<StudyProgram> studyPrograms = studies.values.where((study) => study.type == StudyType.values[index - 1]).toList();
+                    List<StudyProgram> studyPrograms = studies.values
+                        .where((study) => study.type == StudyType.values[index - 1])
+                        .toList();
                     return Column(
-                      children: studyPrograms.map((study) => buildStudiumButton(study, activeStudy, appViewModel)).toList()
+                      children: studyPrograms
+                          .map((study) => buildStudiumButton(study, activeStudy, appViewModel))
+                          .toList()
                         ..add(SizedBox(height: index + 1 == studyTypeCount ? 50 : 0)),
                     );
                   }
@@ -114,7 +119,9 @@ class SideBar extends StatelessWidget {
                 onPressed: study.id == activeStudy
                     ? null
                     : () {
-                        if (study.duration < appViewModel.allStudyPrograms[appViewModel.currentStudyProgram]!.duration) {
+                        if (study.duration <
+                            appViewModel
+                                .allStudyPrograms[appViewModel.currentStudyProgram]!.duration) {
                           appViewModel.changeGrade(YearOfStudy.values[study.duration - 1]);
                         }
                         appViewModel.changeStudy(study.id);
@@ -134,7 +141,8 @@ class SideBar extends StatelessWidget {
       child: Text(
         studyType.toCzechString(),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: Color.fromARGB(255, 129, 129, 129), fontSize: 10, fontWeight: FontWeight.w400),
+        style: const TextStyle(
+            color: Color.fromARGB(255, 129, 129, 129), fontSize: 10, fontWeight: FontWeight.w400),
       ),
     );
   }
@@ -193,13 +201,16 @@ class SideBar extends StatelessWidget {
   Widget buildHeader(BuildContext context) {
     AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
     TimetableViewModel timetableViewModel = Provider.of<TimetableViewModel>(context, listen: false);
-    final currentSemester = context.select((AppViewModel appViewModel) => appViewModel.currentSemester);
+    final currentSemester =
+        context.select((AppViewModel appViewModel) => appViewModel.currentSemester);
 
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
         Expanded(
-          child: Text(appViewModel.currentYear, textAlign: TextAlign.center, style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
+          child: Text(appViewModel.currentYear,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
         ),
         Padding(
           padding: const EdgeInsets.only(right: 10.0),
@@ -283,21 +294,26 @@ class SubjectsExpansionTiles extends StatelessWidget {
       iconColor: white,
       controlAffinity: ListTileControlAffinity.leading,
       maintainState: true,
-      children: programCourseGroup.courses.where((course) => course.duty == courseDuty).map((course) => buildSubjectButton(course)).toList(),
+      children: programCourseGroup.courses
+          .where((course) => course.duty == courseDuty)
+          .map((course) => buildSubjectButton(course))
+          .toList(),
     );
   }
 }
 
-Widget buildSubjectButton(Course programCourse) {
+Widget buildSubjectButton(Course course) {
   return Selector<TimetableViewModel, bool>(
-    selector: (context, tvm) => tvm.containsCourse(programCourse.id),
+    selector: (context, tvm) => tvm.containsCourse(course),
     builder: (context, isSelected, _) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Tooltip(
         waitDuration: const Duration(milliseconds: 1000),
-        message: context.read<AppViewModel>().allCourses[programCourse.id]!.fullName,
+        message: context.read<AppViewModel>().allCourses[course.id]!.fullName,
         child: ElevatedButton(
-          onPressed: () => isSelected ? context.read<TimetableViewModel>().removeCourse(programCourse.id) : context.read<TimetableViewModel>().addCourse(programCourse.id),
+          onPressed: () => isSelected
+              ? context.read<TimetableViewModel>().removeCourse(course)
+              : context.read<TimetableViewModel>().addCourse(course),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 40),
             alignment: Alignment.centerLeft,
@@ -307,7 +323,7 @@ Widget buildSubjectButton(Course programCourse) {
             elevation: 0,
           ),
           child: Text(
-            context.read<AppViewModel>().allCourses[programCourse.id]!.shortcut,
+            context.read<AppViewModel>().allCourses[course.id]!.shortcut,
             style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
           ),
         ),

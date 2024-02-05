@@ -13,8 +13,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../disp_timetable_gen.dart';
+import '../models/course.dart';
+import '../models/course_group.dart';
 import '../models/export_timetable.dart';
-import '../models/program_course_group.dart';
+import '../models/lesson.dart';
 import '../models/timetable.dart';
 import '../utils.dart';
 import 'app.dart';
@@ -42,13 +44,13 @@ class TimetableViewModel extends ChangeNotifier {
     if (timetables.isEmpty) timetables.add(Timetable(name: "default"));
   }
 
-  void addCourseToFilter(int courseId) {
-    filter.courses.add(courseId);
+  void addCourseToFilter(Course course) {
+    filter.courses.add(course);
     notifyListeners();
   }
 
-  void removeCourseFromFilter(int courseId) {
-    filter.courses.remove(courseId);
+  void removeCourseFromFilter(Course course) {
+    filter.courses.remove(course);
     notifyListeners();
   }
 
@@ -76,7 +78,7 @@ class TimetableViewModel extends ChangeNotifier {
         await avm.getProgramCourses(progId);
       }
       for (final val in exportTimetable.timetable.selected.values) {
-        await avm.getAllCourseLessonsAsync(val.keys.toList());
+        await avm.getAllCourseLessonsAsync(val.keys.map((course) => course.id).toList());
       }
       exportTimetable.timetable.semester = Semester.winter;
       timetables.add(exportTimetable.timetable);
@@ -154,34 +156,34 @@ class TimetableViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addCourse(int courseID) {
-    currentTimetable.addCourse(courseID);
+  void addCourse(Course course) {
+    currentTimetable.addCourse(course);
     notifyListeners();
   }
 
-  void removeCourse(int courseID) {
-    currentTimetable.removeCourse(courseID);
+  void removeCourse(Course course) {
+    currentTimetable.removeCourse(course);
     notifyListeners();
   }
 
-  bool containsCourse(int courseID) {
-    return currentTimetable.containsCourse(courseID);
+  bool containsCourse(Course course) {
+    return currentTimetable.containsCourse(course);
   }
 
   /// Check if current timtable contains lesson.
-  bool containsLesson(Course course, CourseLesson lesson) {
-    return currentTimetable.containsLesson(course, lesson);
+  bool containsLesson(Lesson lesson) {
+    return currentTimetable.containsLesson(lesson);
   }
 
   /// Add lesson to current timetable.
-  void addLesson(Course course, CourseLesson lesson) {
-    currentTimetable.addLesson(course, lesson);
+  void addLesson(Lesson lesson) {
+    currentTimetable.addLesson(lesson);
     notifyListeners();
   }
 
   /// Remove lesson from current timetable.
-  void removeLesson(Course course, CourseLesson lesson) {
-    currentTimetable.removeLesson(course, lesson);
+  void removeLesson(Lesson lesson) {
+    currentTimetable.removeLesson(lesson);
     notifyListeners();
   }
 

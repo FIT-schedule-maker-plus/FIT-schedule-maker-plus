@@ -13,12 +13,12 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:fit_schedule_maker_plus/models/faculty.dart';
+import 'package:fit_schedule_maker_plus/models/lesson.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../disp_timetable_gen.dart';
 import '../models/course.dart';
-import '../models/course_lesson.dart';
 import '../models/timetable.dart' as model;
 import '../utils.dart';
 import '../viewmodels/timetable.dart';
@@ -45,12 +45,11 @@ class TimetableContainer extends StatelessWidget {
         children: [
           const Courses(),
           const SizedBox(height: 40),
-          Selector<TimetableViewModel, List<int>>(
+          Selector<TimetableViewModel, List<Course>>(
               selector: (_, vm) => vm.filter.courses.toList(),
               builder: (context, filteredCourses, _) {
                 return Expanded(
-                  child: Timetable(
-                      filter: Filter.courses(filteredCourses.toSet())),
+                  child: Timetable(filter: Filter.courses(filteredCourses.toSet())),
                 );
               })
         ],
@@ -72,36 +71,35 @@ class _CoursesState extends State<Courses> {
 
   @override
   Widget build(BuildContext context) {
-    final allCourses = context.select((AppViewModel vm) => vm.allCourses);
-    final courseIDs = context.select((TimetableViewModel tvm) =>
-        tvm.currentTimetable.currentContent.keys.toList());
-    isCollapsed = courseIDs.isEmpty;
-    bool areAllLessonsFetched = courseIDs.every((courseId) =>
-        context.read<AppViewModel>().isCourseLessonFetched(courseId));
+    final courses = context
+        .select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
+    isCollapsed = courses.isEmpty;
+    bool areAllLessonsFetched =
+        courses.every((course) => context.read<AppViewModel>().isCourseLessonFetched(course.id));
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: isCollapsed
           ? Container(key: const ValueKey(1))
           : areAllLessonsFetched
-              ? buildCourses(courseIDs, allCourses)
+              ? buildCourses(courses)
               : FutureBuilder(
                   future: context
                       .read<AppViewModel>()
-                      .getAllCourseLessonsAsync(courseIDs),
+                      .getAllCourseLessonsAsync(courses.map((course) => course.id).toList()),
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
                       case ConnectionState.done:
-                        return buildCourses(courseIDs, allCourses);
+                        return buildCourses(courses);
                       default:
-                        return buildCourses(courseIDs, allCourses);
+                        return buildCourses(courses);
                     }
                   },
                 ),
     );
   }
 
-  Widget buildCourses(List<int> courseIDs, Map<int, Course> allCourses) {
+  Widget buildCourses(List<Course> courses) {
     return Container(
       key: const ValueKey(2),
       width: double.infinity,
@@ -134,8 +132,7 @@ class _CoursesState extends State<Courses> {
                 height: 0,
               ),
             ),
-            childrenPadding:
-                const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+            childrenPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
             shape: const OutlineInputBorder(borderSide: BorderSide.none),
             collapsedIconColor: Colors.white,
             iconColor: Colors.white,
@@ -149,12 +146,8 @@ class _CoursesState extends State<Courses> {
                 child: Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 60, // to apply margin in the main axis of the wrap
-                  runSpacing:
-                      10, // to apply margin in the cross axis of the wrap
-                  children: courseIDs
-                      .map((courseId) =>
-                          buildCourseWidget(allCourses[courseId]!, context))
-                      .toList(),
+                  runSpacing: 10, // to apply margin in the cross axis of the wrap
+                  children: courses.map((course) => buildCourseWidget(course, context)).toList(),
                 ),
               ),
             ],
@@ -165,23 +158,18 @@ class _CoursesState extends State<Courses> {
   }
 
   Widget buildCourseWidget(Course course, BuildContext context) {
-    bool isHidden =
-        context.read<TimetableViewModel>().filter.courses.contains(course.id);
+    bool isHidden = context.read<TimetableViewModel>().filter.courses.contains(course);
 
-    return Selector<TimetableViewModel, List<int>>(
-      selector: (context, vm) =>
-          vm.currentTimetable.currentContent[course.id]?.toList() ?? [],
-      builder: (context, sem, _) {
+    return Selector<TimetableViewModel, List<Lesson>>(
+      selector: (context, vm) => vm.currentTimetable.currentContent[course]?.toList() ?? [],
+      builder: (context, selectedLessons, _) {
         List<Color> lessonColors = [];
-        Iterable<LessonView> selectedLessons = sem.map((lessonId) => context
-            .read<AppViewModel>()
-            .allCourses[course.id]!
-            .lessons[lessonId]);
+
         Set<LessonType> lessonTypes = course.prerequisites
-            .map((pre) => pre.type)
+            .map((prerequisite) => prerequisite.type)
             .toSet()
-            .difference(selectedLessons.map((lesson) => lesson.type).toSet()
-              ..add(LessonType.project));
+            .difference(
+                selectedLessons.map((lesson) => lesson.type).toSet()..add(LessonType.project));
 
         for (var type in lessonTypes) {
           lessonColors.add(getLessonColor(type));
@@ -222,16 +210,15 @@ class _CoursesState extends State<Courses> {
                     onPressed: () {
                       final tvm = ctx.read<TimetableViewModel>();
                       if (isHidden) {
-                        tvm.removeCourseFromFilter(course.id);
+                        tvm.removeCourseFromFilter(course);
                       } else {
-                        tvm.addCourseToFilter(course.id);
+                        tvm.addCourseToFilter(course);
                       }
                       setState(() => isHidden = !isHidden);
                     },
                     padding: EdgeInsets.zero,
                     color: Colors.white,
-                    icon: Icon(
-                        isHidden ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
                   ),
                 );
               }),
@@ -254,9 +241,7 @@ class _CoursesState extends State<Courses> {
                 waitDuration: const Duration(milliseconds: 500),
                 message: "Vymazat",
                 child: IconButton(
-                  onPressed: () => context
-                      .read<TimetableViewModel>()
-                      .removeCourse(course.id),
+                  onPressed: () => context.read<TimetableViewModel>().removeCourse(course),
                   padding: EdgeInsets.zero,
                   color: Colors.white,
                   icon: const Icon(Icons.close),
@@ -276,20 +261,20 @@ class Timetable extends StatelessWidget {
   final model.Timetable? timetable;
   final Filter filter;
   final bool readOnly;
-  const Timetable(
-      {super.key, this.timetable, required this.filter, this.readOnly = false});
+  const Timetable({super.key, this.timetable, required this.filter, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
-    final courseIds = context.select((TimetableViewModel tvm) =>
-        tvm.currentTimetable.currentContent.keys.toList());
-    bool areAllLessonsFetched = courseIds
-        .every((courseId) => appViewModel.isCourseLessonFetched(courseId));
+    final courses = context
+        .select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
+    bool areAllLessonsFetched =
+        courses.every((course) => appViewModel.isCourseLessonFetched(course.id));
     return areAllLessonsFetched
         ? buildTimetable(context)
         : FutureBuilder(
-            future: appViewModel.getAllCourseLessonsAsync(courseIds),
+            future:
+                appViewModel.getAllCourseLessonsAsync(courses.map((course) => course.id).toList()),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
@@ -332,22 +317,14 @@ class Timetable extends StatelessWidget {
                         children: [
                           Column(
                             children: [
-                              buildWeekDay(
-                                  DayOfWeek.values[index],
-                                  oneLessonWidth - 1,
-                                  generatedData[DayOfWeek.values[index]]!
-                                      .first),
-                              const Divider(
-                                  thickness: 2, height: 2, color: Colors.black),
+                              buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1,
+                                  generatedData[DayOfWeek.values[index]]!.first),
+                              const Divider(thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
-                          ...generatedData[DayOfWeek.values[index]]!.second.map(
-                              (specLes) => LessonView(
-                                  readOnly,
-                                  appViewModel.allCourses[specLes.courseID]!,
-                                  specLes,
-                                  oneLessonWidth,
-                                  generatedData))
+                          ...generatedData[DayOfWeek.values[index]]!.second.map((specLes) =>
+                              LessonView(readOnly, appViewModel.allCourses[specLes.lesson.course]!,
+                                  specLes, oneLessonWidth, generatedData))
                         ],
                       );
                     }),
@@ -395,21 +372,19 @@ class Timetable extends StatelessWidget {
                 0.5, // There was always overflow by 0.5 pixels due to floating point arithmetic
             child: Text(dayOfWeek.toCzechString(),
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400)),
+                    color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400)),
           ),
           Padding(
             padding: EdgeInsets.only(right: lessonWidth / 2),
-            child: const VerticalDivider(
-                thickness: 1, width: 1, color: timetableVerticalLinesColor),
+            child:
+                const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
           ),
           ...List.generate(
             14,
             (index) => Padding(
               padding: EdgeInsets.symmetric(horizontal: lessonWidth / 2),
-              child: const VerticalDivider(
-                  thickness: 1, width: 1, color: timetableVerticalLinesColor),
+              child:
+                  const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
             ),
           ),
         ],
@@ -425,8 +400,7 @@ class LessonView extends StatefulWidget {
   final double oneLessonWidth;
   final Map<DayOfWeek, Pair<int, List<SpecificLesson>>> genData;
 
-  const LessonView(this.readOnly, this.course, this.specLes,
-      this.oneLessonWidth, this.genData,
+  const LessonView(this.readOnly, this.course, this.specLes, this.oneLessonWidth, this.genData,
       {super.key});
 
   @override
@@ -451,20 +425,15 @@ class _LessonViewState extends State<LessonView> {
 
   @override
   Widget build(BuildContext context) {
-    final lessonId = widget.specLes.lessonID;
+    Lesson lesson = widget.specLes.lesson;
     final lessonLevel = widget.specLes.height;
     const int leftOffset = 5;
-    LessonView lesson = widget.course.lessons[lessonId];
     TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = getLessonColor(lesson.type);
 
-    locations = lesson.infos
-        .map((info) => info.locations)
-        .expand((loc) => loc)
-        .toSet()
-        .join(', ');
+    locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
     profesors = lesson.infos.map((info) => info.info).toSet().join(", ");
 
     color = color
@@ -476,8 +445,7 @@ class _LessonViewState extends State<LessonView> {
       color = color.withAlpha(60);
     }
 
-    final hourIndex =
-        (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
+    final hourIndex = (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
     return Positioned(
       left: leftOffset + daysBarWidth + hourIndex * widget.oneLessonWidth,
       top: lessonHeight * lessonLevel + 5,
@@ -489,25 +457,21 @@ class _LessonViewState extends State<LessonView> {
           if (widget.specLes.selected) {
             deselectLesson(timetableViewModel, widget.specLes);
           } else {
-            final lessons = context
-                .read<AppViewModel>()
-                .allCourses[widget.course.id]!
-                .lessons;
-            final selectedLessons = timetableViewModel
-                .currentTimetable.currentContent[widget.course.id];
+            final selectedLessons =
+                timetableViewModel.currentTimetable.currentContent[widget.course.id];
 
             if (selectedLessons == null || selectedLessons.isNotEmpty) {
-              int id = selectedLessons!.firstWhere(
-                  (id) => lessons[id].type == lesson.type,
-                  orElse: () => -1);
-              if (id != -1) {
-                var x = widget.genData.values
+              Lesson? less = selectedLessons
+                  ?.firstWhere((selectedLesson) => selectedLesson.type == lesson.type);
+
+              if (less != null) {
+                SpecificLesson specLess = widget.genData.values
                     .expand((element) => element.second)
-                    .where((element) => element.courseID == widget.course.id)
-                    .firstWhere((element) => element.lessonID == id);
-                x.selected = false;
-                timetableViewModel.currentTimetable
-                    .removeLesson(widget.course.id, id);
+                    .where((element) => element.lesson.course == widget.course)
+                    .firstWhere((element) => element.lesson == less);
+
+                specLess.selected = false;
+                timetableViewModel.currentTimetable.removeLesson(less);
               }
             }
 
@@ -537,15 +501,11 @@ class _LessonViewState extends State<LessonView> {
                     _timer = Timer(const Duration(milliseconds: 600), () {
                       overlayPosition = details.position;
                       overlayTriggerPosition = details.position;
-                      if (details.position.dx + overlayWidth >
-                          screenSize.width) {
-                        overlayPosition =
-                            overlayPosition!.translate(-overlayWidth, 0);
+                      if (details.position.dx + overlayWidth > screenSize.width) {
+                        overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
                       }
-                      if (details.position.dy + overlayHeight >
-                          screenSize.height) {
-                        overlayPosition =
-                            overlayPosition!.translate(0, -overlayHeight);
+                      if (details.position.dy + overlayHeight > screenSize.height) {
+                        overlayPosition = overlayPosition!.translate(0, -overlayHeight);
                       }
                       if (mounted) {
                         showOverlay(widget.course, lesson);
@@ -560,7 +520,7 @@ class _LessonViewState extends State<LessonView> {
     );
   }
 
-  Container buildLesson(LessonView lesson, Color color) {
+  Container buildLesson(Lesson lesson, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       width: (lesson.endsAt - lesson.startsFrom) / 60 * widget.oneLessonWidth,
@@ -591,8 +551,7 @@ class _LessonViewState extends State<LessonView> {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 10),
-        buildRooms(context,
-            lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
+        buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
       ]),
     );
   }
@@ -604,7 +563,7 @@ class _LessonViewState extends State<LessonView> {
     }
   }
 
-  void showOverlay(Course course, LessonView lesson) {
+  void showOverlay(Course course, Lesson lesson) {
     entry = OverlayEntry(
       builder: (context) => Positioned(
         top: overlayPosition!.dy + 1,
@@ -624,7 +583,7 @@ class _LessonViewState extends State<LessonView> {
     overlay.insert(entry!);
   }
 
-  Widget buildOverlay(Course course, LessonView lesson) {
+  Widget buildOverlay(Course course, Lesson lesson) {
     const overlayBorderRadius = Radius.circular(10);
     const overlayZeroRadius = Radius.zero;
     BorderRadiusGeometry? borders;
@@ -636,15 +595,13 @@ class _LessonViewState extends State<LessonView> {
           bottomLeft: overlayBorderRadius,
           bottomRight: overlayBorderRadius,
           topLeft: overlayZeroRadius);
-    } else if (overlayPosition!.translate(overlayWidth, 0) ==
-        overlayTriggerPosition) {
+    } else if (overlayPosition!.translate(overlayWidth, 0) == overlayTriggerPosition) {
       borders = const BorderRadius.only(
           topRight: overlayZeroRadius,
           bottomLeft: overlayBorderRadius,
           bottomRight: overlayBorderRadius,
           topLeft: overlayBorderRadius);
-    } else if (overlayPosition!.translate(0, overlayHeight) ==
-        overlayTriggerPosition) {
+    } else if (overlayPosition!.translate(0, overlayHeight) == overlayTriggerPosition) {
       borders = const BorderRadius.only(
           topRight: overlayBorderRadius,
           bottomLeft: overlayZeroRadius,
@@ -767,8 +724,7 @@ class _LessonViewState extends State<LessonView> {
               .expand<Widget>(
                 (entry) => [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(7),
@@ -789,9 +745,7 @@ class _LessonViewState extends State<LessonView> {
                     child: Text(
                       entry.value.join(", "),
                       style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white),
+                          fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
                     ),
                   )
                 ],
@@ -800,10 +754,8 @@ class _LessonViewState extends State<LessonView> {
             ..add(
               Text(
                 unknownLocations.join(", "),
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white),
+                style:
+                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
               ),
             ),
         ),

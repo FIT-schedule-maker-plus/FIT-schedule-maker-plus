@@ -6,7 +6,7 @@
  * Description: This file contains the representation of a course prerequisities.
  */
 
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
+import 'lesson.dart';
 
 /// Contains information about course lesson requirements.
 class CoursePrerequisite {

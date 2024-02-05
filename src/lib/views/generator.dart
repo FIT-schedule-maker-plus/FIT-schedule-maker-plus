@@ -6,12 +6,13 @@
  * Description: This file defines an overlay view that contains interface for timetable generation.
  */
 
-import 'package:fit_schedule_maker_plus/models/course_lesson.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/app.dart';
 import 'package:fit_schedule_maker_plus/viewmodels/timetable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+import '../models/lesson.dart';
 
 class Generator extends StatelessWidget {
   final AnimationController animationController;
@@ -57,7 +58,8 @@ class Generator extends StatelessWidget {
                   child: Text(
                     "Generátor rozvrhu",
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+                    style:
+                        TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -72,19 +74,24 @@ class Generator extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Expanded(child: Text("Max počet hodin na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
+                          const Expanded(
+                              child: Text("Max počet hodin na den: ",
+                                  style: TextStyle(color: Colors.white, fontSize: 16))),
                           NumberPicker(_textEditingControllerLessons),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          const Expanded(child: Text("Max počet cvičení na den: ", style: TextStyle(color: Colors.white, fontSize: 16))),
+                          const Expanded(
+                              child: Text("Max počet cvičení na den: ",
+                                  style: TextStyle(color: Colors.white, fontSize: 16))),
                           NumberPicker(_textEditingControllerPractices),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      const Text("Dny volna: ", style: TextStyle(color: Colors.white, fontSize: 16)),
+                      const Text("Dny volna: ",
+                          style: TextStyle(color: Colors.white, fontSize: 16)),
                       DaySelector(freeDaysSelected),
                     ],
                   ),
@@ -94,15 +101,23 @@ class Generator extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 context.read<AppViewModel>().generateTimetable(
-                    int.parse(_textEditingControllerLessons.text), int.parse(_textEditingControllerPractices.text), freeDaysSelected, context.read<TimetableViewModel>());
+                    int.parse(_textEditingControllerLessons.text),
+                    int.parse(_textEditingControllerPractices.text),
+                    freeDaysSelected,
+                    context.read<TimetableViewModel>());
                 animationController.reverse();
               },
               child: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 30),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 3)]),
-                  child: const Text("Vygenerovat", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: const [BoxShadow(color: Colors.white, blurRadius: 3)]),
+                  child: const Text("Vygenerovat",
+                      style: TextStyle(
+                          color: Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             )
@@ -184,7 +199,8 @@ class _NumberPickerState extends State<NumberPicker> {
     if (textValue == null) {
       widget._textEditingController.text = "0";
     } else {
-      widget._textEditingController.text = (int.parse(widget._textEditingController.text) + diff).clamp(0, 15).toString();
+      widget._textEditingController.text =
+          (int.parse(widget._textEditingController.text) + diff).clamp(0, 15).toString();
     }
     setState(() {});
   }
@@ -198,17 +214,20 @@ class _NumberPickerState extends State<NumberPicker> {
           buildButton(Icons.remove, () => changeText(-1), const Color.fromARGB(255, 136, 82, 82)),
           Expanded(
             child: TextField(
-              decoration: const InputDecoration(hintText: null, counterText: "", border: InputBorder.none),
+              decoration:
+                  const InputDecoration(hintText: null, counterText: "", border: InputBorder.none),
               textAlign: TextAlign.center,
               maxLength: 2,
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
               controller: widget._textEditingController,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
+              style:
+                  const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
               onChanged: (value) {
                 int? intValue = int.tryParse(value);
                 if (intValue != null) {
-                  widget._textEditingController.value = widget._textEditingController.value.copyWith(
+                  widget._textEditingController.value =
+                      widget._textEditingController.value.copyWith(
                     text: intValue.clamp(0, 15).toString(),
                     selection: const TextSelection.collapsed(offset: 2),
                   );

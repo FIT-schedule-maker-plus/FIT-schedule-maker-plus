@@ -8,8 +8,8 @@
 
 import 'package:fit_schedule_maker_plus/models/course.dart';
 
-import 'course_lesson.dart';
-import 'program_course_group.dart';
+import 'course_group.dart';
+import 'lesson.dart';
 
 class Timetable {
   /// Unique name of the timetable used for differenciating variants
@@ -80,8 +80,7 @@ class Timetable {
     return currentContent.containsKey(courseID);
   }
 
-  factory Timetable.fromJson(Map<String, dynamic> json) =>
-      Timetable(name: "TODO");
+  factory Timetable.fromJson(Map<String, dynamic> json) => Timetable(name: "TODO");
   Map<String, dynamic> toJson() => {};
 
   @override

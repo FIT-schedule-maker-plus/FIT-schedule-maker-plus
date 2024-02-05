@@ -13,7 +13,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import 'models/course_lesson.dart';
+import 'models/lesson.dart';
 
 void saveFile(
   dynamic data,

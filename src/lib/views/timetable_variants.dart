@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../disp_timetable_gen.dart';
-import '../models/program_course_group.dart';
+import '../models/course_group.dart';
 import '../models/timetable.dart';
 import '../viewmodels/app.dart';
 import '../viewmodels/timetable.dart';
@@ -221,7 +221,8 @@ class TimetableVariants extends StatelessWidget {
                 children: [
                   Container(
                     color: Colors.transparent,
-                    constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 150),
+                    constraints:
+                        BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 150),
                     child: Selector<TimetableViewModel, int>(
                       selector: (ctx, vm) => vm.timetables.length,
                       builder: (ctx, length, _) => SingleChildScrollView(

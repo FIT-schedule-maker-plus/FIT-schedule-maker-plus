@@ -6,9 +6,9 @@
  * Description: This file contains the representation of a single course. This course contains multiple `CourseLessons` with different times.
  */
 
-import 'course_lesson.dart';
+import 'course_group.dart';
 import 'course_prerequisite.dart';
-import 'program_course_group.dart';
+import 'lesson.dart';
 
 /// Represents a single course. This course contains multiple CourseLessons with different times
 class Course {
@@ -38,10 +38,9 @@ class Course {
         fullName: json["fullName"],
         semester: json["semester"],
         duty: json["duty"],
-        lessons: List<Lesson>.from(
-            json["lessons"].map((lesson) => Lesson.fromJson(lesson))),
-        prerequisites: List<CoursePrerequisite>.from(json["prerequisites"]
-            .map((prerequisite) => CoursePrerequisite.fromJson(prerequisite))),
+        lessons: List<Lesson>.from(json["lessons"].map((lesson) => Lesson.fromJson(lesson))),
+        prerequisites: List<CoursePrerequisite>.from(
+            json["prerequisites"].map((prerequisite) => CoursePrerequisite.fromJson(prerequisite))),
         loaded: false,
       );
 
@@ -52,8 +51,8 @@ class Course {
         "semester": semester,
         "duty": duty,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),
-        "prerequisites": List<dynamic>.from(
-            prerequisites.map((prerequisite) => prerequisite.toJson())),
+        "prerequisites":
+            List<dynamic>.from(prerequisites.map((prerequisite) => prerequisite.toJson())),
       };
 }
 

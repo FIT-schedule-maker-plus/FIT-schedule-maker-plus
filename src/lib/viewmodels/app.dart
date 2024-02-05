@@ -15,11 +15,11 @@ import 'package:chaleno/chaleno.dart';
 import 'package:flutter/material.dart';
 
 import '../models/course.dart';
-import '../models/course_lesson.dart';
+import '../models/course_group.dart';
 import '../models/course_prerequisite.dart';
 import '../models/faculty.dart';
+import '../models/lesson.dart';
 import '../models/lesson_info.dart';
-import '../models/program_course_group.dart';
 import '../models/study.dart';
 import '../models/timetable.dart';
 import '../viewmodels/timetable.dart';
@@ -66,23 +66,9 @@ class AppViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // FIXME: Right now it only selects the first lesson of each type from each course
-  /// Generates a timetable based on user defined constraints.
-  void generateTimetable(int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
-    for (var courseId in tvm.currentTimetable.currentContent.keys) {
-      final lessons = allCourses[courseId]!.lessons;
-
-      final lessonTypes = lessons.map((lesson) => lesson.type).toSet();
-      tvm.currentTimetable.currentContent[courseId]?.clear();
-      for (var type in lessonTypes) {
-        final index = lessons.indexWhere((element) => element.type == type && !selected.contains(element.dayOfWeek));
-        if (index > -1) {
-          tvm.addLesson(courseId, index);
-        }
-      }
-    }
-
-    notifyListeners();
+  void generateTimetable(
+      int maxLessons, int maxPractices, List<DayOfWeek> selected, TimetableViewModel tvm) {
+    throw UnimplementedError();
   }
 
   /// Fetch all study program avaiable on the web
@@ -90,37 +76,199 @@ class AppViewModel extends ChangeNotifier {
   /// TODO Fetch from the site instead of hardcoding them
   Future<void> getAllStudyProgram() async {
     var studyPrograms = [
-      StudyProgram(id: 15803, type: StudyType.bachelor, duration: 3, shortcut: "BIT", courseGroups: [], fullName: "Information Technology"),
+      StudyProgram(
+          id: 15803,
+          type: StudyType.bachelor,
+          duration: 3,
+          shortcut: "BIT",
+          courseGroups: [],
+          fullName: "Information Technology"),
 
       // MITAI
-      StudyProgram(id: 15994, type: StudyType.magister, duration: 2, shortcut: "NADE", courseGroups: [], fullName: "Application Development"),
-      StudyProgram(id: 15990, type: StudyType.magister, duration: 2, shortcut: "NBIO", courseGroups: [], fullName: "Bioinformatics and Biocomputing"),
-      StudyProgram(id: 15993, type: StudyType.magister, duration: 2, shortcut: "NGRI", courseGroups: [], fullName: "Computer Graphics and Interaction"),
-      StudyProgram(id: 15984, type: StudyType.magister, duration: 2, shortcut: "NNET", courseGroups: [], fullName: "Computer Networks"),
-      StudyProgram(id: 15992, type: StudyType.magister, duration: 2, shortcut: "NVIZ", courseGroups: [], fullName: "Computer Vision"),
-      StudyProgram(id: 15999, type: StudyType.magister, duration: 2, shortcut: "NCPS", courseGroups: [], fullName: "Cyberphysical Systems"),
-      StudyProgram(id: 15997, type: StudyType.magister, duration: 2, shortcut: "NSEC", courseGroups: [], fullName: "Cybersecurity"),
-      StudyProgram(id: 15988, type: StudyType.magister, duration: 2, shortcut: "NEMB", courseGroups: [], fullName: "Embedded Systems"),
-      StudyProgram(id: 16000, type: StudyType.magister, duration: 2, shortcut: "NHPC", courseGroups: [], fullName: "High Performance Computing"),
-      StudyProgram(id: 15995, type: StudyType.magister, duration: 2, shortcut: "NISD", courseGroups: [], fullName: "Information Systems and Databases"),
-      StudyProgram(id: 15987, type: StudyType.magister, duration: 2, shortcut: "NIDE", courseGroups: [], fullName: "Intelligent Devices"),
-      StudyProgram(id: 16001, type: StudyType.magister, duration: 2, shortcut: "NISY", courseGroups: [], fullName: "Intelligent Systems"),
-      StudyProgram(id: 15985, type: StudyType.magister, duration: 2, shortcut: "NMAL", courseGroups: [], fullName: "Machine Learning"),
-      StudyProgram(id: 15996, type: StudyType.magister, duration: 2, shortcut: "NMAT", courseGroups: [], fullName: "Mathematical Methods"),
-      StudyProgram(id: 15991, type: StudyType.magister, duration: 2, shortcut: "NSEN", courseGroups: [], fullName: "Software Engineering"),
-      StudyProgram(id: 15986, type: StudyType.magister, duration: 2, shortcut: "NVER", courseGroups: [], fullName: "Software Verification and Testing"),
-      StudyProgram(id: 15989, type: StudyType.magister, duration: 2, shortcut: "NSPE", courseGroups: [], fullName: "Sound, Speech and Natural Language Processing"),
+      StudyProgram(
+          id: 15994,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NADE",
+          courseGroups: [],
+          fullName: "Application Development"),
+      StudyProgram(
+          id: 15990,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NBIO",
+          courseGroups: [],
+          fullName: "Bioinformatics and Biocomputing"),
+      StudyProgram(
+          id: 15993,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NGRI",
+          courseGroups: [],
+          fullName: "Computer Graphics and Interaction"),
+      StudyProgram(
+          id: 15984,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NNET",
+          courseGroups: [],
+          fullName: "Computer Networks"),
+      StudyProgram(
+          id: 15992,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NVIZ",
+          courseGroups: [],
+          fullName: "Computer Vision"),
+      StudyProgram(
+          id: 15999,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NCPS",
+          courseGroups: [],
+          fullName: "Cyberphysical Systems"),
+      StudyProgram(
+          id: 15997,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NSEC",
+          courseGroups: [],
+          fullName: "Cybersecurity"),
+      StudyProgram(
+          id: 15988,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NEMB",
+          courseGroups: [],
+          fullName: "Embedded Systems"),
+      StudyProgram(
+          id: 16000,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NHPC",
+          courseGroups: [],
+          fullName: "High Performance Computing"),
+      StudyProgram(
+          id: 15995,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NISD",
+          courseGroups: [],
+          fullName: "Information Systems and Databases"),
+      StudyProgram(
+          id: 15987,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NIDE",
+          courseGroups: [],
+          fullName: "Intelligent Devices"),
+      StudyProgram(
+          id: 16001,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NISY",
+          courseGroups: [],
+          fullName: "Intelligent Systems"),
+      StudyProgram(
+          id: 15985,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NMAL",
+          courseGroups: [],
+          fullName: "Machine Learning"),
+      StudyProgram(
+          id: 15996,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NMAT",
+          courseGroups: [],
+          fullName: "Mathematical Methods"),
+      StudyProgram(
+          id: 15991,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NSEN",
+          courseGroups: [],
+          fullName: "Software Engineering"),
+      StudyProgram(
+          id: 15986,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NVER",
+          courseGroups: [],
+          fullName: "Software Verification and Testing"),
+      StudyProgram(
+          id: 15989,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "NSPE",
+          courseGroups: [],
+          fullName: "Sound, Speech and Natural Language Processing"),
 
       // IT-MGR-2
-      StudyProgram(id: 15813, type: StudyType.magister, duration: 2, shortcut: "MBI", courseGroups: [], fullName: "Bioinformatics and Biocomputing"),
-      StudyProgram(id: 15808, type: StudyType.magister, duration: 2, shortcut: "MPV", courseGroups: [], fullName: "Computer and Embedded Systems"),
-      StudyProgram(id: 15811, type: StudyType.magister, duration: 2, shortcut: "MGM", courseGroups: [], fullName: "Computer Graphics and Multimedia"),
-      StudyProgram(id: 15814, type: StudyType.magister, duration: 2, shortcut: "MSK", courseGroups: [], fullName: "Computer Networks and Communication"),
-      StudyProgram(id: 15809, type: StudyType.magister, duration: 2, shortcut: "MIS", courseGroups: [], fullName: "Information Systems"),
-      StudyProgram(id: 15807, type: StudyType.magister, duration: 2, shortcut: "MBS", courseGroups: [], fullName: "Information Technology Security"),
-      StudyProgram(id: 15810, type: StudyType.magister, duration: 2, shortcut: "MIN", courseGroups: [], fullName: "Intelligent Systems"),
-      StudyProgram(id: 15812, type: StudyType.magister, duration: 2, shortcut: "MMI", courseGroups: [], fullName: "Management and Information Technologies"),
-      StudyProgram(id: 15815, type: StudyType.magister, duration: 2, shortcut: "MMM", courseGroups: [], fullName: "Mathematical Methods in Information Technology"),
+      StudyProgram(
+          id: 15813,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MBI",
+          courseGroups: [],
+          fullName: "Bioinformatics and Biocomputing"),
+      StudyProgram(
+          id: 15808,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MPV",
+          courseGroups: [],
+          fullName: "Computer and Embedded Systems"),
+      StudyProgram(
+          id: 15811,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MGM",
+          courseGroups: [],
+          fullName: "Computer Graphics and Multimedia"),
+      StudyProgram(
+          id: 15814,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MSK",
+          courseGroups: [],
+          fullName: "Computer Networks and Communication"),
+      StudyProgram(
+          id: 15809,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MIS",
+          courseGroups: [],
+          fullName: "Information Systems"),
+      StudyProgram(
+          id: 15807,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MBS",
+          courseGroups: [],
+          fullName: "Information Technology Security"),
+      StudyProgram(
+          id: 15810,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MIN",
+          courseGroups: [],
+          fullName: "Intelligent Systems"),
+      StudyProgram(
+          id: 15812,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MMI",
+          courseGroups: [],
+          fullName: "Management and Information Technologies"),
+      StudyProgram(
+          id: 15815,
+          type: StudyType.magister,
+          duration: 2,
+          shortcut: "MMM",
+          courseGroups: [],
+          fullName: "Mathematical Methods in Information Technology"),
     ];
 
     for (final program in studyPrograms) {
@@ -167,8 +315,12 @@ class AppViewModel extends ChangeNotifier {
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/study-plan/$programId/.en");
     if (parser == null) return;
 
-    allStudyPrograms[programId]!.courseGroups =
-        parser.querySelectorAll("div.table-responsive__holder:nth-child(1) table").map(_parseCourseGroup).where((value) => value != null).map((value) => value!).toList();
+    allStudyPrograms[programId]!.courseGroups = parser
+        .querySelectorAll("div.table-responsive__holder:nth-child(1) table")
+        .map(_parseCourseGroup)
+        .where((value) => value != null)
+        .map((value) => value!)
+        .toList();
   }
 
   /// Helper function used in `getProgramCourses` function for parsing group of courses
@@ -183,12 +335,22 @@ class AppViewModel extends ChangeNotifier {
             ? Semester.summer
             : null;
 
-    final yearOfStudy =
-        switch (caption.split("year")[0].trim()) { "1st" => YearOfStudy.first, "2nd" => YearOfStudy.second, "3rd" => YearOfStudy.third, "all" => YearOfStudy.all, _ => null };
+    final yearOfStudy = switch (caption.split("year")[0].trim()) {
+      "1st" => YearOfStudy.first,
+      "2nd" => YearOfStudy.second,
+      "3rd" => YearOfStudy.third,
+      "all" => YearOfStudy.all,
+      _ => null
+    };
 
     if (yearOfStudy == null || semester == null) return null;
 
-    var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
+    var courses = element
+        .querySelectorAll("tr")!
+        .map((res) => _parseAndStoreCourse(res, semester))
+        .where((value) => value != null)
+        .map((value) => value!)
+        .toList();
 
     return CourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
   }
@@ -255,7 +417,10 @@ class AppViewModel extends ChangeNotifier {
     if (html == null) return;
 
     allCourses[courseId]!.prerequisites = _extractPrerequisites(html);
-    allCourses[courseId]!.lessons = parser.querySelectorAll("#schedule tbody tr").map(_parseLesson).fold(<CourseLesson>[], _mergeSameLessons);
+    allCourses[courseId]!.lessons = parser
+        .querySelectorAll("#schedule tbody tr")
+        .map((element) => _parseLesson(element, allCourses[courseId]!))
+        .fold(<Lesson>[], _mergeSameLessons);
 
     allCourses[courseId]!.loaded = true;
   }
@@ -283,7 +448,8 @@ class AppViewModel extends ChangeNotifier {
 
   /// This function checks if the current study program has fetched its course group
   bool isProgramCourseGroupFetched() {
-    return allStudyPrograms.containsKey(currentStudyProgram) && allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
+    return allStudyPrograms.containsKey(currentStudyProgram) &&
+        allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
   }
 
   /// Synchronously loads the current programCourseGroup based on the current study program.
@@ -291,7 +457,8 @@ class AppViewModel extends ChangeNotifier {
   /// have already been fetched. Therefore, it is recommended to check this in advance
   /// using the `isProgramCourseGroupFetched` function.
   CourseGroup getProgramCourseGroup() {
-    return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere((group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
+    return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere(
+        (group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
   }
 
   /// This function takes a string in the format of "hh:mm" and returns the total number of minutes
@@ -344,8 +511,9 @@ class AppViewModel extends ChangeNotifier {
       final numberOfLessons = switch (type) {
         LessonType.lecture => _extractNumberOfLessons(html, "lectures"),
         LessonType.seminar => _extractNumberOfLessons(html, "seminars"),
-        LessonType.exercise =>
-          _extractNumberOfLessons(html, "numerical exercises") ?? _extractNumberOfLessons(html, "lectures"), // the numerical execises can be the same as lectures
+        LessonType.exercise => _extractNumberOfLessons(html, "numerical exercises") ??
+            _extractNumberOfLessons(
+                html, "lectures"), // the numerical execises can be the same as lectures
         LessonType.laboratory => _extractNumberOfLessons(html, "laboratory exercises"),
         LessonType.computerLab => _extractNumberOfLessons(html, "computer exercises"),
         _ => 0, // Not required
@@ -353,7 +521,8 @@ class AppViewModel extends ChangeNotifier {
 
       if (numberOfLessons == null) continue;
 
-      list.add(CoursePrerequisite(type: type, requiredHours: hours, numberOfLessons: numberOfLessons));
+      list.add(
+          CoursePrerequisite(type: type, requiredHours: hours, numberOfLessons: numberOfLessons));
       list.sort((a, b) => a.type.index - b.type.index);
     }
 
@@ -362,7 +531,7 @@ class AppViewModel extends ChangeNotifier {
 
   /// Helper function that take a list of (on going) merged lesson and a lesson to be added into the list
   /// used in the `fetchCourseData` function
-  List<CourseLesson> _mergeSameLessons(List<CourseLesson> list, CourseLesson? lesson) {
+  List<Lesson> _mergeSameLessons(List<Lesson> list, Lesson? lesson) {
     if (lesson == null) {
       return list;
     }
@@ -371,7 +540,10 @@ class AppViewModel extends ChangeNotifier {
 
     for (var i = 0; i < list.length; i++) {
       final value = list[i];
-      if (value.dayOfWeek != lesson.dayOfWeek || value.startsFrom != lesson.startsFrom || value.endsAt != lesson.endsAt || value.type != lesson.type) {
+      if (value.dayOfWeek != lesson.dayOfWeek ||
+          value.startsFrom != lesson.startsFrom ||
+          value.endsAt != lesson.endsAt ||
+          value.type != lesson.type) {
         continue;
       }
 
@@ -389,7 +561,7 @@ class AppViewModel extends ChangeNotifier {
 
   /// Helper function to parse the selected lesson element into inner data structure
   /// used in the `fetchCourseData` function
-  CourseLesson? _parseLesson(element) {
+  Lesson? _parseLesson(dynamic element, Course course) {
     if (element.html.contains("<sup class=\"color-red\">*)</sup>")) {
       // It is not possible to register this class in Studis.
       return null;
@@ -448,9 +620,10 @@ class AppViewModel extends ChangeNotifier {
 
     if (startsFrom == null || endsAt == null || capacity == null) return null;
 
-    return CourseLesson(
+    return Lesson(
       dayOfWeek: dayOfWeek,
       type: type,
+      course: course,
       infos: [LessonInfo(locations: locations, info: info, weeks: weeks, capacity: capacity)],
       startsFrom: startsFrom,
       endsAt: endsAt,

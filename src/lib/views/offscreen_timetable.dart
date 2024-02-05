@@ -7,7 +7,7 @@
  */
 
 import 'dart:developer' as dev;
-import 'package:fit_schedule_maker_plus/models/program_course_group.dart';
+import 'package:fit_schedule_maker_plus/models/course_group.dart';
 import 'package:fit_schedule_maker_plus/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,8 +40,7 @@ class _OffScrTimetableState extends State<OffScrTimetable> {
       final image = await screenshotController.capture();
       if (image != null) {
         final tm = vm.timetables[vm.toExport!];
-        saveImage(
-            image, "timetable_${tm.semester.toEngString()}_${tm.name}.png",
+        saveImage(image, "timetable_${tm.semester.toEngString()}_${tm.name}.png",
             mimetype: "image/png");
       } else {
         dev.log("Failed capturing image.");
@@ -54,8 +53,8 @@ class _OffScrTimetableState extends State<OffScrTimetable> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _captureWidget(context.read<TimetableViewModel>()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _captureWidget(context.read<TimetableViewModel>()));
 
     return OverflowBox(
       // FIXME: Compute the size dynamically so that the timetable always fits.

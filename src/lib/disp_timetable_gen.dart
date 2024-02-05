@@ -10,21 +10,19 @@
 
 import 'dart:math';
 
-import 'models/course_lesson.dart';
 import 'models/course.dart';
+import 'models/lesson.dart';
 import 'models/timetable.dart';
 import 'viewmodels/app.dart';
 import 'viewmodels/timetable.dart';
 
 class SpecificLesson {
-  final Course courseID;
-  final Lesson lessonID;
+  final Lesson lesson;
   int height;
   bool selected;
 
   SpecificLesson({
-    required this.courseID,
-    required this.lessonID,
+    required this.lesson,
     required this.height,
     required this.selected,
   });
@@ -39,20 +37,19 @@ class Filter {
 
   Filter({required this.courses, required this.allCourses});
 
-  Filter.courses(Set<Course> courses)
-      : this(courses: courses, allCourses: false);
+  Filter.courses(Set<Course> courses) : this(courses: courses, allCourses: false);
   Filter.all() : this(courses: {}, allCourses: true);
   Filter.none() : this(courses: {}, allCourses: false);
 }
 
 void selectLesson(TimetableViewModel vm, SpecificLesson lesson) {
   lesson.selected = true;
-  vm.addLesson(lesson.courseID, lesson.lessonID);
+  vm.addLesson(lesson.lesson);
 }
 
 void deselectLesson(TimetableViewModel vm, SpecificLesson lesson) {
   lesson.selected = false;
-  vm.removeLesson(lesson.courseID, lesson.lessonID);
+  vm.removeLesson(lesson.lesson);
 }
 
 class Pair<T, U> {
@@ -63,8 +60,7 @@ class Pair<T, U> {
 
 typedef DisplayedTimetable = Map<DayOfWeek, Pair<int, List<SpecificLesson>>>;
 
-DisplayedTimetable genDispTimetableSpecific(
-    AppViewModel avm, Timetable tim, Filter filter) {
+DisplayedTimetable genDispTimetableSpecific(AppViewModel avm, Timetable tim, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -72,13 +68,12 @@ DisplayedTimetable genDispTimetableSpecific(
     DayOfWeek.thursday: Pair(0, []),
     DayOfWeek.friday: Pair(0, []),
   };
-  fillDays(avm.allCourses, tim, filter, res);
-  fillHeights(avm.allCourses, res);
+  fillDays(avm.allCourses.values.toSet(), tim, filter, res);
+  fillHeights(avm.allCourses.values.toSet(), res);
   return res;
 }
 
-DisplayedTimetable genDispTimetable(
-    AppViewModel avm, TimetableViewModel tvm, Filter filter) {
+DisplayedTimetable genDispTimetable(AppViewModel avm, TimetableViewModel tvm, Filter filter) {
   DisplayedTimetable res = {
     DayOfWeek.monday: Pair(0, []),
     DayOfWeek.tuesday: Pair(0, []),
@@ -87,37 +82,29 @@ DisplayedTimetable genDispTimetable(
     DayOfWeek.friday: Pair(0, []),
   };
 
-  fillDays(avm.allCourses, tvm.currentTimetable, filter, res);
-  fillHeights(avm.allCourses, res);
+  fillDays(avm.allCourses.values.toSet(), tvm.currentTimetable, filter, res);
+  fillHeights(avm.allCourses.values.toSet(), res);
 
   return res;
 }
 
-void fillHeights(
-  Map<Course, Course> courses,
-  DisplayedTimetable outTim,
-) {
+void fillHeights(Set<Course> courses, DisplayedTimetable outTim) {
   outTim.forEach((_, pair) {
     pair.second.sort((a, b) {
-      final lessonA = courses[a.courseID]!.lessons[a.lessonID];
-      final lessonB = courses[b.courseID]!.lessons[b.lessonID];
-      if (lessonA.startsFrom != lessonB.startsFrom) {
-        return lessonA.startsFrom - lessonB.startsFrom;
+      if (a.lesson.startsFrom != b.lesson.startsFrom) {
+        return a.lesson.startsFrom - b.lesson.startsFrom;
       }
-      return courses[a.courseID]!
-          .shortcut
-          .compareTo(courses[b.courseID]!.shortcut);
+      return a.lesson.course.shortcut.compareTo(b.lesson.course.shortcut);
     });
 
     final List<int> levels = [];
 
     for (var sl in pair.second) {
-      final lesson = courses[sl.courseID]!.lessons[sl.lessonID];
       // Try to find a level where this lesson fits
       bool levelFound = false;
       for (int i = 0; i < levels.length; i++) {
-        if (levels[i] < lesson.startsFrom) {
-          levels[i] = lesson.endsAt;
+        if (levels[i] < sl.lesson.startsFrom) {
+          levels[i] = sl.lesson.endsAt;
           sl.height = i;
           levelFound = true;
           break;
@@ -126,7 +113,7 @@ void fillHeights(
       // Add new layer if it does not.
       if (!levelFound) {
         sl.height = levels.length;
-        levels.add(lesson.endsAt);
+        levels.add(sl.lesson.endsAt);
       }
 
       pair.first = max(pair.first, sl.height);
@@ -134,15 +121,12 @@ void fillHeights(
   });
 }
 
-void fillDays(Map<Course, Course> courses, Timetable tim, Filter filter,
-    DisplayedTimetable outTim) {
+void fillDays(Set<Course> courses, Timetable tim, Filter filter, DisplayedTimetable outTim) {
   if (filter.allCourses) {
     tim.currentContent.forEach((courseID, lessons) {
-      for (final lessonID in lessons) {
-        final lesson = courses[courseID]!.lessons[lessonID];
+      for (final lesson in lessons) {
         final sl = SpecificLesson(
-          courseID: courseID,
-          lessonID: lessonID,
+          lesson: lesson,
           height: 0,
           selected: true,
         );
@@ -152,22 +136,15 @@ void fillDays(Map<Course, Course> courses, Timetable tim, Filter filter,
     return;
   }
 
-  final allCourseIDs = tim.currentContent.keys.toList();
-
-  for (int i = 0; i < allCourseIDs.length; i++) {
-    final courseID = allCourseIDs[i];
-    final course = courses[courseID]!;
-
-    for (int j = 0; j < course.lessons.length; j++) {
-      final lesson = course.lessons[j];
+  for (var course in courses) {
+    for (var lesson in course.lessons) {
       final sl = SpecificLesson(
-        courseID: courseID,
-        lessonID: j,
+        lesson: lesson,
         height: 0,
-        selected: tim.containsLesson(courseID, j),
+        selected: tim.containsLesson(lesson),
       );
       // Filter only when the course isn't selected.
-      if (!filter.courses.contains(courseID) || sl.selected) {
+      if (!filter.courses.contains(course) || sl.selected) {
         outTim[lesson.dayOfWeek]!.second.add(sl);
       }
     }
