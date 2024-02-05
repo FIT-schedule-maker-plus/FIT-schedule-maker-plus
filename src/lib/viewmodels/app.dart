@@ -11,17 +11,16 @@
 
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:chaleno/chaleno.dart';
+import 'package:flutter/material.dart';
 
 import '../models/course.dart';
 import '../models/course_lesson.dart';
 import '../models/course_prerequisite.dart';
 import '../models/faculty.dart';
 import '../models/lesson_info.dart';
-import '../models/study.dart';
 import '../models/program_course_group.dart';
-import '../models/program_course.dart';
+import '../models/study.dart';
 import '../models/timetable.dart';
 import '../viewmodels/timetable.dart';
 
@@ -173,7 +172,7 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// Helper function used in `getProgramCourses` function for parsing group of courses
-  ProgramCourseGroup? _parseCourseGroup(Result element) {
+  CourseGroup? _parseCourseGroup(Result element) {
     var caption = element.querySelector("caption")?.text;
     if (caption == null) return null;
     caption = caption.trimLeft().toLowerCase();
@@ -191,11 +190,11 @@ class AppViewModel extends ChangeNotifier {
 
     var courses = element.querySelectorAll("tr")!.map((res) => _parseAndStoreCourse(res, semester)).where((value) => value != null).map((value) => value!).toList();
 
-    return ProgramCourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
+    return CourseGroup(courses: courses, semester: semester, yearOfStudy: yearOfStudy);
   }
 
   /// Helper function used in `_parseCourseGroup` to parse and store course data
-  ProgramCourse? _parseAndStoreCourse(Result courseElement, Semester semester) {
+  Course? _parseAndStoreCourse(Result courseElement, Semester semester) {
     final html = courseElement.html!;
     if (!html.contains("w15p")) return null;
 
@@ -205,7 +204,7 @@ class AppViewModel extends ChangeNotifier {
     final courseIdString = nameElement.href?.split("/")[5];
     if (courseIdString == null) return null;
 
-    final id = int.parse(courseIdString);
+    final courseId = int.parse(courseIdString);
 
     /// the library has problem with `tr` `td` elements, that why parsing them manually here
     final dutyText = html.split("class=\"w5p\">")[2].split("<")[0];
@@ -218,23 +217,27 @@ class AppViewModel extends ChangeNotifier {
 
     if (duty == null) return null;
 
-    if (!allCourses.containsKey(id)) {
+    if (!allCourses.containsKey(courseId)) {
       final courseName = nameElement.text;
       final shortcut = html.split("class=\"w15p\">")[1].split("<")[0];
 
       if (courseName == null) return null;
 
-      allCourses[id] = Course(
-        id: id,
+      Course course = Course(
+        id: courseId,
         shortcut: shortcut,
         fullName: courseName,
         lessons: [],
         prerequisites: [],
         semester: semester,
+        duty: duty,
       );
+
+      allCourses[courseId] = course;
+      return course;
     }
 
-    return ProgramCourse(courseId: id, duty: duty);
+    return allCourses[courseId];
   }
 
   /// Get all data related to the course (prerequisites and lessons)
@@ -287,7 +290,7 @@ class AppViewModel extends ChangeNotifier {
   /// This function assumes that the study program and its program course groups
   /// have already been fetched. Therefore, it is recommended to check this in advance
   /// using the `isProgramCourseGroupFetched` function.
-  ProgramCourseGroup getProgramCourseGroup() {
+  CourseGroup getProgramCourseGroup() {
     return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere((group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
   }
 

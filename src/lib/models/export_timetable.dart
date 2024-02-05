@@ -31,7 +31,7 @@ class ExportTimetable {
     Set<int> programIds = avm.allStudyPrograms.keys.where((id) {
       return avm.allStudyPrograms[id]!.courseGroups.any(
         (group) => group.courses.any(
-          (course) => usedCourseIds.contains(course.courseId),
+          (course) => usedCourseIds.contains(course.id),
         ),
       );
     }).toSet();

@@ -11,7 +11,6 @@
  */
 
 import 'dart:async';
-import 'dart:developer' as dev;
 import 'dart:math';
 import 'package:fit_schedule_maker_plus/models/faculty.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +39,6 @@ class TimetableContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    dev.log("fadsdfsadfsdaf");
     return Container(
       color: appBarCol,
       child: Column(
@@ -76,8 +74,7 @@ class _CoursesState extends State<Courses> {
     final allCourses = context.select((AppViewModel vm) => vm.allCourses);
     final courseIDs = context.select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
     isCollapsed = courseIDs.isEmpty;
-    bool areAllLessonsFetched =
-        courseIDs.every((courseId) => context.read<AppViewModel>().isCourseLessonFetched(courseId));
+    bool areAllLessonsFetched = courseIDs.every((courseId) => context.read<AppViewModel>().isCourseLessonFetched(courseId));
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -164,12 +161,8 @@ class _CoursesState extends State<Courses> {
       selector: (context, vm) => vm.currentTimetable.currentContent[course.id]?.toList() ?? [],
       builder: (context, sem, _) {
         List<Color> lessonColors = [];
-        Iterable<CourseLesson> selectedLessons =
-            sem.map((lessonId) => context.read<AppViewModel>().allCourses[course.id]!.lessons[lessonId]);
-        Set<LessonType> lessonTypes = course.prerequisites
-            .map((pre) => pre.type)
-            .toSet()
-            .difference(selectedLessons.map((lesson) => lesson.type).toSet()..add(LessonType.project));
+        Iterable<CourseLesson> selectedLessons = sem.map((lessonId) => context.read<AppViewModel>().allCourses[course.id]!.lessons[lessonId]);
+        Set<LessonType> lessonTypes = course.prerequisites.map((pre) => pre.type).toSet().difference(selectedLessons.map((lesson) => lesson.type).toSet()..add(LessonType.project));
 
         for (var type in lessonTypes) {
           lessonColors.add(getLessonColor(type));
@@ -180,10 +173,7 @@ class _CoursesState extends State<Courses> {
 
         List<double> stops = List.generate(
           lessonTypes.length,
-          (index) => [
-            colorHorizontalPadding / 2 + index * step + gradientWidth,
-            colorHorizontalPadding / 2 + (index + 1) * step - gradientWidth
-          ],
+          (index) => [colorHorizontalPadding / 2 + index * step + gradientWidth, colorHorizontalPadding / 2 + (index + 1) * step - gradientWidth],
         ).expand((element) => element).toList();
 
         return Container(
@@ -285,9 +275,7 @@ class Timetable extends StatelessWidget {
   Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
-    final generatedData = timetable == null
-        ? genDispTimetable(appViewModel, timetableViewModel, filter)
-        : genDispTimetableSpecific(appViewModel, timetable!, filter);
+    final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
       padding: const EdgeInsets.only(left: 30, right: 30, bottom: 30),
@@ -314,13 +302,13 @@ class Timetable extends StatelessWidget {
                         children: [
                           Column(
                             children: [
-                              buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1,
-                                  generatedData[DayOfWeek.values[index]]!.first),
+                              buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
                               const Divider(thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
-                          ...generatedData[DayOfWeek.values[index]]!.second.map((specLes) => Lesson(readOnly,
-                              appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, generatedData))
+                          ...generatedData[DayOfWeek.values[index]]!
+                              .second
+                              .map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, generatedData))
                         ],
                       );
                     }),
@@ -365,8 +353,7 @@ class Timetable extends StatelessWidget {
         children: [
           SizedBox(
             width: daysBarWidth - 0.5, // There was always overflow by 0.5 pixels due to floating point arithmetic
-            child: Text(dayOfWeek.toCzechString(),
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400)),
+            child: Text(dayOfWeek.toCzechString(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400)),
           ),
           Padding(
             padding: EdgeInsets.only(right: lessonWidth / 2),
@@ -532,8 +519,7 @@ class _LessonState extends State<Lesson> {
         ),
         Text(
           profesors!,
-          style: const TextStyle(
-              fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
+          style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 10),
@@ -576,29 +562,13 @@ class _LessonState extends State<Lesson> {
 
     // the border where the mouse is pointing should be sharp, the other are rounded
     if (overlayPosition == overlayTriggerPosition) {
-      borders = const BorderRadius.only(
-          topRight: overlayBorderRadius,
-          bottomLeft: overlayBorderRadius,
-          bottomRight: overlayBorderRadius,
-          topLeft: overlayZeroRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayZeroRadius);
     } else if (overlayPosition!.translate(overlayWidth, 0) == overlayTriggerPosition) {
-      borders = const BorderRadius.only(
-          topRight: overlayZeroRadius,
-          bottomLeft: overlayBorderRadius,
-          bottomRight: overlayBorderRadius,
-          topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayZeroRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
     } else if (overlayPosition!.translate(0, overlayHeight) == overlayTriggerPosition) {
-      borders = const BorderRadius.only(
-          topRight: overlayBorderRadius,
-          bottomLeft: overlayZeroRadius,
-          bottomRight: overlayBorderRadius,
-          topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayZeroRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
     } else {
-      borders = const BorderRadius.only(
-          topRight: overlayBorderRadius,
-          bottomLeft: overlayBorderRadius,
-          bottomRight: overlayZeroRadius,
-          topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
     }
 
     List<Widget> infos = lesson.infos
@@ -661,8 +631,7 @@ class _LessonState extends State<Lesson> {
             child: Text(
               course.fullName,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
             ),
           ),
           const SizedBox(height: 15),
@@ -747,19 +716,13 @@ class _LessonState extends State<Lesson> {
   Row buildInfo(String infoType, String infoValue) {
     return Row(
       children: [
-        Text(infoType,
-            style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w200,
-                color: Color.fromARGB(255, 100, 100, 100),
-                decoration: TextDecoration.none)),
+        Text(infoType, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
         Expanded(
           child: Text(
             infoValue,
             softWrap: true,
             overflow: TextOverflow.clip,
-            style: const TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
           ),
         ),
       ],

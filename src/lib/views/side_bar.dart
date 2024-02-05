@@ -9,7 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/program_course.dart';
+import '../models/course.dart';
 import '../models/program_course_group.dart';
 import '../models/study.dart';
 import '../viewmodels/app.dart';
@@ -176,7 +176,7 @@ class SideBar extends StatelessWidget {
     );
   }
 
-  Widget buildAllSubjectList(ProgramCourseGroup programCourseGroup) {
+  Widget buildAllSubjectList(CourseGroup programCourseGroup) {
     return ListView(
       shrinkWrap: true,
       children: [
@@ -259,7 +259,7 @@ class SideBar extends StatelessWidget {
 
 class SubjectsExpansionTiles extends StatelessWidget {
   final CourseDuty courseDuty;
-  final ProgramCourseGroup programCourseGroup;
+  final CourseGroup programCourseGroup;
   const SubjectsExpansionTiles(this.courseDuty, this.programCourseGroup, {super.key});
 
   @override
@@ -288,17 +288,16 @@ class SubjectsExpansionTiles extends StatelessWidget {
   }
 }
 
-Widget buildSubjectButton(ProgramCourse programCourse) {
+Widget buildSubjectButton(Course programCourse) {
   return Selector<TimetableViewModel, bool>(
-    selector: (context, tvm) => tvm.containsCourse(programCourse.courseId),
+    selector: (context, tvm) => tvm.containsCourse(programCourse.id),
     builder: (context, isSelected, _) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Tooltip(
         waitDuration: const Duration(milliseconds: 1000),
-        message: context.read<AppViewModel>().allCourses[programCourse.courseId]!.fullName,
+        message: context.read<AppViewModel>().allCourses[programCourse.id]!.fullName,
         child: ElevatedButton(
-          onPressed: () =>
-              isSelected ? context.read<TimetableViewModel>().removeCourse(programCourse.courseId) : context.read<TimetableViewModel>().addCourse(programCourse.courseId),
+          onPressed: () => isSelected ? context.read<TimetableViewModel>().removeCourse(programCourse.id) : context.read<TimetableViewModel>().addCourse(programCourse.id),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 40),
             alignment: Alignment.centerLeft,
@@ -308,7 +307,7 @@ Widget buildSubjectButton(ProgramCourse programCourse) {
             elevation: 0,
           ),
           child: Text(
-            context.read<AppViewModel>().allCourses[programCourse.courseId]!.shortcut,
+            context.read<AppViewModel>().allCourses[programCourse.id]!.shortcut,
             style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w400),
           ),
         ),

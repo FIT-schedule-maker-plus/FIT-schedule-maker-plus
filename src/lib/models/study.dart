@@ -15,7 +15,7 @@ class StudyProgram {
   final String fullName;
   final StudyType type;
   final int duration;
-  List<ProgramCourseGroup> courseGroups;
+  List<CourseGroup> courseGroups;
 
   StudyProgram({
     required this.id,
@@ -32,7 +32,7 @@ class StudyProgram {
       fullName: json["fullname"],
       type: json["type"],
       duration: json["duration"],
-      courseGroups: List<ProgramCourseGroup>.from(json["courseGroups"].map((group) => ProgramCourseGroup.fromJson(group))));
+      courseGroups: List<CourseGroup>.from(json["courseGroups"].map((group) => CourseGroup.fromJson(group))));
 
   Map<String, dynamic> toJson() => {
         "id": id,
