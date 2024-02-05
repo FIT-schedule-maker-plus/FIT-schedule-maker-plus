@@ -11,6 +11,7 @@ import 'dart:js' as js;
 import 'dart:html' as html;
 import 'dart:typed_data';
 
+import 'package:fit_schedule_maker_plus/models/study.dart';
 import 'package:flutter/material.dart';
 
 import 'models/lesson.dart';
@@ -51,4 +52,202 @@ Color getLessonColor(LessonType type) {
     LessonType.laboratory => const Color.fromARGB(255, 111, 92, 24),
     LessonType.project => const Color.fromARGB(255, 177, 97, 17),
   };
+}
+
+List<StudyProgram> getAllStudies() {
+  return [
+    StudyProgram(
+        id: 15803,
+        type: StudyType.bachelor,
+        duration: 3,
+        shortcut: "BIT",
+        courseGroups: [],
+        fullName: "Information Technology"),
+
+    // MITAI
+    StudyProgram(
+        id: 15994,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NADE",
+        courseGroups: [],
+        fullName: "Application Development"),
+    StudyProgram(
+        id: 15990,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NBIO",
+        courseGroups: [],
+        fullName: "Bioinformatics and Biocomputing"),
+    StudyProgram(
+        id: 15993,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NGRI",
+        courseGroups: [],
+        fullName: "Computer Graphics and Interaction"),
+    StudyProgram(
+        id: 15984,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NNET",
+        courseGroups: [],
+        fullName: "Computer Networks"),
+    StudyProgram(
+        id: 15992,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NVIZ",
+        courseGroups: [],
+        fullName: "Computer Vision"),
+    StudyProgram(
+        id: 15999,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NCPS",
+        courseGroups: [],
+        fullName: "Cyberphysical Systems"),
+    StudyProgram(
+        id: 15997,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NSEC",
+        courseGroups: [],
+        fullName: "Cybersecurity"),
+    StudyProgram(
+        id: 15988,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NEMB",
+        courseGroups: [],
+        fullName: "Embedded Systems"),
+    StudyProgram(
+        id: 16000,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NHPC",
+        courseGroups: [],
+        fullName: "High Performance Computing"),
+    StudyProgram(
+        id: 15995,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NISD",
+        courseGroups: [],
+        fullName: "Information Systems and Databases"),
+    StudyProgram(
+        id: 15987,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NIDE",
+        courseGroups: [],
+        fullName: "Intelligent Devices"),
+    StudyProgram(
+        id: 16001,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NISY",
+        courseGroups: [],
+        fullName: "Intelligent Systems"),
+    StudyProgram(
+        id: 15985,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NMAL",
+        courseGroups: [],
+        fullName: "Machine Learning"),
+    StudyProgram(
+        id: 15996,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NMAT",
+        courseGroups: [],
+        fullName: "Mathematical Methods"),
+    StudyProgram(
+        id: 15991,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NSEN",
+        courseGroups: [],
+        fullName: "Software Engineering"),
+    StudyProgram(
+        id: 15986,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NVER",
+        courseGroups: [],
+        fullName: "Software Verification and Testing"),
+    StudyProgram(
+        id: 15989,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "NSPE",
+        courseGroups: [],
+        fullName: "Sound, Speech and Natural Language Processing"),
+
+    // IT-MGR-2
+    StudyProgram(
+        id: 15813,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MBI",
+        courseGroups: [],
+        fullName: "Bioinformatics and Biocomputing"),
+    StudyProgram(
+        id: 15808,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MPV",
+        courseGroups: [],
+        fullName: "Computer and Embedded Systems"),
+    StudyProgram(
+        id: 15811,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MGM",
+        courseGroups: [],
+        fullName: "Computer Graphics and Multimedia"),
+    StudyProgram(
+        id: 15814,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MSK",
+        courseGroups: [],
+        fullName: "Computer Networks and Communication"),
+    StudyProgram(
+        id: 15809,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MIS",
+        courseGroups: [],
+        fullName: "Information Systems"),
+    StudyProgram(
+        id: 15807,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MBS",
+        courseGroups: [],
+        fullName: "Information Technology Security"),
+    StudyProgram(
+        id: 15810,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MIN",
+        courseGroups: [],
+        fullName: "Intelligent Systems"),
+    StudyProgram(
+        id: 15812,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MMI",
+        courseGroups: [],
+        fullName: "Management and Information Technologies"),
+    StudyProgram(
+        id: 15815,
+        type: StudyType.magister,
+        duration: 2,
+        shortcut: "MMM",
+        courseGroups: [],
+        fullName: "Mathematical Methods in Information Technology"),
+  ];
 }
