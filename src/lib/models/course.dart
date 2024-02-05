@@ -17,7 +17,7 @@ class Course {
   final String fullName;
   final Semester semester;
   final CourseDuty duty;
-  List<CourseLesson> lessons;
+  List<Lesson> lessons;
   List<CoursePrerequisite> prerequisites;
   bool loaded;
 
@@ -38,8 +38,10 @@ class Course {
         fullName: json["fullName"],
         semester: json["semester"],
         duty: json["duty"],
-        lessons: List<CourseLesson>.from(json["lessons"].map((lesson) => CourseLesson.fromJson(lesson))),
-        prerequisites: List<CoursePrerequisite>.from(json["prerequisites"].map((prerequisite) => CoursePrerequisite.fromJson(prerequisite))),
+        lessons: List<Lesson>.from(
+            json["lessons"].map((lesson) => Lesson.fromJson(lesson))),
+        prerequisites: List<CoursePrerequisite>.from(json["prerequisites"]
+            .map((prerequisite) => CoursePrerequisite.fromJson(prerequisite))),
         loaded: false,
       );
 
@@ -50,7 +52,8 @@ class Course {
         "semester": semester,
         "duty": duty,
         "lessons": List<dynamic>.from(lessons.map((lesson) => lesson.toJson())),
-        "prerequisites": List<dynamic>.from(prerequisites.map((prerequisite) => prerequisite.toJson())),
+        "prerequisites": List<dynamic>.from(
+            prerequisites.map((prerequisite) => prerequisite.toJson())),
       };
 }
 

@@ -7,7 +7,6 @@
  */
 
 import 'package:fit_schedule_maker_plus/models/course.dart';
-import 'package:fit_schedule_maker_plus/views/timetable_container.dart';
 
 import 'course_lesson.dart';
 import 'program_course_group.dart';
@@ -20,17 +19,17 @@ class Timetable {
   Semester semester = Semester.winter;
 
   /// Contains all information about the content of this timetable.
-  Map<Semester, Map<Course, Set<CourseLesson>>> selected = {
+  Map<Semester, Map<Course, Set<Lesson>>> selected = {
     Semester.winter: {},
     Semester.summer: {},
   };
 
   /// selected lessons in the currently chosen semester
-  Map<Course, Set<CourseLesson>> get currentContent => selected[semester]!;
+  Map<Course, Set<Lesson>> get currentContent => selected[semester]!;
 
   Timetable({
     required this.name,
-    Map<Semester, Map<Course, Set<CourseLesson>>>? courseContent,
+    Map<Semester, Map<Course, Set<Lesson>>>? courseContent,
     this.semester = Semester.winter,
   }) {
     if (courseContent != null) {
@@ -39,13 +38,13 @@ class Timetable {
   }
 
   /// Check if current semester timetable contains a given course lesson.
-  bool containsLesson(CourseLesson lesson) {
+  bool containsLesson(Lesson lesson) {
     return currentContent.containsKey(lesson.course) &&
         currentContent[lesson.course]!.contains(lesson);
   }
 
   /// Add course lesson to current semester timetable.
-  void addLesson(CourseLesson lesson) {
+  void addLesson(Lesson lesson) {
     if (currentContent[lesson.course] == null) {
       currentContent[lesson.course] = {};
     }
@@ -53,7 +52,7 @@ class Timetable {
   }
 
   /// Remove lesson from current semester timetable.
-  void removeLesson(CourseLesson lesson) {
+  void removeLesson(Lesson lesson) {
     if (containsLesson(lesson)) {
       currentContent[lesson.course]!.remove(lesson);
     }

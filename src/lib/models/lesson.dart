@@ -10,7 +10,7 @@ import 'package:fit_schedule_maker_plus/models/course.dart';
 
 import 'lesson_info.dart';
 
-class CourseLesson {
+class Lesson {
   /// When the lesson starts
   final int startsFrom;
 
@@ -25,7 +25,7 @@ class CourseLesson {
 
   List<LessonInfo> infos;
 
-  CourseLesson({
+  Lesson({
     required this.dayOfWeek,
     required this.type,
     required this.startsFrom,
@@ -34,11 +34,12 @@ class CourseLesson {
     required this.course,
   });
 
-  factory CourseLesson.fromJson(Map<String, dynamic> json) => CourseLesson(
+  factory Lesson.fromJson(Map<String, dynamic> json) => Lesson(
         startsFrom: int.parse(json["starts_from"]),
         endsAt: int.parse(json["ends_at"]),
         type: LessonType.values[int.parse(json["type"])],
         dayOfWeek: DayOfWeek.values[int.parse(json["day_of_week"])],
+        course: Course.fromJson(json["course"]),
         infos: List<LessonInfo>.from(
             json["infos"].map((info) => LessonInfo.fromJson(info))),
       );

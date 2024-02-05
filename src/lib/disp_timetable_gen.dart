@@ -18,7 +18,7 @@ import 'viewmodels/timetable.dart';
 
 class SpecificLesson {
   final Course courseID;
-  final CourseLesson lessonID;
+  final Lesson lessonID;
   int height;
   bool selected;
 

@@ -49,7 +49,8 @@ class TimetableContainer extends StatelessWidget {
               selector: (_, vm) => vm.filter.courses.toList(),
               builder: (context, filteredCourses, _) {
                 return Expanded(
-                  child: Timetable(filter: Filter.courses(filteredCourses.toSet())),
+                  child: Timetable(
+                      filter: Filter.courses(filteredCourses.toSet())),
                 );
               })
         ],
@@ -72,9 +73,11 @@ class _CoursesState extends State<Courses> {
   @override
   Widget build(BuildContext context) {
     final allCourses = context.select((AppViewModel vm) => vm.allCourses);
-    final courseIDs = context.select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
+    final courseIDs = context.select((TimetableViewModel tvm) =>
+        tvm.currentTimetable.currentContent.keys.toList());
     isCollapsed = courseIDs.isEmpty;
-    bool areAllLessonsFetched = courseIDs.every((courseId) => context.read<AppViewModel>().isCourseLessonFetched(courseId));
+    bool areAllLessonsFetched = courseIDs.every((courseId) =>
+        context.read<AppViewModel>().isCourseLessonFetched(courseId));
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -83,7 +86,9 @@ class _CoursesState extends State<Courses> {
           : areAllLessonsFetched
               ? buildCourses(courseIDs, allCourses)
               : FutureBuilder(
-                  future: context.read<AppViewModel>().getAllCourseLessonsAsync(courseIDs),
+                  future: context
+                      .read<AppViewModel>()
+                      .getAllCourseLessonsAsync(courseIDs),
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
                       case ConnectionState.done:
@@ -129,7 +134,8 @@ class _CoursesState extends State<Courses> {
                 height: 0,
               ),
             ),
-            childrenPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+            childrenPadding:
+                const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
             shape: const OutlineInputBorder(borderSide: BorderSide.none),
             collapsedIconColor: Colors.white,
             iconColor: Colors.white,
@@ -143,8 +149,12 @@ class _CoursesState extends State<Courses> {
                 child: Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 60, // to apply margin in the main axis of the wrap
-                  runSpacing: 10, // to apply margin in the cross axis of the wrap
-                  children: courseIDs.map((courseId) => buildCourseWidget(allCourses[courseId]!, context)).toList(),
+                  runSpacing:
+                      10, // to apply margin in the cross axis of the wrap
+                  children: courseIDs
+                      .map((courseId) =>
+                          buildCourseWidget(allCourses[courseId]!, context))
+                      .toList(),
                 ),
               ),
             ],
@@ -155,14 +165,23 @@ class _CoursesState extends State<Courses> {
   }
 
   Widget buildCourseWidget(Course course, BuildContext context) {
-    bool isHidden = context.read<TimetableViewModel>().filter.courses.contains(course.id);
+    bool isHidden =
+        context.read<TimetableViewModel>().filter.courses.contains(course.id);
 
     return Selector<TimetableViewModel, List<int>>(
-      selector: (context, vm) => vm.currentTimetable.currentContent[course.id]?.toList() ?? [],
+      selector: (context, vm) =>
+          vm.currentTimetable.currentContent[course.id]?.toList() ?? [],
       builder: (context, sem, _) {
         List<Color> lessonColors = [];
-        Iterable<CourseLesson> selectedLessons = sem.map((lessonId) => context.read<AppViewModel>().allCourses[course.id]!.lessons[lessonId]);
-        Set<LessonType> lessonTypes = course.prerequisites.map((pre) => pre.type).toSet().difference(selectedLessons.map((lesson) => lesson.type).toSet()..add(LessonType.project));
+        Iterable<LessonView> selectedLessons = sem.map((lessonId) => context
+            .read<AppViewModel>()
+            .allCourses[course.id]!
+            .lessons[lessonId]);
+        Set<LessonType> lessonTypes = course.prerequisites
+            .map((pre) => pre.type)
+            .toSet()
+            .difference(selectedLessons.map((lesson) => lesson.type).toSet()
+              ..add(LessonType.project));
 
         for (var type in lessonTypes) {
           lessonColors.add(getLessonColor(type));
@@ -173,7 +192,10 @@ class _CoursesState extends State<Courses> {
 
         List<double> stops = List.generate(
           lessonTypes.length,
-          (index) => [colorHorizontalPadding / 2 + index * step + gradientWidth, colorHorizontalPadding / 2 + (index + 1) * step - gradientWidth],
+          (index) => [
+            colorHorizontalPadding / 2 + index * step + gradientWidth,
+            colorHorizontalPadding / 2 + (index + 1) * step - gradientWidth
+          ],
         ).expand((element) => element).toList();
 
         return Container(
@@ -208,7 +230,8 @@ class _CoursesState extends State<Courses> {
                     },
                     padding: EdgeInsets.zero,
                     color: Colors.white,
-                    icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                        isHidden ? Icons.visibility_off : Icons.visibility),
                   ),
                 );
               }),
@@ -231,7 +254,9 @@ class _CoursesState extends State<Courses> {
                 waitDuration: const Duration(milliseconds: 500),
                 message: "Vymazat",
                 child: IconButton(
-                  onPressed: () => context.read<TimetableViewModel>().removeCourse(course.id),
+                  onPressed: () => context
+                      .read<TimetableViewModel>()
+                      .removeCourse(course.id),
                   padding: EdgeInsets.zero,
                   color: Colors.white,
                   icon: const Icon(Icons.close),
@@ -251,13 +276,16 @@ class Timetable extends StatelessWidget {
   final model.Timetable? timetable;
   final Filter filter;
   final bool readOnly;
-  const Timetable({super.key, this.timetable, required this.filter, this.readOnly = false});
+  const Timetable(
+      {super.key, this.timetable, required this.filter, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
-    final courseIds = context.select((TimetableViewModel tvm) => tvm.currentTimetable.currentContent.keys.toList());
-    bool areAllLessonsFetched = courseIds.every((courseId) => appViewModel.isCourseLessonFetched(courseId));
+    final courseIds = context.select((TimetableViewModel tvm) =>
+        tvm.currentTimetable.currentContent.keys.toList());
+    bool areAllLessonsFetched = courseIds
+        .every((courseId) => appViewModel.isCourseLessonFetched(courseId));
     return areAllLessonsFetched
         ? buildTimetable(context)
         : FutureBuilder(
@@ -275,7 +303,9 @@ class Timetable extends StatelessWidget {
   Widget buildTimetable(BuildContext context) {
     AppViewModel appViewModel = context.read<AppViewModel>();
     TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
-    final generatedData = timetable == null ? genDispTimetable(appViewModel, timetableViewModel, filter) : genDispTimetableSpecific(appViewModel, timetable!, filter);
+    final generatedData = timetable == null
+        ? genDispTimetable(appViewModel, timetableViewModel, filter)
+        : genDispTimetableSpecific(appViewModel, timetable!, filter);
 
     return Container(
       padding: const EdgeInsets.only(left: 30, right: 30, bottom: 30),
@@ -302,13 +332,22 @@ class Timetable extends StatelessWidget {
                         children: [
                           Column(
                             children: [
-                              buildWeekDay(DayOfWeek.values[index], oneLessonWidth - 1, generatedData[DayOfWeek.values[index]]!.first),
-                              const Divider(thickness: 2, height: 2, color: Colors.black),
+                              buildWeekDay(
+                                  DayOfWeek.values[index],
+                                  oneLessonWidth - 1,
+                                  generatedData[DayOfWeek.values[index]]!
+                                      .first),
+                              const Divider(
+                                  thickness: 2, height: 2, color: Colors.black),
                             ],
                           ),
-                          ...generatedData[DayOfWeek.values[index]]!
-                              .second
-                              .map((specLes) => Lesson(readOnly, appViewModel.allCourses[specLes.courseID]!, specLes, oneLessonWidth, generatedData))
+                          ...generatedData[DayOfWeek.values[index]]!.second.map(
+                              (specLes) => LessonView(
+                                  readOnly,
+                                  appViewModel.allCourses[specLes.courseID]!,
+                                  specLes,
+                                  oneLessonWidth,
+                                  generatedData))
                         ],
                       );
                     }),
@@ -352,18 +391,25 @@ class Timetable extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: daysBarWidth - 0.5, // There was always overflow by 0.5 pixels due to floating point arithmetic
-            child: Text(dayOfWeek.toCzechString(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400)),
+            width: daysBarWidth -
+                0.5, // There was always overflow by 0.5 pixels due to floating point arithmetic
+            child: Text(dayOfWeek.toCzechString(),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400)),
           ),
           Padding(
             padding: EdgeInsets.only(right: lessonWidth / 2),
-            child: const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+            child: const VerticalDivider(
+                thickness: 1, width: 1, color: timetableVerticalLinesColor),
           ),
           ...List.generate(
             14,
             (index) => Padding(
               padding: EdgeInsets.symmetric(horizontal: lessonWidth / 2),
-              child: const VerticalDivider(thickness: 1, width: 1, color: timetableVerticalLinesColor),
+              child: const VerticalDivider(
+                  thickness: 1, width: 1, color: timetableVerticalLinesColor),
             ),
           ),
         ],
@@ -372,20 +418,22 @@ class Timetable extends StatelessWidget {
   }
 }
 
-class Lesson extends StatefulWidget {
+class LessonView extends StatefulWidget {
   final bool readOnly;
   final Course course;
   final SpecificLesson specLes;
   final double oneLessonWidth;
   final Map<DayOfWeek, Pair<int, List<SpecificLesson>>> genData;
 
-  const Lesson(this.readOnly, this.course, this.specLes, this.oneLessonWidth, this.genData, {super.key});
+  const LessonView(this.readOnly, this.course, this.specLes,
+      this.oneLessonWidth, this.genData,
+      {super.key});
 
   @override
-  State<Lesson> createState() => _LessonState();
+  State<LessonView> createState() => _LessonViewState();
 }
 
-class _LessonState extends State<Lesson> {
+class _LessonViewState extends State<LessonView> {
   Timer? _timer;
   bool entryHasFocus = false;
   OverlayEntry? entry;
@@ -406,13 +454,17 @@ class _LessonState extends State<Lesson> {
     final lessonId = widget.specLes.lessonID;
     final lessonLevel = widget.specLes.height;
     const int leftOffset = 5;
-    CourseLesson lesson = widget.course.lessons[lessonId];
+    LessonView lesson = widget.course.lessons[lessonId];
     TimetableViewModel timetableViewModel = context.watch<TimetableViewModel>();
     Size screenSize = MediaQuery.of(context).size;
 
     Color color = getLessonColor(lesson.type);
 
-    locations = lesson.infos.map((info) => info.locations).expand((loc) => loc).toSet().join(', ');
+    locations = lesson.infos
+        .map((info) => info.locations)
+        .expand((loc) => loc)
+        .toSet()
+        .join(', ');
     profesors = lesson.infos.map((info) => info.info).toSet().join(", ");
 
     color = color
@@ -424,7 +476,8 @@ class _LessonState extends State<Lesson> {
       color = color.withAlpha(60);
     }
 
-    final hourIndex = (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
+    final hourIndex =
+        (lesson.startsFrom / 60) - 7; // Timetable starts from 7:00
     return Positioned(
       left: leftOffset + daysBarWidth + hourIndex * widget.oneLessonWidth,
       top: lessonHeight * lessonLevel + 5,
@@ -436,18 +489,25 @@ class _LessonState extends State<Lesson> {
           if (widget.specLes.selected) {
             deselectLesson(timetableViewModel, widget.specLes);
           } else {
-            final lessons = context.read<AppViewModel>().allCourses[widget.course.id]!.lessons;
-            final selectedLessons = timetableViewModel.currentTimetable.currentContent[widget.course.id];
+            final lessons = context
+                .read<AppViewModel>()
+                .allCourses[widget.course.id]!
+                .lessons;
+            final selectedLessons = timetableViewModel
+                .currentTimetable.currentContent[widget.course.id];
 
             if (selectedLessons == null || selectedLessons.isNotEmpty) {
-              int id = selectedLessons!.firstWhere((id) => lessons[id].type == lesson.type, orElse: () => -1);
+              int id = selectedLessons!.firstWhere(
+                  (id) => lessons[id].type == lesson.type,
+                  orElse: () => -1);
               if (id != -1) {
                 var x = widget.genData.values
                     .expand((element) => element.second)
                     .where((element) => element.courseID == widget.course.id)
                     .firstWhere((element) => element.lessonID == id);
                 x.selected = false;
-                timetableViewModel.currentTimetable.removeLesson(widget.course.id, id);
+                timetableViewModel.currentTimetable
+                    .removeLesson(widget.course.id, id);
               }
             }
 
@@ -477,11 +537,15 @@ class _LessonState extends State<Lesson> {
                     _timer = Timer(const Duration(milliseconds: 600), () {
                       overlayPosition = details.position;
                       overlayTriggerPosition = details.position;
-                      if (details.position.dx + overlayWidth > screenSize.width) {
-                        overlayPosition = overlayPosition!.translate(-overlayWidth, 0);
+                      if (details.position.dx + overlayWidth >
+                          screenSize.width) {
+                        overlayPosition =
+                            overlayPosition!.translate(-overlayWidth, 0);
                       }
-                      if (details.position.dy + overlayHeight > screenSize.height) {
-                        overlayPosition = overlayPosition!.translate(0, -overlayHeight);
+                      if (details.position.dy + overlayHeight >
+                          screenSize.height) {
+                        overlayPosition =
+                            overlayPosition!.translate(0, -overlayHeight);
                       }
                       if (mounted) {
                         showOverlay(widget.course, lesson);
@@ -496,7 +560,7 @@ class _LessonState extends State<Lesson> {
     );
   }
 
-  Container buildLesson(CourseLesson lesson, Color color) {
+  Container buildLesson(LessonView lesson, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       width: (lesson.endsAt - lesson.startsFrom) / 60 * widget.oneLessonWidth,
@@ -519,11 +583,16 @@ class _LessonState extends State<Lesson> {
         ),
         Text(
           profesors!,
-          style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w100, color: Color(0xFFC6C4C4)),
+          style: const TextStyle(
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w100,
+              color: Color(0xFFC6C4C4)),
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 10),
-        buildRooms(context, lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
+        buildRooms(context,
+            lesson.infos.map((v) => v.locations).expand((v) => v).toSet()),
       ]),
     );
   }
@@ -535,7 +604,7 @@ class _LessonState extends State<Lesson> {
     }
   }
 
-  void showOverlay(Course course, CourseLesson lesson) {
+  void showOverlay(Course course, LessonView lesson) {
     entry = OverlayEntry(
       builder: (context) => Positioned(
         top: overlayPosition!.dy + 1,
@@ -555,20 +624,38 @@ class _LessonState extends State<Lesson> {
     overlay.insert(entry!);
   }
 
-  Widget buildOverlay(Course course, CourseLesson lesson) {
+  Widget buildOverlay(Course course, LessonView lesson) {
     const overlayBorderRadius = Radius.circular(10);
     const overlayZeroRadius = Radius.zero;
     BorderRadiusGeometry? borders;
 
     // the border where the mouse is pointing should be sharp, the other are rounded
     if (overlayPosition == overlayTriggerPosition) {
-      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayZeroRadius);
-    } else if (overlayPosition!.translate(overlayWidth, 0) == overlayTriggerPosition) {
-      borders = const BorderRadius.only(topRight: overlayZeroRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
-    } else if (overlayPosition!.translate(0, overlayHeight) == overlayTriggerPosition) {
-      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayZeroRadius, bottomRight: overlayBorderRadius, topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(
+          topRight: overlayBorderRadius,
+          bottomLeft: overlayBorderRadius,
+          bottomRight: overlayBorderRadius,
+          topLeft: overlayZeroRadius);
+    } else if (overlayPosition!.translate(overlayWidth, 0) ==
+        overlayTriggerPosition) {
+      borders = const BorderRadius.only(
+          topRight: overlayZeroRadius,
+          bottomLeft: overlayBorderRadius,
+          bottomRight: overlayBorderRadius,
+          topLeft: overlayBorderRadius);
+    } else if (overlayPosition!.translate(0, overlayHeight) ==
+        overlayTriggerPosition) {
+      borders = const BorderRadius.only(
+          topRight: overlayBorderRadius,
+          bottomLeft: overlayZeroRadius,
+          bottomRight: overlayBorderRadius,
+          topLeft: overlayBorderRadius);
     } else {
-      borders = const BorderRadius.only(topRight: overlayBorderRadius, bottomLeft: overlayBorderRadius, bottomRight: overlayZeroRadius, topLeft: overlayBorderRadius);
+      borders = const BorderRadius.only(
+          topRight: overlayBorderRadius,
+          bottomLeft: overlayBorderRadius,
+          bottomRight: overlayZeroRadius,
+          topLeft: overlayBorderRadius);
     }
 
     List<Widget> infos = lesson.infos
@@ -631,7 +718,11 @@ class _LessonState extends State<Lesson> {
             child: Text(
               course.fullName,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  decoration: TextDecoration.none),
             ),
           ),
           const SizedBox(height: 15),
@@ -676,7 +767,8 @@ class _LessonState extends State<Lesson> {
               .expand<Widget>(
                 (entry) => [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(7),
@@ -696,7 +788,10 @@ class _LessonState extends State<Lesson> {
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: Text(
                       entry.value.join(", "),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white),
                     ),
                   )
                 ],
@@ -705,7 +800,10 @@ class _LessonState extends State<Lesson> {
             ..add(
               Text(
                 unknownLocations.join(", "),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w300, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white),
               ),
             ),
         ),
@@ -716,13 +814,22 @@ class _LessonState extends State<Lesson> {
   Row buildInfo(String infoType, String infoValue) {
     return Row(
       children: [
-        Text(infoType, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w200, color: Color.fromARGB(255, 100, 100, 100), decoration: TextDecoration.none)),
+        Text(infoType,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w200,
+                color: Color.fromARGB(255, 100, 100, 100),
+                decoration: TextDecoration.none)),
         Expanded(
           child: Text(
             infoValue,
             softWrap: true,
             overflow: TextOverflow.clip,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black, decoration: TextDecoration.none),
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+                decoration: TextDecoration.none),
           ),
         ),
       ],
