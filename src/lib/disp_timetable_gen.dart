@@ -19,12 +19,10 @@ import 'viewmodels/timetable.dart';
 class SpecificLesson {
   final Lesson lesson;
   int height;
-  bool selected;
 
   SpecificLesson({
     required this.lesson,
     required this.height,
-    required this.selected,
   });
 }
 
@@ -40,16 +38,6 @@ class Filter {
   Filter.courses(Set<Course> courses) : this(courses: courses, allCourses: false);
   Filter.all() : this(courses: {}, allCourses: true);
   Filter.none() : this(courses: {}, allCourses: false);
-}
-
-void selectLesson(TimetableViewModel vm, SpecificLesson lesson) {
-  lesson.selected = true;
-  vm.addLesson(lesson.lesson);
-}
-
-void deselectLesson(TimetableViewModel vm, SpecificLesson lesson) {
-  lesson.selected = false;
-  vm.removeLesson(lesson.lesson);
 }
 
 class Pair<T, U> {
@@ -68,8 +56,8 @@ DisplayedTimetable genDispTimetableSpecific(AppViewModel avm, Timetable tim, Fil
     DayOfWeek.thursday: Pair(0, []),
     DayOfWeek.friday: Pair(0, []),
   };
-  fillDays(avm.allCourses.values.toSet(), tim, filter, res);
-  fillHeights(avm.allCourses.values.toSet(), res);
+  fillDays(tim, filter, res);
+  fillHeights(res);
   return res;
 }
 
@@ -82,13 +70,13 @@ DisplayedTimetable genDispTimetable(AppViewModel avm, TimetableViewModel tvm, Fi
     DayOfWeek.friday: Pair(0, []),
   };
 
-  fillDays(avm.allCourses.values.toSet(), tvm.currentTimetable, filter, res);
-  fillHeights(avm.allCourses.values.toSet(), res);
+  fillDays(tvm.currentTimetable, filter, res);
+  fillHeights(res);
 
   return res;
 }
 
-void fillHeights(Set<Course> courses, DisplayedTimetable outTim) {
+void fillHeights(DisplayedTimetable outTim) {
   outTim.forEach((_, pair) {
     pair.second.sort((a, b) {
       if (a.lesson.startsFrom != b.lesson.startsFrom) {
@@ -121,14 +109,13 @@ void fillHeights(Set<Course> courses, DisplayedTimetable outTim) {
   });
 }
 
-void fillDays(Set<Course> courses, Timetable tim, Filter filter, DisplayedTimetable outTim) {
+void fillDays(Timetable tim, Filter filter, DisplayedTimetable outTim) {
   if (filter.allCourses) {
     tim.currentContent.forEach((courseID, lessons) {
       for (final lesson in lessons) {
         final sl = SpecificLesson(
           lesson: lesson,
           height: 0,
-          selected: true,
         );
         outTim[lesson.dayOfWeek]!.second.add(sl);
       }
@@ -136,15 +123,14 @@ void fillDays(Set<Course> courses, Timetable tim, Filter filter, DisplayedTimeta
     return;
   }
 
-  for (var course in courses) {
+  for (var course in tim.currentContent.keys) {
     for (var lesson in course.lessons) {
       final sl = SpecificLesson(
         lesson: lesson,
         height: 0,
-        selected: tim.containsLesson(lesson),
       );
       // Filter only when the course isn't selected.
-      if (!filter.courses.contains(course) || sl.selected) {
+      if (!filter.courses.contains(course) || tim.containsLesson(lesson)) {
         outTim[lesson.dayOfWeek]!.second.add(sl);
       }
     }
