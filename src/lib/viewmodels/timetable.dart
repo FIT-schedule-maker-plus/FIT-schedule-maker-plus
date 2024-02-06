@@ -9,6 +9,7 @@
  */
 
 import 'dart:convert';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -75,10 +76,10 @@ class TimetableViewModel extends ChangeNotifier {
       final data = utf8.decode(res!.files.first.bytes!.toList());
       final exportTimetable = ExportTimetable.fromJson(jsonDecode(data));
       for (final progId in exportTimetable.programIds) {
-        await avm.getProgramCourses(progId);
+        await avm.getCourses(progId);
       }
       for (final val in exportTimetable.timetable.selected.values) {
-        await avm.getAllCourseLessonsAsync(val.keys.map((course) => course.id).toList());
+        await avm.getAllLessonsAsync(val.keys.map((course) => course.id).toList());
       }
       exportTimetable.timetable.semester = Semester.winter;
       timetables.add(exportTimetable.timetable);
@@ -175,21 +176,29 @@ class TimetableViewModel extends ChangeNotifier {
     return currentTimetable.containsLesson(lesson);
   }
 
-  /// Add lesson to current timetable.
-  void addLesson(Lesson lesson) {
-    currentTimetable.addLesson(lesson);
-    notifyListeners();
-  }
-
-  /// Remove lesson from current timetable.
-  void removeLesson(Lesson lesson) {
-    currentTimetable.removeLesson(lesson);
-    notifyListeners();
-  }
-
   /// Clear all lessons from current timetable.
   void clearLessons() {
     currentTimetable.clearLessons();
+    notifyListeners();
+  }
+
+  /// Select or deselect lesson in timetable
+  void selectLesson(Lesson lesson) {
+    // Unselect lesson from the same course and of the same `LessonType`
+    Iterable<Lesson> lessonToDeselect = currentTimetable.currentContent[lesson.course]!
+        .where((selectedLesson) => selectedLesson.type == lesson.type);
+
+    if (lessonToDeselect.isNotEmpty) {
+      currentTimetable.deselectLesson(lessonToDeselect.first);
+    }
+
+    currentTimetable.selectLesson(lesson);
+    notifyListeners();
+  }
+
+  /// Select or deselect lesson in timetable
+  void deselectLesson(Lesson lesson) {
+    currentTimetable.deselectLesson(lesson);
     notifyListeners();
   }
 }
