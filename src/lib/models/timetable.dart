@@ -44,7 +44,7 @@ class Timetable {
   }
 
   /// Add course lesson to current semester timetable.
-  void addLesson(Lesson lesson) {
+  void selectLesson(Lesson lesson) {
     if (currentContent[lesson.course] == null) {
       currentContent[lesson.course] = {};
     }
@@ -52,10 +52,8 @@ class Timetable {
   }
 
   /// Remove lesson from current semester timetable.
-  void removeLesson(Lesson lesson) {
-    if (containsLesson(lesson)) {
-      currentContent[lesson.course]!.remove(lesson);
-    }
+  void deselectLesson(Lesson lesson) {
+    currentContent[lesson.course]!.remove(lesson);
   }
 
   /// Clear all lessons in current semester timetable.
@@ -85,10 +83,7 @@ class Timetable {
 
   @override
   bool operator ==(Object other) {
-    return (other is Timetable) &&
-        semester == other.semester &&
-        selected == other.selected &&
-        name == other.name;
+    return (other is Timetable) && semester == other.semester && name == other.name;
   }
 
   @override
