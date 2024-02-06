@@ -32,7 +32,6 @@ class AppViewModel extends ChangeNotifier {
   Map<int, StudyProgram> allStudyPrograms = {};
   Map<String, Faculty> allLocations = {};
   YearOfStudy currentGrade = YearOfStudy.second;
-  Semester currentSemester = Semester.winter;
   String currentYear = "2023/24";
   int currentStudyProgram = 15803; // BIT
 
@@ -48,12 +47,6 @@ class AppViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Changes the semester to winter or summer and notifies all listeners
-  void changeSemester(Semester semester) {
-    currentSemester = semester;
-    notifyListeners();
-  }
-
   /// Changes the year and notifies all listeners that the year has been changed
   void changeYear(String year) {
     currentYear = year;
@@ -63,7 +56,7 @@ class AppViewModel extends ChangeNotifier {
   /// Changes the stady and notifies all listeners
   void changeStudy(int programId) {
     currentStudyProgram = programId;
-    getProgramCourses(programId);
+    getCourses(programId);
     notifyListeners();
   }
 
@@ -112,7 +105,7 @@ class AppViewModel extends ChangeNotifier {
   /// Retrieve all courses within the specified study program asynchronously.
   /// https://www.fit.vut.cz/study/study-plan/{programId}/.en
   /// Asynchronously fetches courses for a given study program if not already loaded.
-  Future<void> getProgramCourses(int programId) async {
+  Future<void> getCourses(int programId) async {
     if (allStudyPrograms.containsKey(programId)) {
       if (allStudyPrograms[programId]!.courseGroups.isNotEmpty) {
         return;
@@ -215,7 +208,7 @@ class AppViewModel extends ChangeNotifier {
   /// Asynchronously fetches and updates data for a specific course if not already loaded.
   Future<void> fetchCourseData(int courseId) async {
     if (!allCourses.containsKey(courseId)) return; // unknown course
-    if (isCourseLessonFetched(courseId)) return;
+    if (isLessonFetched(courseId)) return;
 
     final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
     if (parser == null) return;
@@ -233,14 +226,14 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// Checks if lessons for a given course have already been fetched.
-  bool isCourseLessonFetched(int courseId) {
+  bool isLessonFetched(int courseId) {
     return allCourses[courseId]!.loaded;
   }
 
   /// Asynchronously fetches lessons for multiple courses if not already loaded.
-  Future<void> getAllCourseLessonsAsync(List<int> courseIds) async {
+  Future<void> getAllLessonsAsync(List<int> courseIds) async {
     await Future.wait(courseIds.map((courseId) async {
-      if (!isCourseLessonFetched(courseId)) {
+      if (!isLessonFetched(courseId)) {
         await fetchCourseData(courseId);
       }
     }));
@@ -254,18 +247,19 @@ class AppViewModel extends ChangeNotifier {
   }
 
   /// This function checks if the current study program has fetched its course group
-  bool isProgramCourseGroupFetched() {
+  bool isCourseGroupFetched() {
     return allStudyPrograms.containsKey(currentStudyProgram) &&
         allStudyPrograms[currentStudyProgram]!.courseGroups.isNotEmpty;
   }
 
-  /// Synchronously loads the current programCourseGroup based on the current study program.
-  /// This function assumes that the study program and its program course groups
+  /// Synchronously loads the current CourseGroup based on the current study program.
+  /// This function assumes that the study program and its course groups
   /// have already been fetched. Therefore, it is recommended to check this in advance
-  /// using the `isProgramCourseGroupFetched` function.
-  CourseGroup getProgramCourseGroup() {
-    return allStudyPrograms[currentStudyProgram]!.courseGroups.firstWhere(
-        (group) => group.semester == currentSemester && group.yearOfStudy == currentGrade);
+  /// using the `isCourseGroupFetched` function.
+  CourseGroup getCourseGroup(Semester semester) {
+    return allStudyPrograms[currentStudyProgram]!
+        .courseGroups
+        .firstWhere((group) => group.semester == semester && group.yearOfStudy == currentGrade);
   }
 
   /// This function takes a string in the format of "hh:mm" and returns the total number of minutes
