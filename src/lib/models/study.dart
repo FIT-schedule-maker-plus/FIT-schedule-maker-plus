@@ -14,7 +14,10 @@ class StudyProgram {
   final String shortcut;
   final String fullName;
   final StudyType type;
+
+  /// Number of years to graduate
   final int duration;
+
   List<CourseGroup> courseGroups;
 
   StudyProgram({

@@ -43,11 +43,11 @@ class SideBar extends StatelessWidget {
   }
 
   Widget buildStudiumBar(BuildContext context) {
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
+    final int studyTypeCount = StudyType.values.length + 1;
+    AppViewModel appViewModel = context.read<AppViewModel>();
+    Map<int, StudyProgram> studies = appViewModel.allStudyPrograms;
     final activeStudy =
         context.select((AppViewModel appViewModel) => appViewModel.currentStudyProgram);
-    Map<int, StudyProgram> studies = appViewModel.allStudyPrograms;
-    final int studyTypeCount = StudyType.values.length + 1;
 
     return Container(
       color: black,
@@ -148,7 +148,8 @@ class SideBar extends StatelessWidget {
   }
 
   Widget buildSubjectBar(BuildContext context) {
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
+    AppViewModel appViewModel = context.read<AppViewModel>();
+    Semester semester = context.read<TimetableViewModel>().currentTimetable.semester;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -156,25 +157,21 @@ class SideBar extends StatelessWidget {
       child: SizedBox(
         width: 225,
         child: Column(children: [
-          buildHeader(context),
+          buildSubjectBarHeader(context),
           const Divider(color: black),
           buildGradeTabs(context),
           const SizedBox(height: 15),
           Expanded(
-            child: appViewModel.isProgramCourseGroupFetched()
-                ? buildAllSubjectList(appViewModel.getProgramCourseGroup())
+            child: appViewModel.isCourseGroupFetched()
+                ? buildAllSubjectList(appViewModel.getCourseGroup(semester))
                 : FutureBuilder(
-                    future: appViewModel.getProgramCourses(appViewModel.currentStudyProgram),
+                    future: appViewModel.getCourses(appViewModel.currentStudyProgram),
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                        case ConnectionState.none:
-                        case ConnectionState.active:
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                        case ConnectionState.done:
+                          return buildAllSubjectList(appViewModel.getCourseGroup(semester));
                         default:
-                          return buildAllSubjectList(appViewModel.getProgramCourseGroup());
+                          return const Center(child: CircularProgressIndicator());
                       }
                     },
                   ),
@@ -197,18 +194,16 @@ class SideBar extends StatelessWidget {
     );
   }
 
-  // inlcudes year and semeter
-  Widget buildHeader(BuildContext context) {
-    AppViewModel appViewModel = Provider.of<AppViewModel>(context, listen: false);
-    TimetableViewModel timetableViewModel = Provider.of<TimetableViewModel>(context, listen: false);
-    final currentSemester =
-        context.select((AppViewModel appViewModel) => appViewModel.currentSemester);
+  Widget buildSubjectBarHeader(BuildContext context) {
+    TimetableViewModel timetableViewModel = context.read<TimetableViewModel>();
+    Semester currentSemester =
+        context.select((TimetableViewModel tvm) => tvm.currentTimetable.semester);
 
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
         Expanded(
-          child: Text(appViewModel.currentYear,
+          child: Text(context.read<AppViewModel>().currentYear,
               textAlign: TextAlign.center,
               style: const TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.w500)),
         ),
@@ -225,7 +220,7 @@ class SideBar extends StatelessWidget {
               value: currentSemester == Semester.winter,
               onChanged: (value) {
                 Semester semester = value ? Semester.winter : Semester.summer;
-                appViewModel.changeSemester(semester);
+                // context.read<AppViewModel>().changeSemester(semester);
                 timetableViewModel.changeSemester(semester);
               },
             ),

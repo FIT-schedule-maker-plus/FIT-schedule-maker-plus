@@ -98,9 +98,6 @@ class VariantWidget extends StatelessWidget {
                   Semester semester = value ? Semester.winter : Semester.summer;
                   final tvm = context.read<TimetableViewModel>();
                   tvm.changeSemester(semester, index: index);
-                  if (index == tvm.active) {
-                    context.read<AppViewModel>().changeSemester(semester);
-                  }
                 },
               ),
             );

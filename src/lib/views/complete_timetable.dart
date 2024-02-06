@@ -95,7 +95,6 @@ class CompleteTimetable extends StatelessWidget {
                     final semester = value ? Semester.winter : Semester.summer;
                     final tvm = context.read<TimetableViewModel>();
                     tvm.changeSemester(semester);
-                    context.read<AppViewModel>().changeSemester(semester);
                   },
                 ),
               ),
