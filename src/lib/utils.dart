@@ -9,6 +9,7 @@
 import 'dart:convert';
 import 'dart:js' as js;
 import 'dart:html' as html;
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:fit_schedule_maker_plus/models/study.dart';
@@ -43,8 +44,8 @@ void saveImage(
   ]);
 }
 
-Color getLessonColor(LessonType type) {
-  return switch (type) {
+Color getLessonColor(LessonType type, {bool active = false}) {
+  Color color = switch (type) {
     LessonType.lecture => const Color.fromARGB(255, 22, 106, 30),
     LessonType.seminar => const Color.fromARGB(255, 38, 161, 161),
     LessonType.exercise => const Color.fromARGB(255, 21, 69, 88),
@@ -52,6 +53,16 @@ Color getLessonColor(LessonType type) {
     LessonType.laboratory => const Color.fromARGB(255, 111, 92, 24),
     LessonType.project => const Color.fromARGB(255, 177, 97, 17),
   };
+
+  color = color
+      .withRed(max(0, color.red - (0x60 * 299 / 1000).round()))
+      .withGreen(max(0, color.green - (0x60 * 587 / 1000).round()))
+      .withBlue(max(0, color.blue - (0x60 * 114 / 1000).round()));
+
+  if (!active) {
+    color = color.withAlpha(60);
+  }
+  return color;
 }
 
 List<StudyProgram> getAllStudies() {
