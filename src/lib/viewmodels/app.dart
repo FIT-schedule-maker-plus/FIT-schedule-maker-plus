@@ -210,7 +210,8 @@ class AppViewModel extends ChangeNotifier {
     if (!allCourses.containsKey(courseId)) return; // unknown course
     if (isLessonFetched(courseId)) return;
 
-    final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$courseId/.en");
+    final shortcut = allCourses[courseId]!.shortcut;
+    final parser = await Chaleno().load("https://www.fit.vut.cz/study/course/$shortcut/.en");
     if (parser == null) return;
 
     final html = parser.html;
